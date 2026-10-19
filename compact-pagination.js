@@ -3,7 +3,7 @@ function compactPageEnd(total,end){return Math.max(10,Math.min(Math.ceil(Math.ma
 (()=>{
  const registered=new WeakMap();
  let backTarget=null;
- const selector='table > tbody, .league-awards-grid, .adv-grid, .ownership-scroll, .captain-evidence-grid, .captain-history, #savedPlans';
+ const selector='table > tbody, .league-awards-grid, .adv-grid, .ownership-scroll, .captain-evidence-grid, .captain-history, .compact-feature-list, #savedPlans';
  function paginate(list){
   const items=Array.from(list.children);
   if(items.length<=10||registered.has(list))return;
