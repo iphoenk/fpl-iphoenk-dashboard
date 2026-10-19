@@ -5,3 +5,6 @@
 #dashboardPlaying{display:none}.team-hero .hero-stats{margin-top:18px;padding-top:18px}
 
 body[data-view="dashboard"] .main{padding-top:24px}.focus-card h3{letter-spacing:0;word-spacing:.08em;font-weight:600}.focus-kicker{letter-spacing:.8px}.focus-card .focus-link{letter-spacing:0;word-spacing:.04em}.hero-manager{line-height:1.8}.brief-heading h2{letter-spacing:0}@media(max-width:700px){body[data-view="dashboard"] .main{padding-top:16px}}
+
+html[data-theme='dark'] .adv-card .big{color:#e6edf7}html[data-theme='dark'] .adv-card .big small{color:#b9c8da}
+

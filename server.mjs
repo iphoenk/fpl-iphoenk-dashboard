@@ -8,7 +8,7 @@ export function sourceFor(path){
  if(path==='/api/model/manifest')return RAW+'manifest.json';
  if(path==='/api/model/players')return RAW+'players.json';
  const p=path.replace(/^\/api\//,'').replace(/\/?$/,'/');
- if(path.startsWith('/api/')&&/^(bootstrap-static\/|fixtures\/|event\/[1-9]\d?\/live\/|entry\/[1-9]\d{0,9}\/|entry\/[1-9]\d{0,9}\/history\/|entry\/[1-9]\d{0,9}\/event\/[1-9]\d?\/picks\/|leagues-classic\/[1-9]\d{0,9}\/standings\/)$/.test(p))return FPL+p;
+ if(path.startsWith('/api/')&&/^(bootstrap-static\/|fixtures\/|element-summary\/[1-9]\d{0,5}\/|event\/[1-9]\d?\/live\/|entry\/[1-9]\d{0,9}\/|entry\/[1-9]\d{0,9}\/history\/|entry\/[1-9]\d{0,9}\/event\/[1-9]\d?\/picks\/|leagues-classic\/[1-9]\d{0,9}\/standings\/)$/.test(p))return FPL+p;
  return null;
 }
 export async function handle(request,env,ctx,html){
