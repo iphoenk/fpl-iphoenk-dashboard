@@ -1,0 +1,4 @@
+export function officialBundle(bs,now=Date.now()){
+ const number=v=>v==null||String(v).trim()===''||!Number.isFinite(Number(v))?null:Number(v),next=bs.events.find(e=>e.is_next),teams=new Map(bs.teams.map(t=>[t.id,t.short_name]));if(!next)throw new Error('Next GW unavailable');
+ return {manifest:{gameweek:next.id,deadline:next.deadline_time,generated_at:new Date(now).toISOString(),default_model:'official_fallback',provider_mode:'official-fallback',provider_name:'Official FPL ep_next',models:[{id:'official_fallback',name:'Official FPL ep_next · fallback'}]},players:Object.fromEntries(bs.elements.filter(p=>number(p.ep_next)!==null).map(p=>[p.id,{element:p.id,web_name:p.web_name,team_name:teams.get(p.team),predicted_points:number(p.ep_next),predicted_range_low:null,predicted_range_high:null}]))};
+}
