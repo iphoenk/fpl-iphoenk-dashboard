@@ -1,0 +1,17 @@
+.git
+.openai
+.vercel
+worker
+dist
+tests
+README.md
+*.zip
+*.tar.gz
+
+.env
+.env.*
+.github
+docs
+AGENTS.md
+CLAUDE.md
+GEMINI.md

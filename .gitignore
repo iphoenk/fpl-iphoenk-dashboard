@@ -1,0 +1,14 @@
+# Repository files only — never commit local credentials or generated output.
+node_modules/
+public/
+worker/
+dist/
+.vercel/
+.openai/
+.env
+.env.*
+!.env.example
+*.log
+*.zip
+*.tar.gz
+.DS_Store

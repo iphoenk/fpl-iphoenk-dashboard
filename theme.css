@@ -1,0 +1,55 @@
+:root{color-scheme:light}
+.theme-toggle{position:fixed;z-index:120;top:16px;right:18px;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 13px;border:1px solid #dce4ed;border-radius:12px;background:#fff;color:#24364b;box-shadow:0 3px 15px #1421370b;font:500 12px/1 Inter,system-ui,sans-serif;cursor:pointer}
+.theme-toggle:focus-visible{outline:3px solid #00a575;outline-offset:3px}
+html[data-theme="dark"]{color-scheme:dark;--bg:#0d1420;--panel:#151f2d;--line:#2b3a4f;--muted:#a5b4c9;--text:#e6edf7;--lime:#63dfad;--green:#63dfad;--red:#ff7897;--orange:#edbe6b}
+html[data-theme="dark"] body{background:#0d1420;color:#e6edf7}
+html[data-theme="dark"] :is(.approved-header,.panel,.approved-summary,.approved-news-panel,.connection-card,.mobile-bottom-nav,.mobile-more,.approved-more>div,dialog,.team-context,.theme-toggle){background:#151f2d;color:#e6edf7;border-color:#2b3a4f}
+html[data-theme="dark"] :is(.panel-head,.panel-body,.table-wrap,.news-rail-item,.news-rail-heading,.approved-summary-row,.price-watch-item,.footer,.dialog-head,.tabs-mini,.adv-row){border-color:#2b3a4f}
+html[data-theme="dark"] :is(h1,h2,h3,h4,.intro h1,.panel-head h2,.news-rail-heading h2,.adv-section-title,.advanced-header h2,.stat-num,.stat:first-child .stat-num,.compact-item strong,.approved-summary-row strong,.price-eta,.news-player-top button,.news-rail-item a,.news-rail-item h3,.player-label button,.compact-score,.mini-statline strong,.dialog-head h2){color:#e6edf7}
+html[data-theme="dark"] :is(.muted,.adv-note,.subtle-note,.source-note,.stat-foot,.panel-heading small,.deadline,.intro p,.advanced-header p,.approved-summary-row>span,.news-rail-heading p,.news-rail-item small,.news-rail-item p,.news-rail-foot,.footer,.compact-item small,.chart-legend,.price-watch-item p,.approved-gw,.connection-card p,.connection-privacy,.eyebrow){color:#a5b4c9}
+html[data-theme="dark"] :is(.stat,.adv-card,.ownership-card,.compact-item,.price-projections span,.table-wrap thead,.table-wrap th,.filters,.toolbar,.source-tag,.section-jumps,.entrybar,.approved-local-tabs button:hover){background:#1a2738;color:#dbe6f6;border-color:#304157}
+html[data-theme="dark"] .stat:first-child{background:#12362f;border-color:#256852}
+html[data-theme="dark"] :is(input,select,textarea,.btn,.overview-links .btn,.team-context,.tabs-mini button){background:#1d2b3d;color:#e6edf7;border-color:#3b4d65}
+html[data-theme="dark"] input::placeholder{color:#a1b1c7}
+html[data-theme="dark"] :is(.approved-navigation>button,.approved-more summary,.approved-more button,.approved-local-tabs button,.adv-tabs button,.dashboard-tabs button,.mobile-bottom-nav button,.mobile-more button,.adv-row button,.team-name,.adv-card a,.news-player-top button){color:#b9c7da}
+html[data-theme="dark"] :is(.approved-navigation>button.active,.approved-local-tabs button.active,.adv-tabs button.active,.mobile-bottom-nav button.active,.approved-more button:hover,.watch-star.saved){background:#143d33;color:#75e2b6;border-color:#328065}
+html[data-theme="dark"] :is(.btn.primary,.connection-card .btn.primary){background:#68dfb0;border-color:#68dfb0;color:#09271d}
+html[data-theme="dark"] :is(.badge,.notice.ok){background:#123d32;color:#88ebc3;border-color:#2b7259}
+html[data-theme="dark"] :is(.badge.danger,.adv-error){background:#451e32;color:#ff9bb6}
+html[data-theme="dark"] :is(.notice,.badge.warn){background:#342d1c;color:#f3d596;border-color:#65512b}
+html[data-theme="dark"] :is(td,th,tr){border-color:#2b3a4f}
+html[data-theme="dark"] :is(tr.selected-row td,tr.evidence-owned td){background:#40263f!important;color:#f1d7eb}
+html[data-theme="dark"] .evidence-owned td:first-child{box-shadow:inset 3px 0 #ff79c0}
+html[data-theme="dark"] .adv-chart text{fill:#bac8da!important}
+html[data-theme="dark"] .adv-chart .axis{stroke:#34445b}
+html[data-theme="dark"] :is(.adv-bar,.mini-progress){background:#2d3c51}
+html[data-theme="dark"] .price-projections b{color:#e6edf7}
+html[data-theme="dark"] .pitch-wrap{background:#151f2d}
+html[data-theme="dark"] :is(.bench-row,.refined-bench-label,.bench-title){background:#101a28;color:#a5b4c9}
+html[data-theme="dark"] .pitch .player-score,html[data-theme="dark"] .bench-row .player-score{background:#e9f0f8;color:#142137}
+html[data-theme="dark"] .team-hero{background:#30063d;color:#fff}
+html[data-theme="dark"] .team-hero :is(h1,strong){color:#fff}
+html[data-theme="dark"] .hero-stat.accent strong{color:#65edaf}
+html[data-theme="dark"] .connection-gate{background:radial-gradient(ellipse at 50% 0,#193a35,transparent 70%),#0d1420}
+html[data-theme="dark"] .connection-shirt{background:#153f34;color:#72e1b4}
+html[data-theme="dark"] :is(.approved-brand img,.connection-brand img){background:#fff;border-radius:9px}
+html[data-theme="dark"] .negative{color:#ff87a5}
+@media(max-width:700px){.theme-toggle{top:12px;right:14px;width:44px;padding:10px}.theme-toggle span{display:none}}
+@media(prefers-reduced-motion:no-preference){.theme-toggle{transition:background .15s,color .15s}}
+html[data-theme="dark"] .page-view p{color:#a5b4c9}
+html[data-theme="dark"] .team-hero p{color:#d3bddb}
+html[data-theme="dark"] :is(.adv-note,.subtle-note,.lab-bubble-choices,.spotlight,.news-all,.player-photo-fallback){background:#1a2738;color:#b9c7da;border-color:#304157}
+html[data-theme="dark"] .ownership-card p.owned{color:#75e2b6}
+html[data-theme="dark"] .notice.ok{background:#123d32;color:#88ebc3;border-color:#2b7259}
+html[data-theme="dark"] .tint{color:#edf3fc}
+html[data-theme="dark"] .stat .eyebrow,html[data-theme="dark"] .stat .stat-foot,html[data-theme="dark"] .stat:first-child .eyebrow,html[data-theme="dark"] .stat:first-child .stat-foot{color:#b5c5d8}
+/* Align the theme action to the navigation row, rather than the viewport edge. */
+.approved-header-inner{position:relative;gap:18px}
+.theme-toggle{position:static;flex:none;transform:none;box-shadow:none}
+html[data-theme="dark"] :is(.approved-brand img,.connection-brand img){background:transparent;border-radius:0;filter:invert(1) hue-rotate(180deg) brightness(1.25);mix-blend-mode:screen}
+.connecting-team .approved-header{display:block;position:fixed;top:0;right:0;background:none;border:0;z-index:110}
+.connecting-team .approved-header-inner{padding:0;min-height:0}
+.connecting-team .approved-header :is(.approved-brand,.approved-navigation){display:none}
+.connecting-team .theme-toggle{position:fixed;top:16px;right:18px;transform:none}
+@media(max-width:920px){.theme-toggle{position:absolute;top:50%;right:18px;transform:translateY(-50%);width:44px;padding:10px}.theme-toggle span{display:none}}
+@media(max-width:700px){.theme-toggle{right:14px}}

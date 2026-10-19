@@ -1,0 +1,19 @@
+name: Task or improvement
+description: A scoped task that a human or AI contributor can implement and review.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and intended behavior
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope, files, and concurrent work
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance and verification
+    validations:
+      required: true
