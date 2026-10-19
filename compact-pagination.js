@@ -6,10 +6,10 @@ function compactPageEnd(total,end){return Math.max(10,Math.min(Math.ceil(Math.ma
  const selector='table > tbody, .league-awards-grid, .adv-grid, .ownership-scroll, .captain-evidence-grid, .captain-history, .compact-feature-list, #savedPlans';
  function paginate(list){
   const items=Array.from(list.children);
-  if(items.length<=10||registered.has(list))return;
+  const league=!!list.closest('#leaguePanel');
+  if((items.length<=10&&!league)||registered.has(list))return;
   // Mixed layouts are sections, not a list of repeated cards.
   if(list.matches('.adv-grid')&&!items.every(n=>n.matches('.adv-card')))return;
-  const league=!!list.closest('#leaguePanel');
   const upstream=league?{previous:document.getElementById('leaguePrev')?.onclick,next:document.getElementById('leagueNext')?.onclick,hasPrevious:state.leaguePage>1,hasNext:!!state.league?.standings?.has_next}:null;
   const nav=document.createElement('nav');nav.className='compact-pagination';nav.setAttribute('aria-label','Navigasi daftar');
   const previous=document.createElement('button'),next=document.createElement('button'),label=document.createElement('span');
