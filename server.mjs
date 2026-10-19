@@ -1,3 +1,4 @@
+import {fetchCoreEvidence} from './core-evidence.mjs';
 const FPL='https://fantasy.premierleague.com/api/';
 const RAW='https://raw.githubusercontent.com/abdelmalek-maskri/fplens/main/app/public/data/';
 export function sourceFor(path){
@@ -13,6 +14,7 @@ export function sourceFor(path){
 }
 export async function handle(request,env,ctx,html){
  const url=new URL(request.url);
+ if(/^\/api\/core\/evidence\/?$/.test(url.pathname)){if(!['GET','HEAD'].includes(request.method))return Response.json({error:'Metode tidak didukung'},{status:405});try{return Response.json(await fetchCoreEvidence(),{headers:{'Cache-Control':'public, max-age=900'}});}catch{return Response.json({error:'Data FPL Core belum tersedia; statistik Official FPL tetap aktif.'},{status:503,headers:{'Cache-Control':'no-store'}});}}
  if(!['GET','HEAD'].includes(request.method))return Response.json({error:'Metode tidak didukung.'},{status:405});
  if(/^\/api\/news\/headlines\/?$/.test(url.pathname))return Response.json(await publicNewsHeadlines());
  if(url.pathname==='/api/insights/snapshot'){

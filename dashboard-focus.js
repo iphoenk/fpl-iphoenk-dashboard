@@ -7,7 +7,7 @@ function dashboardNewsContext(){
  const context=buildNewsContext(allPlayers(),ownIds(),ext.watch,suggestions);
  dashboardContextCache={key,players:state.players,picks:state.picks,snapshot:ext.snapshot,context};return context;
 }
-function dashboardDate(time){return Number.isFinite(time)&&time>0?new Intl.DateTimeFormat('id-ID',{timeZone:'Asia/Jakarta',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(time))+' WIB':'Tanggal belum tersedia';}
+function dashboardDate(time){return Number.isFinite(time)&&time>0?deviceDateTime(time):'Tanggal belum tersedia';}
 function newsPublishedDate(value){if(/^\d{4}-\d{2}-\d{2}$/.test(value||''))return new Intl.DateTimeFormat('id-ID',{timeZone:'UTC',day:'numeric',month:'short',year:'numeric'}).format(new Date(value));return dashboardDate(typeof value==='number'?value:Date.parse(value));}
 function newsReason(player,context){
  const labels=[];
