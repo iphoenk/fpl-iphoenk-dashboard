@@ -1,0 +1,2 @@
+export function deviceTimeLabel(zone=Intl.DateTimeFormat().resolvedOptions().timeZone){return (zone||'Local').split('/').pop().replaceAll('_',' ')+' Time';}
+export function deviceDateTime(value){if(value==null||value==='')return 'Tanggal belum tersedia';const date=new Date(value);return Number.isFinite(date.getTime())?new Intl.DateTimeFormat('id-ID',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(date)+' · '+deviceTimeLabel():'Tanggal belum tersedia';}

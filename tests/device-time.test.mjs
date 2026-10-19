@@ -1,0 +1,2 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {deviceTimeLabel,deviceDateTime} from '../device-time.mjs';
+test('time label follows device zone with readable city and absent dates stay unknown',()=>{assert.equal(deviceTimeLabel('Asia/Jakarta'),'Jakarta Time');assert.equal(deviceTimeLabel('America/New_York'),'New York Time');assert.match(deviceDateTime('invalid'),/belum/);});
