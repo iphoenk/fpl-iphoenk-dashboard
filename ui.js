@@ -13,6 +13,7 @@ function clearAlert(){$('alert').classList.add('hidden');}
 async function api(path){
  const response=await fetch('/api/'+path.replace(/\/(?=\?|$)/,''),{signal:AbortSignal.timeout(27000)});let data;
  try{data=await response.json();}catch{throw new Error('Respons sumber data tidak valid. Coba muat ulang.');}
+ const providerMode=response.headers.get('X-Provider-Mode');if(providerMode){state.providers??={};state.providers[path]={mode:providerMode,captured:response.headers.get('X-Provider-Captured-At')};if(typeof renderProviderStatus==='function')renderProviderStatus();}
  if(!response.ok)throw new Error(data.error||'Data belum tersedia.');
  state.apiTime=response.headers.get('X-Data-Fetched-At')||new Date().toISOString();return data;
 }
@@ -51,8 +52,7 @@ async function loadBase(){
  $('deadline').textContent=state.next?deviceDateTime(state.next.deadline_time):'Musim selesai';$('deadlineGw').textContent=state.next?'GAMEWEEK '+state.next.id+' · '+deviceTimeLabel():'Menunggu musim berikutnya';
  const year=bootstrap.events[0]?new Date(bootstrap.events[0].deadline_time).getFullYear():new Date().getFullYear();$('seasonLabel').textContent='SEASON '+year+'/'+String(year+1).slice(-2);
  renderStats();renderInsights();renderScout();renderFixtures();
- const modelResults=await Promise.allSettled([api('model/manifest'),api('model/players')]);
- if(modelResults.every(r=>r.status==='fulfilled')){state.manifest=modelResults[0].value;state.model=modelResults[1].value;}else state.modelError='Sumber FPL iphoenk sedang tidak tersedia. Statistik FPL tetap dapat dipakai.';
+ try{const bundle=await api('model/bundle');state.manifest=bundle.manifest;state.model=bundle.players;}catch{state.modelError='Sumber FPL iphoenk sedang tidak tersedia. Statistik FPL tetap dapat dipakai.';}
  renderInsights();renderScout();renderPitch();
 }
 async function fetchTeam(id,gw){const [entry,picks]=await Promise.all([api('entry/'+id+'/'),api('entry/'+id+'/event/'+gw+'/picks/')]);return {entry,picks};}
