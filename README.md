@@ -31,3 +31,9 @@ V6/V12 engine integration is NOT active in this dashboard. See architecture note
 ## Deployment
 
 Vercel project: fpl-dugout, production domain fpl-iphoenk.vercel.app. Build: node scripts/build-vercel.mjs; static output public; serverless proxy api/index.js. .vercel and .env files stay local and untracked. A Git push alone is not proof that production deployed: check Vercel status and the actual production UI.
+
+## Phase one checkpoint
+
+Overview now reports independent source freshness, identity/deadline validity and model player coverage. Accuracy has a separate private forecast archive: first server capture per season/GW/source, immutable path, SHA-256 integrity, no capture after deadline. Capture happens on Overview visit or explicit action; there is no unattended scheduler guarantee. Actual evaluation waits for Official finished fixtures plus event.data_checked. Failed optional sources do not erase Official FPL functionality.
+
+Vercel Blob is a private store connected by server environment configuration. Neither token nor forecast data belongs in Git. Runtime dependencies are locked in package-lock.json; run npm ci before tests on a clean checkout. See docs/checkpoints/2026-10-19-phase-one.md for baseline deployment and rollback. Phase two remains separate.

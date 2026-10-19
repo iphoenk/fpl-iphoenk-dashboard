@@ -19,3 +19,24 @@ html[data-theme="dark"] .news-priority{color:#efc47e}
 @media(max-width:700px){.approved-header-inner{padding:10px 14px;gap:10px}.approved-brand img{width:clamp(128px,40vw,170px)}.header-account-actions{gap:6px}.header-account-actions .team-context{max-width:95px;padding:8px;font-size:11px}.header-account-actions .theme-toggle{width:40px;min-width:40px;min-height:44px}.team-hero h1{font-size:24px}}
 #dashboardOverview>.panel:first-child{margin-top:0}.dashboard-columns #dashboardOverview>.panel:first-child>.panel-head,.dashboard-columns .news-rail-heading{min-height:92px;box-sizing:border-box;padding:18px 20px;align-items:center}.dashboard-columns .news-rail-heading h2,.dashboard-columns #dashboardOverview .panel-head h2{margin:0}.dashboard-columns .news-rail-heading p{margin:4px 0 0}.dashboard-columns #dashboardOverview .panel-heading small{display:block;margin-top:4px}
 .overview-gw-switch{display:flex;gap:6px;padding:5px;background:var(--panel,#fff);border:1px solid var(--border,#dbe4ef);border-radius:14px;width:fit-content;margin:22px 0 16px}.overview-gw-switch button{padding:12px 18px;border:0;background:transparent;color:var(--muted);border-radius:10px;font:inherit;cursor:pointer}.overview-gw-switch button.active{background:var(--accent-soft,#dff4ec);color:var(--text,#082039);font-weight:700}.next-gw-overview{min-width:0;margin-top:0}.next-gw-overview[hidden],#dashboardOverview[hidden],.approved-local-tabs[hidden]{display:none!important}.next-plan-note{padding:14px 20px;color:var(--muted);font-size:12px;line-height:1.7}.next-plan-controls{display:flex;align-items:end;justify-content:space-between;gap:16px;padding:0 20px 20px;flex-wrap:wrap}.next-plan-controls label{display:grid;gap:8px;font-size:13px}.next-gw-overview table{width:100%;border-collapse:collapse}.next-gw-overview th,.next-gw-overview td{padding:14px;text-align:left;border-bottom:1px solid var(--border,#dbe4ef);font-size:13px}.next-gw-overview .panel-head p{margin:6px 0 0;color:var(--muted);font-size:12px}@media(max-width:600px){.overview-gw-switch{width:100%;box-sizing:border-box}.overview-gw-switch button{flex:1;padding:12px 8px;font-size:13px}.next-gw-overview table{min-width:570px}}
+
+/* Keep selected controls and player detail surfaces readable in both themes. */
+.overview-gw-switch button.active{background:#dff4ec;color:#07563e}
+html[data-theme="dark"] .overview-gw-switch{background:#151f2d;border-color:#36475d}
+html[data-theme="dark"] .overview-gw-switch button.active{background:#214f40;color:#a8f5d1;box-shadow:inset 0 0 0 1px #45866d}
+.overview-gw-switch button:focus-visible{outline:3px solid #00a575;outline-offset:2px}
+html[data-theme="dark"] :is(.dialog-head,.detail-grid>div){background:#1c2a3c;border-color:#35475f;color:#e6edf7}
+html[data-theme="dark"] .detail-grid strong{color:#e6edf7}
+html[data-theme="dark"] .detail-grid small{color:#b7c7dc}
+#captainCard.spotlight{padding:20px;min-height:0;align-self:start}
+#captainCard.spotlight h3{font-size:23px;margin:12px 0 8px;line-height:1.3}
+#captainCard.spotlight .metric{font-size:32px;line-height:1.2;margin:16px 0 12px;color:var(--text)}
+#captainCard.spotlight .metric small{font-size:12px;color:var(--muted)}
+#captainCard.spotlight p{font-size:12px;line-height:1.65;margin:0;max-width:44ch}
+#captainCard.spotlight .spotlight-bottom{margin-top:16px;padding-top:14px;gap:12px}
+#captainCard.spotlight .spotlight-bottom .btn{min-height:40px;padding:10px 12px;font-size:12px}
+.news-headline-toggle{display:block;text-align:left;font:inherit;font-weight:650;line-height:1.6;color:inherit;background:none;border:0;padding:0;width:100%;cursor:pointer}
+.news-headline-toggle:focus-visible{outline:2px solid var(--green);outline-offset:4px}
+.news-summary{margin-top:10px;padding:12px;border-left:3px solid var(--green);background:color-mix(in srgb,var(--text) 5%,transparent);font-size:13px;line-height:1.7;color:var(--text)}
+.news-source-link{color:var(--green);text-decoration:underline;text-underline-offset:3px}
+.focus-card{padding:22px;gap:12px}.focus-card .focus-kicker{display:block;line-height:1.6}.focus-card h3{line-height:1.5}.focus-card p{line-height:1.8}.focus-card p small{font-size:11px;color:var(--muted)}.focus-card .focus-link{padding-top:16px;min-height:44px}.brief-heading{margin-bottom:16px}@media(max-width:700px){.focus-card{padding:18px;gap:10px}.focus-grid{gap:14px}.focus-card p{font-size:12px}.focus-kicker{font-size:10px}}@media(max-width:460px){.focus-grid{grid-template-columns:1fr}.focus-deadline{grid-column:auto}}
