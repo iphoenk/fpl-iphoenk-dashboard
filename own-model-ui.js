@@ -6,7 +6,7 @@ function currentOwnPrediction(p){
 }
 async function loadOwnModel(){
  if(ownModelBusy)return;ownModelBusy=true;ownModelError=null;renderOwnModelComparisons();
- try{const data=await api('own-model');if(data.model_id!=='fpl-iphoenk-python-v1'||data.target_gw!==state.next?.id||Date.now()>=Date.parse(data.expires_at_utc))throw Error('Model perlu diperbarui.');ownModelData=data;clearTimeout(ownModelExpiry);ownModelExpiry=setTimeout(()=>{ownModelData=null;ownModelError='Snapshot eksperimen sudah kedaluwarsa. Prediksi resmi tetap tersedia.';renderOwnModelComparisons();},Math.max(1,Date.parse(data.expires_at_utc)-Date.now()));}
+ try{const data=await api('own-model'+(currentSquad().length?'?ids='+currentSquad().map(p=>p.id).sort((a,b)=>a-b).join(','):''));if(data.model_id!=='fpl-iphoenk-python-v1'||data.target_gw!==state.next?.id||Date.now()>=Date.parse(data.expires_at_utc))throw Error('Model perlu diperbarui.');ownModelData=data;clearTimeout(ownModelExpiry);ownModelExpiry=setTimeout(()=>{ownModelData=null;ownModelError='Snapshot eksperimen sudah kedaluwarsa. Prediksi resmi tetap tersedia.';renderOwnModelComparisons();},Math.max(1,Date.parse(data.expires_at_utc)-Date.now()));}
  catch{ownModelData=null;ownModelError='Model eksperimen belum tersedia atau perlu diperbarui. Prediksi resmi tetap tersedia.';}
  finally{ownModelBusy=false;renderOwnModelComparisons();}
 }
@@ -24,6 +24,7 @@ function ownModelPanel(compact=false){
  return panel('FPL iphoenk Python · eksperimen',body);
 }
 function renderOwnModelComparisons(){
+ if(!ownModelData)document.querySelectorAll('.own-model-player').forEach(node=>node.remove());
  let parent=null,id='';
  if(state.view==='modelinsights'){parent=$('view-modelinsights');id='ownModelInsights';}
  else if(state.view==='planning'){parent=$('view-planning');id='ownModelCaptainComparison';}

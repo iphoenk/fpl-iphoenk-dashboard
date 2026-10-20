@@ -14,3 +14,19 @@ test('publisher preserves first forecast and detects deadline races',async()=>{
  doc.players['1'].xp=6;doc.players['1'].components.goals=4;await publishOwnModel({doc,store,archive,fetcher,clock:()=>now+1000});assert.equal(JSON.stringify(records.get(first)),saved);
  let calls=0;await assert.rejects(()=>publishOwnModel({doc,store,archive,fetcher,clock:()=>calls++<1?now:Date.parse(doc.deadline_utc)}));
 });
+
+test('small comparison response is cached briefly without stale reuse or expiry overrun',async()=>{
+ const {doc,bs,fixtures,now}=ownFixture(),fetcher=async url=>Response.json(String(url).includes('bootstrap')?bs:fixtures),options={storeFactory:async()=>({read:async()=>ownRecord(doc)}),fetcher,clock:()=>now};
+ const r=await ownModelResponse(new Request('https://site.test/api/own-model?ids=1,2'),options),data=await r.json();
+ assert.deepEqual(Object.keys(data.players),['1','2']);assert.equal(data.coverage.universe,4);
+ assert.match(r.headers.get('vercel-cdn-cache-control'),/s-maxage=30/);assert.doesNotMatch(r.headers.get('vercel-cdn-cache-control'),/stale/);
+ const near=await ownModelResponse(new Request('https://site.test/api/own-model?ids=1'),{...options,clock:()=>Date.parse(doc.expires_at_utc)-2500});assert.match(near.headers.get('vercel-cdn-cache-control'),/s-maxage=2/);
+ const bad=await ownModelResponse(new Request('https://site.test/api/own-model?ids=0,nope'),options);assert.equal(bad.status,400);
+});
+
+test('warm origin read reuses validated context only within thirty seconds',async()=>{
+ const {doc,bs,fixtures,now}=ownFixture();let calls=0,reads=0,time=now;const fetcher=async url=>{calls++;return Response.json(String(url).includes('bootstrap')?bs:fixtures);},options={storeFactory:async()=>({read:async()=>{reads++;return ownRecord(doc);}}),fetcher,clock:()=>time},request=()=>new Request('https://site.test/api/own-model?ids=1');
+ const first=await ownModelResponse(request(),options);await first.json();const count=calls;
+ time+=1000;const warm=await ownModelResponse(request(),options);assert.equal(warm.status,200);assert.equal(calls,count);assert.equal(reads,1);assert.match(warm.headers.get('vercel-cdn-cache-control'),/s-maxage=29/);
+ time=now+31000;await ownModelResponse(request(),options);assert.ok(calls>count);assert.equal(reads,2);
+});
