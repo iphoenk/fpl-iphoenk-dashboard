@@ -18,7 +18,7 @@ test('publisher preserves first forecast and detects deadline races',async()=>{
 test('small comparison response is cached briefly without stale reuse or expiry overrun',async()=>{
  const {doc,bs,fixtures,now}=ownFixture(),fetcher=async url=>Response.json(String(url).includes('bootstrap')?bs:fixtures),options={storeFactory:async()=>({read:async()=>ownRecord(doc)}),fetcher,clock:()=>now};
  const r=await ownModelResponse(new Request('https://site.test/api/own-model?ids=1,2'),options),data=await r.json();
- assert.deepEqual(Object.keys(data.players),['1','2']);assert.equal(data.coverage.universe,4);
+ assert.deepEqual(Object.keys(data.players),['1','2']);const rewritten=await ownModelResponse(new Request('https://site.test/api/own-model?ids=1,2&path=own-model'),options);assert.equal(rewritten.status,200);assert.equal(data.coverage.universe,4);
  assert.match(r.headers.get('vercel-cdn-cache-control'),/s-maxage=30/);assert.doesNotMatch(r.headers.get('vercel-cdn-cache-control'),/stale/);
  const near=await ownModelResponse(new Request('https://site.test/api/own-model?ids=1'),{...options,clock:()=>Date.parse(doc.expires_at_utc)-2500});assert.match(near.headers.get('vercel-cdn-cache-control'),/s-maxage=2/);
  const bad=await ownModelResponse(new Request('https://site.test/api/own-model?ids=0,nope'),options);assert.equal(bad.status,400);

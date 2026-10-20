@@ -10,7 +10,7 @@ export async function ownModelResponse(request,{storeFactory=providerStore,fetch
  const url=new URL(request.url);if(!/^\/api\/own-model\/?$/.test(url.pathname))return null;
  const headers={'Cache-Control':'no-store','Vercel-CDN-Cache-Control':'no-store'};
  if(request.method!=='GET')return Response.json({status:'unavailable',error:'Read-only endpoint'},{status:405,headers});
- const requested=url.searchParams.get('ids');if([...url.searchParams.keys()].some(k=>k!=='ids')||requested!==null&&(!/^[1-9]\d{0,5}(,[1-9]\d{0,5}){0,19}$/.test(requested)||new Set(requested.split(',')).size!==requested.split(',').length))return Response.json({status:'unavailable',error:'Invalid player selection'},{status:400,headers});
+ const requested=url.searchParams.get('ids');if(requested!==null&&(!/^[1-9]\d{0,5}(,[1-9]\d{0,5}){0,19}$/.test(requested)||new Set(requested.split(',')).size!==requested.split(',').length))return Response.json({status:'unavailable',error:'Invalid player selection'},{status:400,headers});
  try{return await bounded(async()=>{
   const start=performance.now();let cached=recentValidated,now=clock();
   if(!cached||cached.fetcher!==fetcher||cached.storeFactory!==storeFactory||now<cached.checkedAt||now-cached.checkedAt>=30000||now>=Date.parse(cached.doc.expires_at_utc)){
