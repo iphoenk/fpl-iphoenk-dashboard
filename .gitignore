@@ -13,3 +13,7 @@ dist/
 *.tar.gz
 .DS_Store
 .env*
+.model-data/
+.superpowers/
+__pycache__/
+*.pyc

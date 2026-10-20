@@ -1,0 +1,11 @@
+import {createHash} from 'node:crypto';
+export const canonical=v=>JSON.stringify(v&&typeof v==='object'?Array.isArray(v)?v.map(x=>JSON.parse(canonical(x))):Object.fromEntries(Object.keys(v).sort().map(k=>[k,JSON.parse(canonical(v[k]))])):v);
+export const hash=v=>createHash('sha256').update(canonical(v)).digest('hex');
+export function ownFixture(){
+ const now=Date.parse('2026-10-20T00:00:00Z'),scoring={long_play:2,short_play:1,goals_conceded:{GKP:-1,DEF:-1,MID:0,FWD:0},saves:1,goals_scored:{GKP:10,DEF:6,MID:5,FWD:4},assists:3,clean_sheets:{GKP:4,DEF:4,MID:1,FWD:0},penalties_saved:5,penalties_missed:-2,yellow_cards:-1,red_cards:-3,own_goals:-2,bonus:1,defensive_contribution:{GKP:0,DEF:2,MID:2,FWD:2}};
+ const bs={events:[{id:1,deadline_time:'2026-08-01T00:00:00Z'},{id:8,is_next:true,deadline_time:'2026-10-25T00:00:00Z'}],teams:[{id:1,short_name:'AAA'},{id:2,short_name:'BBB'}],elements:[1,2,3,4].map(i=>({id:i,code:100+i,web_name:'Player '+i,team:1,element_type:i,status:'a',chance_of_playing_next_round:null})),game_config:{scoring}};
+ const fixtures=[{id:20,event:8,team_h:1,team_a:2,kickoff_time:'2026-10-26T12:00:00Z',finished:false}];
+ const doc={schema_version:1,model_id:'fpl-iphoenk-python-v1',model_version:'0.1.1',experimental:true,season:'2026',target_gw:8,deadline_utc:bs.events[1].deadline_time,generated_at_utc:new Date(now).toISOString(),inputs_as_of_utc:new Date(now).toISOString(),acquisition_finished_at_utc:new Date(now).toISOString(),expires_at_utc:new Date(now+21600000).toISOString(),scoring_version:'official-2026-27-v1',scoring_hash:hash(scoring),fixture_hash:hash(fixtures.map(({finished,...f})=>f)),source_manifest:[{path:'bootstrap-static/',fetched_at:new Date(now).toISOString(),sha256:'a'.repeat(64)}],validation_status:'ready',players:Object.fromEntries(bs.elements.map(p=>[p.id,{permanent_code:p.code,current_element_id:p.id,name:p.web_name,team_id:p.team,team:'AAA',position:p.element_type,fixture_ids:[20],status:'ready',xp:5,components:{appearance:2,goals:3},evidence_count:6,availability:{status:'a',chance:null}}]))};
+ for(const row of Object.values(doc.players))row.components=Object.fromEntries(['appearance','goals','assists','clean_sheet','conceded','saves','bonus','defcon','penalties_saved','penalties_missed','cards','own_goals'].map(k=>[k,row.components[k]??0]));
+ return {now,bs,fixtures,doc};
+}
