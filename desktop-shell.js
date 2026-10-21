@@ -23,8 +23,11 @@ function shellFit(){
  const on=document.body.classList.contains('has-team')&&document.body.dataset.view==='dashboard'&&innerWidth>=1100;
  if(!on){if(lay.style.zoom)lay.style.zoom='';return;}
  lay.style.zoom='1';
- const box=lay.getBoundingClientRect(),foot=document.querySelector('.footer'),footH=foot?foot.getBoundingClientRect().height+8:0;
- const avail=innerHeight-(box.top+scrollY)-footH-8,z=Math.max(.7,Math.min(1,avail/box.height)),next=z<.995?String(Math.round(z*100)/100):'';
+ const foot=document.querySelector('.footer'),footH=foot&&foot.offsetParent?foot.getBoundingClientRect().height+8:0;
+ const fits=()=>{const r=lay.getBoundingClientRect();return r.bottom+footH+8<=innerHeight;};
+ let z=1;
+ if(!fits()){let lo=.7,hi=1;lay.style.zoom=String(lo);if(!fits()){z=lo;}else{for(let i=0;i<7;i++){const mid=(lo+hi)/2;lay.style.zoom=String(mid);if(fits())lo=mid;else hi=mid;}z=lo;}}
+ z=Math.max(.7,Math.min(1,z));const next=z<.995?String(Math.floor(z*100)/100):'';
  lay.style.zoom=next;
 }
 let shellFitTimer=0;const shellFitSoon=()=>{clearTimeout(shellFitTimer);shellFitTimer=setTimeout(shellFit,60);};

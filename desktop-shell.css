@@ -156,3 +156,30 @@ body.has-team[data-view=dashboard] #dashboardPool>summary :is(span,strong){font-
 @media(prefers-reduced-motion:reduce){body.has-team .app-side,body.has-team .approved-header,body.has-team .shell,body.has-team .notice,body.has-team .footer{transition:none!important}}
 
 @media(min-width:1100px){body.has-team .footer{display:none!important}body.has-team .header-account-actions .shell-refresh{min-height:40px;padding:6px 14px;border-radius:10px;white-space:nowrap;font-size:13px}}
+
+/* Layout v3: decision previews sit under Starting XI; Player News runs the full height beside them; focus cards are uniform. */
+body.has-team[data-view=dashboard] .overview-decision-previews{grid-column:1!important;grid-row:5!important}
+body.has-team[data-view=dashboard] .dashboard-news{grid-row:4/span 2!important}
+body.has-team[data-view=dashboard] .focus-grid>.focus-card{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center;align-content:center;column-gap:12px;row-gap:0!important;height:64px!important;min-height:64px!important;padding:8px 16px!important;box-sizing:border-box}
+body.has-team[data-view=dashboard] .focus-grid>.focus-card>*{grid-column:1;margin:0!important;min-width:0}
+body.has-team[data-view=dashboard] .focus-grid>.focus-card>.focus-link{grid-column:2;grid-row:1/span 2;align-self:center;white-space:nowrap;font-size:var(--t-body)!important}
+body.has-team[data-view=dashboard] .focus-grid>.focus-card :is(p,small){display:none!important}
+body.has-team[data-view=dashboard] .focus-grid>.focus-card :is(h3,strong){font-size:var(--t-title)!important;line-height:20px!important}
+
+body.has-team[data-view=dashboard] .focus-grid{display:grid!important;grid-column:2;grid-row:1/span 3;grid-template-rows:repeat(3,minmax(0,1fr));row-gap:10px;min-height:0}
+body.has-team[data-view=dashboard] .focus-grid>.focus-card{grid-column:auto!important;grid-row:auto!important;height:auto!important;min-height:0!important}
+body.has-team[data-view=dashboard] .overview-decision-previews .overview-preview{padding:8px 12px}
+body.has-team[data-view=dashboard] .overview-decision-previews .overview-fixture-row{margin:0;gap:4px}
+body.has-team[data-view=dashboard] .overview-decision-previews .overview-rank{margin:1px 0}
+
+body.has-team[data-view=dashboard] .focus-grid{grid-row:1/span 2!important;grid-template-columns:minmax(0,1fr)!important;grid-auto-flow:row}
+body.has-team[data-view=dashboard] .dashboard-news{grid-row:3/span 3!important}
+body.has-team[data-view=dashboard] .focus-grid>.focus-deadline{order:-1}
+
+body.has-team[data-view=dashboard] .overview-decision-previews .overview-preview{display:grid!important;grid-template-columns:minmax(0,1fr) auto;column-gap:6px;align-content:start;align-items:center}
+body.has-team[data-view=dashboard] .overview-decision-previews .overview-preview>*{grid-column:1/-1;min-width:0}
+body.has-team[data-view=dashboard] .overview-decision-previews .overview-preview>h3{grid-column:1;grid-row:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.has-team[data-view=dashboard] .overview-decision-previews .overview-preview>.btn{grid-column:2;grid-row:1;position:static!important;font-size:10px!important;padding:2px 7px!important;white-space:nowrap}
+/* Player News filters stay on one line */
+body.has-team[data-view=dashboard] .player-news-filters{display:flex!important;flex-wrap:nowrap!important;gap:0!important;padding:6px 8px!important;overflow:hidden}
+body.has-team[data-view=dashboard] .player-news-filters button{flex:1 1 auto;min-width:0;padding:4px 6px!important;white-space:nowrap;font-size:11px!important}
