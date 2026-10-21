@@ -308,3 +308,11 @@ body.has-team[data-view=dashboard] .news-rail-heading .news-checked{margin-left:
 /* Fixture outlook: rows centred in the remaining card height */
 body.has-team[data-view=dashboard] .overview-preview:has(.overview-fixture-grid){grid-template-rows:auto auto minmax(0,1fr)}
 body.has-team[data-view=dashboard] .overview-fixture-grid{align-self:stretch;align-content:space-evenly;row-gap:0!important}
+
+/* Header: Reload and theme toggle are icon-only on desktop */
+@media(min-width:1100px){
+body.has-team .header-account-actions :is(.theme-toggle,.shell-refresh) span{display:none!important}
+body.has-team .header-account-actions :is(.theme-toggle,.shell-refresh){width:30px;min-width:30px!important;padding:0!important;display:inline-flex;align-items:center;justify-content:center}
+body.has-team .header-account-actions .shell-refresh svg{width:15px;height:15px}
+body.has-team .header-account-actions .theme-toggle svg{width:15px;height:15px}
+}
