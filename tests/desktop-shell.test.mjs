@@ -21,8 +21,8 @@ test('desktop shell styles apply only on desktop widths and for connected teams'
  assert.deepEqual(stray,[]);
  assert.match(css,/prefers-reduced-motion/);
 });
-test('rail toggle is icon-only with an accessible name',()=>{
- const toggle=js.match(/<button type="button" class="app-side-toggle"[^>]*>/)[0];
+test('rail toggle is the FPL iphoenk logo, text-free, with an accessible name',()=>{
+ const toggle=js.match(/<button type="button" class="app-side-logo"[^>]*>/)[0];
  assert.match(toggle,/aria-label="Ciutkan menu"/);
  assert.doesNotMatch(js,/Ciutkan menu<\/span>/);
 });
