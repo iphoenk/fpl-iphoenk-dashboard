@@ -241,3 +241,13 @@ body.has-team[data-view=dashboard] .focus-grid>.focus-card:not(.focus-deadline)>
 body.has-team[data-view=dashboard] .overview-gw-switch{padding:3px!important;min-height:0!important}
 body.has-team[data-view=dashboard] .overview-gw-switch button{min-height:30px!important;padding:3px 14px!important;line-height:1.2}
 body.has-team[data-view=dashboard] .overview-controls .focus-deadline{padding:0 14px!important;min-height:0!important}
+/* Compact Starting XI; Transfer outlook dropped on desktop (Transfer radar already shows the top move) */
+body.has-team[data-view=dashboard] .overview-decision-previews{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-areas:'planning fixture'!important}
+body.has-team[data-view=dashboard] .overview-decision-previews>.overview-preview:nth-child(1){display:none!important}
+body.has-team[data-view=dashboard] #dashboardOverview .pitch{gap:6px!important;padding:8px 0!important}
+body.has-team[data-view=dashboard] #dashboardOverview .pitch .player{width:64px!important}
+body.has-team[data-view=dashboard] #dashboardOverview .pitch .shirt{width:24px!important;height:28px!important;margin-bottom:3px!important}
+body.has-team[data-view=dashboard] #dashboardOverview .pitch .player-name{padding:3px 2px!important;font-size:10px!important;line-height:13px!important}
+body.has-team[data-view=dashboard] #dashboardOverview .pitch .player-score{padding:3px 2px!important;font-size:11px!important;line-height:14px!important}
+body.has-team[data-view=dashboard] #dashboardOverview .bench-row .player{min-width:56px}
+body.has-team[data-view=dashboard] #dashboardOverview .bench-row .shirt{display:none}
