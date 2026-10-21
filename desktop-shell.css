@@ -304,3 +304,7 @@ body.has-team[data-view=dashboard] .focus-list li.is-ok>b{font-weight:500;color:
 body.has-team[data-view=dashboard] .focus-card .focus-link{margin-top:auto!important;font-size:var(--t-body)!important}
 
 body.has-team[data-view=dashboard] .news-rail-heading .news-checked{margin-left:auto;margin-right:10px;align-self:center}
+
+/* Fixture outlook: rows centred in the remaining card height */
+body.has-team[data-view=dashboard] .overview-preview:has(.overview-fixture-grid){grid-template-rows:auto auto minmax(0,1fr)}
+body.has-team[data-view=dashboard] .overview-fixture-grid{align-self:stretch;align-content:space-evenly;row-gap:0!important}
