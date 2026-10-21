@@ -1,88 +1,78 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createPublicTeamBackend} from '../public-team-server.mjs';
+import {createPublicDecisionService,publicDecisionResponse} from '../multiuser-decision-server.mjs';
 
-const DAY=Date.parse('2026-10-21T16:00:00Z');
-const event={id:8,is_current:true,deadline_time:'2026-10-20T11:00:00Z'};
-const bootstrap={events:[{id:1,deadline_time:'2026-08-01T11:00:00Z'},event,{id:9,is_next:true,deadline_time:'2026-10-24T11:00:00Z'}],
-  elements:Array.from({length:35},(_,i)=>({id:i+1,web_name:'Player'+(i+1),team:i%20+1,status:'a'}))};
-function fixtureFetcher({delay=1,fail=false}={}){
-  const calls=new Map();let active=0,peak=0;
-  const fetcher=async url=>{
-    active++;peak=Math.max(peak,active);
-    calls.set(url,(calls.get(url)||0)+1);
-    try{
-      if(delay)await new Promise(resolve=>setTimeout(resolve,delay));
-      const u=new URL(url),path=u.pathname;
-      if(fail&&path.includes('/entry/'))return new Response('Unavailable',{status:503});
-      let data;
-      if(path.endsWith('bootstrap-static/'))data=bootstrap;
-      else if(/\/entry\/\d+\/event\/8\/picks\/$/.test(path))data={picks:Array.from({length:15},(_,i)=>({element:i+1,position:i+1,is_captain:i===0,is_vice_captain:i===1})),entry_history:{bank:5}};
-      else if(/\/entry\/\d+\/$/.test(path)){const id=Number(path.split('/')[3]);data={id,name:'Team'+id,player_first_name:'Manager',player_last_name:String(id),summary_overall_points:480,summary_overall_rank:id,leagues:{classic:[{id:777,name:'ABC',entry_rank:id===20?274:id}]}};}
-      else if(path.endsWith('/standings/')){const page=Number(u.searchParams.get('page_standings')),start=(page-1)*50+1;data={league:{id:777,name:'ABC'},standings:{results:Array.from({length:50},(_,i)=>({rank:start+i,entry:start+i===274?20:900000+start+i,entry_name:'Rival'+(start+i),total:600-start-i,event_total:50,last_rank:start+i})),has_next:true}};}
-      else if(path.includes('latest_index.json'))data={generated_at:new Date(DAY-10000).toISOString(),sources:[{source_id:'official_fpl',health:'GREEN',effective_state:'LIVE'}]};
-      else if(path.includes('publish_integrity.json'))data={status:'PASS',observed_at:new Date(DAY-10000).toISOString()};
-      else throw Error('Unexpected mock URL '+url);
-      return Response.json(data);
-    }finally{active--;}
-  };
-  return {fetcher,calls,peak:()=>peak};
+const NOW=Date.parse('2026-10-21T15:30:00Z');
+const inputPlayers=[];
+let id=1;
+for(let club=1;club<=20;club++)for(const position of [1,2,3,4]){
+ const n=position===1?2:position===2?5:position===3?5:3;
+ for(let i=0;i<n;i++)inputPlayers.push({id:id++,web_name:'Player'+id,element_type:position,team:club,
+ ep_next:String(1+(club%8)+i/4),now_cost:45+club,status:'a'});
 }
-const request=(id,league='')=>new Request('https://example.test/api/public-team?entry_id='+id+(league?'&league_id='+league:'')); 
-test('20 distinct public teams share Official and V6 caches under a bounded six-fetch concurrency ceiling',async()=>{
- const mock=fixtureFetcher({delay:7}),svc=createPublicTeamBackend({fetcher:mock.fetcher,clock:()=>DAY,maxActive:6,maxPending:120});
- const results=await Promise.all(Array.from({length:20},(_,i)=>svc.handle(request(i+1))));
- assert.ok(results.every(x=>x.status===200));
- const items=await Promise.all(results.map(x=>x.json()));
- assert.deepEqual(items.map(x=>x.entry_id),Array.from({length:20},(_,i)=>i+1));
- assert.ok(items.every(x=>x.team.squad.length===15&&x.optimizer.advice===null&&x.optimizer.monte_carlo==='DISABLED'));
- assert.ok(mock.peak()<=6);assert.ok(svc.metrics().peak_active<=6);
- assert.equal([...mock.calls.entries()].find(([k])=>k.endsWith('bootstrap-static/'))[1],1);
- assert.equal([...mock.calls.keys()].filter(k=>k.includes('latest_index.json')).length,1);
- assert.equal([...mock.calls.keys()].filter(k=>k.includes('publish_integrity.json')).length,1);
- const before=svc.metrics().upstream_calls;
- const repeat=await Promise.all(Array.from({length:20},(_,i)=>svc.handle(request(i+1))));
- assert.ok(repeat.every(x=>x.status===200));assert.equal(svc.metrics().upstream_calls,before);
+const choose=(pos,count)=>inputPlayers.filter(p=>p.element_type===pos).filter((p,i)=>i%2===0).slice(0,count);
+const squad=[...choose(1,2),...choose(2,5),...choose(3,5),...choose(4,3)];
+const bs={events:[{id:1,deadline_time:'2026-08-01T12:00:00Z',finished:true},{id:7,is_current:true,deadline_time:'2026-10-18T11:00:00Z'},{id:8,is_next:true,deadline_time:'2026-10-24T11:00:00Z'}],elements:inputPlayers};
+const picks={picks:squad.map((p,i)=>({element:p.id,position:i+1,selling_price:p.now_cost})),entry_history:{bank:60,event:7}};
+function mock(delay=2){
+ const urls=new Map();let active=0,peak=0;
+ const fetcher=async url=>{
+  active++;peak=Math.max(peak,active);urls.set(url,(urls.get(url)||0)+1);
+  try{
+   if(delay)await new Promise(r=>setTimeout(r,delay));
+   const path=new URL(url).pathname;
+   if(path.endsWith('bootstrap-static/'))return Response.json(bs);
+   if(path.includes('latest_index.json'))return Response.json({generated_at:new Date(NOW-90000).toISOString(),sources:[{source_id:'official_fpl',health:'GREEN'}]});
+   if(path.includes('publish_integrity.json'))return Response.json({status:'PASS',observed_at:new Date(NOW-90000).toISOString()});
+   if(path.endsWith('picks/'))return Response.json(picks);
+   const m=path.match(/\/entry\/(\d+)\/$/);
+   if(m)return Response.json({id:Number(m[1]),name:'Team'+m[1]});
+   return Response.json({error:'not found'},{status:404});
+  }finally{active--;}
+ };
+ return {urls,fetcher,peak:()=>peak};
+}
+test('20 concurrent FPL IDs, Official bootstrap and V6 evidence shared, IO capped at six',async()=>{
+ const m=mock(5),service=createPublicDecisionService({fetcher:m.fetcher,clock:()=>NOW,maxActive:6,maxCompute:4});
+ const jobs=Array.from({length:20},(_,i)=>service.get(1000+i));
+ const results=await Promise.all(jobs);
+ assert.ok(results.every((r,i)=>r.entry_id===1000+i&&r.status==='ready'));
+ assert.ok(results.every(r=>r.source.v6.status==='VERIFIED'&&r.source.v6.mode==='PROVENANCE_ONLY'));
+ assert.ok(results.every(r=>r.canonical_v12===false&&r.monte_carlo===false));
+ assert.ok(m.peak()<=6);
+ assert.ok(service.stats().upstreamPeak<=6);
+ assert.ok(service.stats().peak<=4);
+ assert.equal([...m.urls].find(([u])=>u.endsWith('bootstrap-static/'))[1],1);
+ assert.equal([...m.urls].filter(([u])=>u.includes('latest_index.json')).length,1);
+ assert.equal([...m.urls].filter(([u])=>u.includes('publish_integrity.json')).length,1);
+ const before=service.stats().upstreamCalls;
+ await Promise.all(Array.from({length:20},(_,i)=>service.get(1000+i)));
+ assert.equal(service.stats().upstreamCalls,before);
 });
-test('twenty requests for the same FPL ID are deduplicated by normalized Official resource key',async()=>{
- const mock=fixtureFetcher({delay:6}),svc=createPublicTeamBackend({fetcher:mock.fetcher,clock:()=>DAY,maxActive:3});
- const r=await Promise.all(Array.from({length:20},()=>svc.handle(request(6))));
- assert.equal(r.length,20);assert.ok(r.every(x=>x.status===200));
- assert.equal([...mock.calls.entries()].find(([k])=>k.endsWith('entry/6/'))[1],1);
+test('20 requests for same account deduplicate resource and advisory compute',async()=>{
+ const m=mock(5),service=createPublicDecisionService({fetcher:m.fetcher,clock:()=>NOW,maxActive:3});
+ const results=await Promise.all(Array.from({length:20},()=>service.get(995)));
+ assert.ok(results.every(r=>r.entry_id===995));
+ assert.equal([...m.urls].find(([u])=>u.endsWith('entry/995/'))[1],1);
 });
-test('rank 274 returns exactly positions 271-280 and leader gap from page one',async()=>{
- const mock=fixtureFetcher(),svc=createPublicTeamBackend({fetcher:mock.fetcher,clock:()=>DAY});
- const r=await svc.handle(request(20,777)),obj=await r.json();
- assert.equal(r.status,200);assert.equal(obj.selected_league.block_start,271);
- assert.equal(obj.selected_league.rows.length,10);assert.equal(obj.selected_league.rows[0].rank,271);
- assert.equal(obj.selected_league.rows[9].rank,280);
- assert.equal(obj.selected_league.rank,274);assert.equal(obj.selected_league.coverage,'VERIFIED');
- assert.equal(obj.selected_league.leader_points,599);
- assert.equal(obj.selected_league.gap_to_leader,273);
- assert.ok([...mock.calls.keys()].some(k=>k.includes('page_standings=6')));
+test('strict query rejects non-ID, repeated ID and unexpected params without upstream',async()=>{
+ const fake={get:()=>{throw Error('should not call')},stats:()=>({})};
+ for(const url of ['https://app.test/api/decision?entry_id=0','https://app.test/api/decision?entry_id=1&entry_id=2',
+ 'https://app.test/api/decision?entry_id=1&debug=true']){
+  const r=await publicDecisionResponse(new Request(url),{service:fake});assert.equal(r.status,400);
+ }
+ const r=await publicDecisionResponse(new Request('https://app.test/api/decision/health'),{service:fake});
+ assert.equal(r.status,200);assert.equal((await r.json()).status,'READY');
 });
-test('disallow arbitrary league ID and malformed query; never fetch private decisions or credentials',async()=>{
- const mock=fixtureFetcher(),svc=createPublicTeamBackend({fetcher:mock.fetcher,clock:()=>DAY});
- assert.equal((await svc.handle(request('0'))).status,400);
- assert.equal((await svc.handle(request('1&foo=2'))).status,400);
- assert.equal((await svc.handle(request(1,999))).status,404);
- assert.equal((await svc.handle(new Request('https://example.test/api/public-team?entry_id=1',{method:'POST'}))).status,405);
- assert.ok([...mock.calls.keys()].every(k=>!k.includes('private')&&!k.includes('reports/')));
+test('strict bounded pool queues and backpressure; 429 rather than unbounded requests',async()=>{
+ const m=mock(50),service=createPublicDecisionService({fetcher:m.fetcher,clock:()=>NOW,maxActive:1,maxWaiting:0,maxCompute:1});
+ const results=await Promise.all(Array.from({length:5},(_,i)=>publicDecisionResponse(new Request('https://app.test/api/decision?entry_id='+(i+1)),{service})));
+ assert.ok(results.some(r=>r.status===429||r.status===503));assert.ok(m.peak()<=1);
 });
-test('overload fails fast with 503 rather than unbounded work',async()=>{
- const mock=fixtureFetcher({delay:50}),svc=createPublicTeamBackend({fetcher:mock.fetcher,clock:()=>DAY,maxActive:1,maxPending:0});
- const r=await Promise.all([svc.handle(request(1)),svc.handle(request(2)),svc.handle(request(3))]);
- assert.ok(r.some(x=>x.status===503));assert.ok(mock.peak()<=1);
-});
-test('Official failures return safe 503; V6 failure never fabricates factual data',async()=>{
- const mock=fixtureFetcher({fail:true}),svc=createPublicTeamBackend({fetcher:mock.fetcher,clock:()=>DAY});
- const r=await svc.handle(request(1));assert.equal(r.status,503);
- assert.equal((await r.json()).error,'UPSTREAM_UNAVAILABLE');
-});
-test('health is read-only and exposes aggregate server-side limits, never team identities',async()=>{
- const svc=createPublicTeamBackend({fetcher:fixtureFetcher().fetcher});
- const r=await svc.handle(new Request('https://example.test/api/public-team/health'));
- const obj=await r.json();assert.equal(obj.status,'READY');assert.equal(obj.metrics.max_active,6);
- assert.equal(JSON.stringify(obj).includes('entry_id'),false);
- assert.equal(await svc.handle(new Request('https://example.test/api/no-match')),null);
+test('V6 outage does not reclassify Official facts or invent model authority',async()=>{
+ const m=mock();const f=async url=>String(url).includes('runtime-data-v6')?Response.json({error:'down'},{status:503}):m.fetcher(url);
+ const service=createPublicDecisionService({fetcher:f,clock:()=>NOW});
+ const r=await service.get(15);
+ assert.equal(r.status,'ready');assert.equal(r.source.provider,'Official FPL');assert.equal(r.source.v6.status,'UNAVAILABLE');
+ assert.equal(r.canonical_v12,false);assert.equal(r.search_scope,'BOUNDED_NONCANONICAL');
 });

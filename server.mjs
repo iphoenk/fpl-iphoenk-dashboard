@@ -1,5 +1,4 @@
 import {fetchCoreEvidence} from './core-evidence.mjs';
-import {publicTeamResponse} from './public-team-server.mjs';
 import {officialBundle} from './model-fallback.mjs';
 const FPL='https://fantasy.premierleague.com/api/';
 const RAW='https://raw.githubusercontent.com/abdelmalek-maskri/fplens/main/app/public/data/';
@@ -16,7 +15,6 @@ export function sourceFor(path){
 }
 export async function handle(request,env,ctx,html){
  const url=new URL(request.url);
- const multi=await publicTeamResponse(request);if(multi)return multi;
  if(/^\/api\/own-model\/?$/.test(url.pathname))return Response.json({status:'unavailable',error:'Model Python tersedia pada deployment Vercel.'},{status:request.method==='GET'?503:405,headers:{'Cache-Control':'no-store'}});
  if(/^\/api\/model\/bundle\/?$/.test(url.pathname)){if(!['GET','HEAD'].includes(request.method))return Response.json({error:'Metode tidak didukung'},{status:405});try{const [manifest,players]=await Promise.all(['manifest','players'].map(async name=>{const r=await handle(new Request(new URL('/api/model/'+name,url)),env,ctx,html);if(!r.ok)throw new Error('Source unavailable');return r.json();}));return Response.json({manifest,players});}catch{try{const r=await fetch(FPL+'bootstrap-static/',{signal:AbortSignal.timeout(22000)});if(!r.ok)throw new Error('FPL unavailable');return Response.json(officialBundle(await r.json()),{headers:{'X-Provider-Mode':'official-fallback'}});}catch{return Response.json({error:'Official FPL unavailable'},{status:503});}}}
  if(/^\/api\/core\/evidence\/?$/.test(url.pathname)){if(!['GET','HEAD'].includes(request.method))return Response.json({error:'Metode tidak didukung'},{status:405});try{return Response.json(await fetchCoreEvidence(),{headers:{'Cache-Control':'public, max-age=900'}});}catch{return Response.json({error:'Data FPL Core belum tersedia; statistik Official FPL tetap aktif.'},{status:503,headers:{'Cache-Control':'no-store'}});}}
