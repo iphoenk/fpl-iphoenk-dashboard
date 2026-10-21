@@ -316,3 +316,8 @@ body.has-team .header-account-actions :is(.theme-toggle,.shell-refresh){width:30
 body.has-team .header-account-actions .shell-refresh svg{width:15px;height:15px}
 body.has-team .header-account-actions .theme-toggle svg{width:15px;height:15px}
 }
+
+body.has-team[data-view=dashboard] .news-rail-heading #refreshPersonalNews{width:28px;min-width:28px!important;padding:0!important;display:inline-flex;align-items:center;justify-content:center}
+@keyframes newsspin{to{transform:rotate(360deg)}}
+.news-rail-heading #refreshPersonalNews svg.spin{animation:newsspin 1s linear infinite}
+@media(prefers-reduced-motion:reduce){.news-rail-heading #refreshPersonalNews svg.spin{animation:none}}
