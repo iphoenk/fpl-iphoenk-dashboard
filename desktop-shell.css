@@ -389,7 +389,7 @@ body.has-team[data-view=tim] .section-gap{margin-top:12px!important}
 body.has-team[data-view=tim] .section-gap>.panel-head{padding:8px 14px!important;min-height:0!important}
 body.has-team[data-view=tim] .section-gap :is(h2,.panel-heading h2){font-size:15px!important;line-height:20px!important}
 body.has-team[data-view=tim] .section-gap :is(.panel-heading small,.eyebrow){font-size:11px!important;line-height:14px!important}
-body.has-team[data-view=tim] #squadTable :is(th,td){padding:6px 14px!important;font-size:12px!important;line-height:16px!important}
+body.has-team[data-view=tim] #squadTable :is(th,td){padding:10px 14px!important;font-size:12px!important;line-height:20px!important}
 body.has-team[data-view=tim] #squadTable th{font-size:10px!important}
 body.has-team[data-view=tim] #squadTable :is(button,.player-chip,.name-chip){padding:2px 10px!important;min-height:0!important;font-size:12px!important;line-height:18px!important}
 }
@@ -408,4 +408,12 @@ body.has-team[data-view=tim] .compact-item .compact-score{font-size:17px!importa
 body.has-team[data-view=tim] .compact-item .compact-score small{display:block}
 body.has-team[data-view=tim] #radar .empty{padding:12px 14px!important;font-size:12px}
 body.has-team[data-view=tim] .spotlight .spotlight-bottom{padding-top:8px!important}
+}
+
+/* Tables: text vertically centred between row lines, uniform rhythm */
+@media(min-width:1100px){
+body.has-team .table-wrap table :is(th,td){vertical-align:middle!important;padding-top:10px!important;padding-bottom:10px!important;line-height:20px!important}
+body.has-team .table-wrap table th{padding-top:9px!important;padding-bottom:9px!important;line-height:16px!important}
+body.has-team .table-wrap table td :is(button,.chip,.name-chip,.player-chip){display:inline-flex;align-items:center;min-height:26px;padding:0 10px!important;line-height:1!important}
+body.has-team .table-wrap table tbody tr{height:40px}
 }
