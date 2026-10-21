@@ -31,10 +31,10 @@ test('ten-row navigator supports touch, keyboard, buttons and changes selection'
 test('scenario A/B/C are compact with C and VC and source-qualified estimates',()=>{
  assert.match(js,/A · Hold/);
  assert.match(js,/B · 1 Transfer/);
- assert.match(js,/C · Alternatif/);
+ assert.match(js,/C · 2 Transfers/);
  assert.match(js,/decision-scenario-bottom/);
  assert.match(js,/<b>VC<\/b>/);
- assert.match(js,/belum divalidasi/);
+ assert.match(js,/No verified FT\/hit/);
  assert.match(css,/decision-scenario-move/);
  assert.match(css,/decision-plan \.decision-scenario\{\s*padding:11px 12px/);
 });

@@ -34,7 +34,7 @@ test('classic mini-league selector persists by FPL entry, validates membership a
 test('next GW displays hold, one transfer and alternatives without invented points',()=>{
  assert.match(js,/A · Hold/);
  assert.match(js,/B · 1 Transfer/);
- assert.match(js,/C · Alternatif/);
+ assert.match(js,/C · 2 Transfers/);
  assert.match(js,/PUBLIC_FPL_DETERMINISTIC_ADVISORY_V1/);
  assert.match(js,/No validated option available/);
  assert.match(js,/publicPlan/);
