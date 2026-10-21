@@ -35,10 +35,10 @@ test('next GW displays hold, one transfer and alternatives without invented poin
  assert.match(js,/A · Hold/);
  assert.match(js,/B · 1 Transfer/);
  assert.match(js,/C · Alternatif/);
- assert.match(js,/projected!==null/);
- assert.match(js,/Perlu simulasi dan validasi prediksi/);
- assert.match(js,/is_captain/);
- assert.match(js,/is_vice_captain/);
+ assert.match(js,/PUBLIC_FPL_DETERMINISTIC_ADVISORY_V1/);
+ assert.match(js,/No validated option available/);
+ assert.match(js,/publicPlan/);
+ assert.match(js,/vice_captain/);
 });
 test('desktop and tablet are in one design family while mobile stacks',()=>{
  assert.match(css,/@media\(min-width:768px\) and \(max-width:1099px\)/);

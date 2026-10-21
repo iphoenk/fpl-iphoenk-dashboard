@@ -114,33 +114,39 @@
       '<div id="decisionLeagueSwipe" class="decision-table-wrap" role="region" tabindex="0" aria-label="Klasemen 10 tim, swipe horizontal untuk berpindah blok"><table><thead><tr><th>Rank</th><th>Tim</th><th>GW</th><th>Total</th><th>Trend</th></tr></thead><tbody>'+(lines||'<tr><td colspan="5" class="decision-empty">'+(active?.loading?'Memuat 10 tim…':active?.error?'Klasemen gagal dimuat, gunakan panah untuk mencoba lagi.':'Pilih liga untuk memuat peserta')+'</td></tr>')+'</tbody></table></div>'+
       '<footer class="decision-foot"><span>'+safeName(member?.name||'Classic League')+'</span><span>'+status+'</span></footer></article>';
   }
+  const publicPlan={entryId:null,gw:null,loading:false,report:null,request:0};
+  async function refreshPublicPlan(){
+    const id=Number(state.entry?.id),gw=Number(state.next?.id);
+    if(!id||!gw)return;
+    const token=++publicPlan.request;
+    Object.assign(publicPlan,{entryId:id,gw,loading:true,report:null});
+    renderDecision();
+    try{
+      const report=await api('decision?entry_id='+id);
+      if(token!==publicPlan.request||Number(state.entry?.id)!==id||Number(state.next?.id)!==gw)return;
+      if(Number(report?.entry_id)!==id||Number(report?.planning_gw)!==gw||
+        report?.contract!=='PUBLIC_FPL_DETERMINISTIC_ADVISORY_V1'||report?.canonical_v12!==false||report?.monte_carlo!==false)throw Error('Invalid public decision context');
+      publicPlan.report=report;
+    }catch(_){if(token===publicPlan.request)publicPlan.report=null;}
+    if(token===publicPlan.request){publicPlan.loading=false;renderDecision();}
+  }
   function planCard(){
-    const picks=state.picks?.picks||[],gw=state.next?.id;
-    const cap=picks.find(p=>p.is_captain),vice=picks.find(p=>p.is_vice_captain);
-    const name=id=>safeName(state.players[id]?.web_name||'—'),first=cap?.element,second=vice?.element;
-    let projected=null;
-    const starters=picks.filter(p=>p.position<=11).map(p=>state.players[p.element]).filter(Boolean);
-    if(starters.length===11&&starters.every(p=>typeof xp==='function'&&xp(p)!==null)){
-      const score=teamPrediction(starters,1);if(Number.isFinite(score))projected=score;
-    }
-    let candidates=[];
-    if(typeof dashboardNewsContext==='function'){
-      try{const context=dashboardNewsContext();candidates=[...(context.candidates||new Map()).entries()].filter(([id,m])=>m&&state.players[id]&&Number.isFinite(Number(m.gain))).slice(0,2);}
-      catch(_){}
-    }
-    const scenario=(label,mode,pair,caption)=>{
-      const player=pair?state.players[pair[0]]:null,delta=pair&&Number.isFinite(Number(pair[1].gain))?Number(pair[1].gain):null,out=pair?pair[1].out:null;
-      const display=player&&out?safeName(out)+' → '+safeName(player.web_name):safeName(caption);
-      const metric=projected!==null&&mode==='Hold'?fmt(projected,1)+' xP':delta!==null?(delta>0?'+':'')+fmt(delta,1)+' xP*':'—';
-      return '<div class="decision-scenario"><div class="decision-scenario-title"><strong>'+safeName(label)+'</strong><span>'+metric+'</span></div>'+
-        '<p class="decision-scenario-move">'+display+'</p>'+
-        '<div class="decision-scenario-bottom"><div class="decision-captains"><span><b>C</b> '+name(first)+'</span><span><b>VC</b> '+name(second)+'</span></div>'+
-        '<button class="decision-action" data-goto="'+(mode==='Hold'?'planning':'transfers')+'">Analisis ↗</button></div>'+
-        '<small class="decision-scenario-note">'+(delta!==null?'*Potensi sebelum hit, belum divalidasi':'Perlu simulasi dan validasi prediksi')+'</small></div>';
+    const gw=Number(state.next?.id),report=publicPlan.entryId===Number(state.entry?.id)&&publicPlan.gw===gw?publicPlan.report:null;
+    const name=id=>safeName(state.players[id]?.web_name||'—');
+    const scenario=(key,label)=>{
+      const s=report?.scenarios?.[key];
+      if(!s)return '<div class="decision-scenario"><div class="decision-scenario-title"><strong>'+label+'</strong><span>—</span></div><p class="decision-scenario-move">'+(publicPlan.loading?'Loading Official FPL advisory…':'No validated option available')+'</p><small class="decision-scenario-note">Unverified numbers are not displayed</small></div>';
+      const changes=s.changes?.length?s.changes.map(c=>safeName(c.out.web_name)+' → '+safeName(c.in.web_name)).join(' · '):'Keep all 15 · optimize XI';
+      const delta=s.transfers?' · Gross Δ '+(s.gross_gain_vs_hold>0?'+':'')+fmt(s.gross_gain_vs_hold,1)+' xP':'';
+      return '<div class="decision-scenario"><div class="decision-scenario-title"><strong>'+label+'</strong><span>'+fmt(s.expected_points,1)+' xP</span></div>'+
+        '<p class="decision-scenario-move">'+changes+'</p><div class="decision-scenario-bottom">'+
+        '<div class="decision-captains"><span><b>C</b> '+name(s.captain)+'</span><span><b>VC</b> '+name(s.vice_captain)+'</span></div>'+
+        '<button class="decision-action" data-goto="'+(s.transfers?'transfers':'planning')+'">Analyse ↗</button></div>'+
+        '<small class="decision-scenario-note">GW '+gw+' · '+safeName(s.formation)+delta+' · No verified FT/hit</small></div>';
     };
-    return '<article class="decision-panel decision-plan"><header class="decision-panel-head"><div><h2>Plan Next GW'+(gw?' · GW '+gw:'')+'</h2><p>Rencana dari data publik, belum transaksi FPL</p></div><button class="decision-link" data-goto="planning">Buka Planner ↗</button></header>'+
-      '<div class="decision-scenarios">'+scenario('A · Hold','Hold',null,'Pertahankan 15 pemain, optimalkan XI')+scenario('B · 1 Transfer','1 Transfer',candidates[0],'Kandidat belum tersedia')+scenario('C · Alternatif','Compare',candidates[1],'Bandingkan kandidat lain')+'</div>'+
-      '<footer class="decision-foot"><span>Bank: '+safeName(state.picks?.entry_history?money(state.picks.entry_history.bank):'—')+'</span><span>Transfer GW depan tidak terlihat dari FPL ID publik</span></footer></article>';
+    return '<article class="decision-panel decision-plan"><header class="decision-panel-head"><div><h2>Plan Next GW'+(gw?' · GW '+gw:'')+'</h2><p>Official FPL one-GW estimates · public advisory · no Monte Carlo</p></div><button class="decision-link" data-goto="planning">Planner ↗</button></header>'+
+      '<div class="decision-scenarios">'+scenario('A','A · Hold')+scenario('B','B · 1 Transfer')+scenario('C','C · 2 Transfers')+'</div>'+
+      '<footer class="decision-foot"><span>'+(report?safeName(report.economics_status):'Official data pending')+'</span><span>No login · Not canonical V12 · No invented transfer hits</span></footer></article>';
   }
   function renderDecision(){
     if(!stage.isConnected)return;
@@ -168,6 +174,7 @@
     renderDecision();
     const id=currentLeagueId();
     if(state.entry&&id)refreshLeagueSnapshot(id);
+    if(state.entry&&!state.visitingTeam)refreshPublicPlan();
     return response;
   };
   document.addEventListener('change',e=>{
