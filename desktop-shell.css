@@ -351,3 +351,45 @@ body.has-team[data-view=dashboard] .focus-grid>.focus-card:not(.focus-deadline)>
 /* Logo button: never a grey box (iPad keeps :hover/:active after a tap) */
 .app-side .app-side-logo,.app-side .app-side-logo:hover,.app-side .app-side-logo:active,.app-side .app-side-logo:focus{background:transparent!important;box-shadow:none!important;-webkit-tap-highlight-color:transparent}
 .app-side .app-side-logo:focus-visible{outline:2px solid var(--green,#2f9e6f);outline-offset:2px}
+
+/* Tim (Skuad): compact like Overview */
+@media(min-width:1100px){
+body.has-team[data-view=tim] .shell>.main>:not(.provider-status){zoom:.92}
+body.has-team[data-view=tim] #teamStats{gap:10px!important;margin:0 0 10px!important}
+body.has-team[data-view=tim] #teamStats .stat{padding:8px 14px!important;min-height:0!important;height:auto!important;display:flex;flex-direction:column;gap:0!important}
+body.has-team[data-view=tim] #teamStats .stat>*{margin:0!important}
+body.has-team[data-view=tim] #teamStats .stat-decoration{display:none!important}
+body.has-team[data-view=tim] #teamStats .eyebrow{font-size:10px!important;line-height:14px!important}
+body.has-team[data-view=tim] #teamStats .stat-num{font-size:22px!important;line-height:28px!important}
+body.has-team[data-view=tim] #teamStats .stat-foot{font-size:11px!important;line-height:14px!important}
+body.has-team[data-view=tim] .grid-main{gap:12px!important}
+body.has-team[data-view=tim] .grid-main .panel-head{padding:8px 14px!important;min-height:0!important}
+body.has-team[data-view=tim] .grid-main .panel-head h2,body.has-team[data-view=tim] .grid-main .panel-heading h2{font-size:15px!important;line-height:20px!important}
+body.has-team[data-view=tim] .grid-main .panel-head :is(small,p){font-size:11px!important;line-height:14px!important}
+body.has-team[data-view=tim] .grid-main .pitch-wrap{padding:4px 0!important}
+body.has-team[data-view=tim] .grid-main .pitch{height:auto!important;min-height:0!important;gap:6px!important;padding:10px 0!important;justify-content:center}
+body.has-team[data-view=tim] .grid-main .pitch .player{width:64px!important}
+body.has-team[data-view=tim] .grid-main .pitch .shirt{width:24px!important;height:28px!important;margin-bottom:3px!important}
+body.has-team[data-view=tim] .grid-main .pitch .player-name{padding:3px 2px!important;font-size:10px!important;line-height:13px!important}
+body.has-team[data-view=tim] .grid-main .pitch .player-score{padding:3px 2px!important;font-size:11px!important;line-height:14px!important}
+body.has-team[data-view=tim] .grid-main .bench-title{padding:0!important;margin:0!important;font-size:10px!important;line-height:18px!important}
+body.has-team[data-view=tim] .grid-main .bench-row{padding:2px 0 6px!important;margin:0!important}
+body.has-team[data-view=tim] .grid-main .bench-row .shirt{display:none!important}
+body.has-team[data-view=tim] .grid-main .bench-row .player{min-width:56px;min-height:0;padding:4px 6px}
+body.has-team[data-view=tim] .grid-main .subtle-note{padding:8px 14px!important;font-size:11px!important;line-height:15px!important}
+body.has-team[data-view=tim] .right-stack{gap:12px!important}
+body.has-team[data-view=tim] .right-stack .panel{padding-block:0}
+body.has-team[data-view=tim] .spotlight{padding:12px 16px!important}
+body.has-team[data-view=tim] .spotlight h3{font-size:17px!important;line-height:22px!important;margin:2px 0!important}
+body.has-team[data-view=tim] .spotlight p{font-size:12px!important;line-height:16px!important;margin:0 0 6px!important}
+body.has-team[data-view=tim] .spotlight .metric{font-size:22px!important;line-height:28px!important}
+}
+@media(min-width:1100px){
+body.has-team[data-view=tim] .section-gap{margin-top:12px!important}
+body.has-team[data-view=tim] .section-gap>.panel-head{padding:8px 14px!important;min-height:0!important}
+body.has-team[data-view=tim] .section-gap :is(h2,.panel-heading h2){font-size:15px!important;line-height:20px!important}
+body.has-team[data-view=tim] .section-gap :is(.panel-heading small,.eyebrow){font-size:11px!important;line-height:14px!important}
+body.has-team[data-view=tim] #squadTable :is(th,td){padding:6px 14px!important;font-size:12px!important;line-height:16px!important}
+body.has-team[data-view=tim] #squadTable th{font-size:10px!important}
+body.has-team[data-view=tim] #squadTable :is(button,.player-chip,.name-chip){padding:2px 10px!important;min-height:0!important;font-size:12px!important;line-height:18px!important}
+}
