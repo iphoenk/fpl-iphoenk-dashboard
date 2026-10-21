@@ -10,3 +10,5 @@ body[data-view='dashboard'] .brief-heading{display:none}body[data-view='dashboar
 body[data-view='dashboard'] .focus-card .focus-link{margin-top:auto;padding-top:12px}body[data-view='dashboard'] .focus-card{gap:7px}body[data-view='dashboard'] .focus-card h3{margin:4px 0}
 
 .overview-move .preview-gain{margin-left:auto;font-size:12px;font-weight:700}
+
+.overview-fixture-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:14px;row-gap:6px}.overview-fixture-grid .overview-fixture-row{min-width:0;flex-wrap:nowrap}.overview-fixture-grid .overview-fixture-row>span{display:flex;gap:4px;min-width:0}@media(max-width:560px){.overview-fixture-grid{grid-template-columns:1fr}}
