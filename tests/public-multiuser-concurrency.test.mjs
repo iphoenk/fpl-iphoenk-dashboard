@@ -10,7 +10,7 @@ for(let club=1;club<=20;club++)for(const position of [1,2,3,4]){
  for(let i=0;i<n;i++)inputPlayers.push({id:id++,web_name:'Player'+id,element_type:position,team:club,
  ep_next:String(1+(club%8)+i/4),now_cost:45+club,status:'a'});
 }
-const choose=(pos,count)=>inputPlayers.filter(p=>p.element_type===pos).filter((p,i)=>i%2===0).slice(0,count);
+const choose=(pos,count)=>Array.from({length:count},(_,i)=>inputPlayers.find(p=>p.element_type===pos&&p.team===({1:[1,2],2:[3,4,5,6,7],3:[8,9,10,11,12],4:[13,14,15]}[pos][i])));
 const squad=[...choose(1,2),...choose(2,5),...choose(3,5),...choose(4,3)];
 const bs={events:[{id:1,deadline_time:'2026-08-01T12:00:00Z',finished:true},{id:7,is_current:true,deadline_time:'2026-10-18T11:00:00Z'},{id:8,is_next:true,deadline_time:'2026-10-24T11:00:00Z'}],elements:inputPlayers};
 const picks={picks:squad.map((p,i)=>({element:p.id,position:i+1,selling_price:p.now_cost})),entry_history:{bank:60,event:7}};

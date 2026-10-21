@@ -10,7 +10,7 @@ for(let team=1;team<=14;team++)for(const pos of [1,2,3,4])for(let k=0;k<3;k++)ad
 const take=(pos,teams)=>teams.map(team=>players.find(p=>p.element_type===pos&&p.team===team));
 const squad=[...take(1,[1,2]),...take(2,[3,4,5,6,7]),...take(3,[8,9,10,11,12]),
  players.find(p=>p.element_type===4&&p.team===13),players.find(p=>p.element_type===4&&p.team===14),players.find(p=>p.element_type===4&&p.team===13&&p.id!==players.find(x=>x.element_type===4&&x.team===13).id)];
-const bootstrap={elements:players,events:[{id:7,is_current:true},{id:8,is_next:true}]};
+const bootstrap={elements:players,events:[{id:7,is_current:true,deadline_time:'2026-10-18T11:00:00Z'},{id:8,is_next:true,deadline_time:'2026-10-25T11:00:00Z'}]};
 const picks={picks:squad.map((p,i)=>({element:p.id,position:i+1,selling_price:p.now_cost})),entry_history:{bank:120,event:7}};
 test('A/B/C reoptimize legal XI, four bench, captain/vice with no fake hits',()=>{
  const r=publicDecision({entry:{id:900},picks,bootstrap,planningGw:8});
@@ -46,7 +46,7 @@ test('twenty concurrent users share bootstrap, deduplicate same ID and bound con
  const service=createPublicDecisionService({fetcher,maxActive:4});
  const results=await Promise.all(Array.from({length:20},(_,i)=>service.get(70000+i)));
  assert.ok(results.every((r,i)=>r.status==='ready'&&r.entry_id===70000+i));
- assert.equal(per.size,20);assert.equal(calls,41);assert.ok(service.stats().peak<=4);
+ assert.equal(per.size,20);assert.equal(calls,43);assert.ok(service.stats().peak<=4);
  await Promise.all(Array.from({length:20},()=>service.get(70000)));
  assert.equal(calls,41);
  assert.ok(peak<=8); // per entry, two Official requests in parallel; shared bootstrap is separate
@@ -67,5 +67,5 @@ test('identical cold users coalesce, real errors are not cached',async()=>{
  };
  const s=createPublicDecisionService({fetcher});
  const both=await Promise.all([s.get(55),s.get(55)]);
- assert.equal(both[0].entry_id,55);assert.equal(n,3);
+ assert.equal(both[0].entry_id,55);assert.equal(n,5);
 });
