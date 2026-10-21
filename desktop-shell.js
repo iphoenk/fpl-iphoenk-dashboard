@@ -22,6 +22,8 @@ function shellFit(){
  const lay=document.getElementById('dashboardLayout');if(!lay)return;
  const on=document.body.classList.contains('has-team')&&document.body.dataset.view==='dashboard'&&innerWidth>=1100;
  if(!on){if(lay.style.zoom)lay.style.zoom='';return;}
+ if(lay.querySelector('.next-gw-overview:not([hidden])')){lay.dataset.plan='1';lay.style.zoom='.84';return;}
+ delete lay.dataset.plan;
  lay.style.zoom='1';
  const foot=document.querySelector('.footer'),footH=foot&&foot.offsetParent?foot.getBoundingClientRect().height+8:0;
  const fits=()=>{const r=lay.getBoundingClientRect();return r.bottom+footH+8<=innerHeight;};
@@ -47,6 +49,6 @@ function shellPlaceExtras(){
 function shellPlaceRefresh(){const b=document.getElementById('refreshButton'),top=document.querySelector('.header-account-actions'),foot=document.querySelector('.footer');if(!b||!top||!foot)return;if(innerWidth>=1100){const ctx=document.getElementById('activeTeamContext');if(b.parentNode!==top){b.classList.add('shell-refresh');ctx&&ctx.parentNode===top?top.insertBefore(b,ctx):top.prepend(b);}}else if(b.parentNode!==foot){b.classList.remove('shell-refresh');foot.appendChild(b);}}
 addEventListener('resize',()=>{shellPlaceRefresh();shellPlaceExtras();});new MutationObserver(()=>{shellPlaceRefresh();shellPlaceExtras();}).observe(document.body,{childList:true,subtree:true});shellPlaceRefresh();shellPlaceExtras();
 addEventListener('resize',shellFitSoon);new MutationObserver(shellFitSoon).observe(document.body,{attributes:true,attributeFilter:['class']});
-const shellView=document.getElementById('view-dashboard');if(shellView)new MutationObserver(shellFitSoon).observe(shellView,{childList:true,subtree:true});
+const shellView=document.getElementById('view-dashboard');if(shellView)new MutationObserver(shellFitSoon).observe(shellView,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden']});
 shellSync();setTimeout(shellFit,600);setTimeout(shellFit,2500);
 })();
