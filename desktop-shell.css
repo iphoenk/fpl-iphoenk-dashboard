@@ -332,3 +332,13 @@ body.has-team .provider-status>summary{height:30px!important;padding:0 11px!impo
 body.has-team .provider-status>summary::-webkit-details-marker{display:none}
 body.has-team .provider-status[open]>summary{color:var(--text)}
 body.has-team .provider-status>div{top:36px!important;left:auto!important;right:0!important;width:min(460px,calc(100vw - var(--side-w) - 40px))}
+
+/* Inner pages: same proportion as Overview (scaled content, header and sidebar unchanged) */
+@media(min-width:1100px){
+body.has-team:not([data-view=dashboard]) .shell>.main>:not(.provider-status){zoom:.84}
+}
+
+/* Plan Next GW is a long page: no fit-to-screen, side cards keep natural height */
+body.has-team[data-view=dashboard] #dashboardLayout[data-plan] .focus-grid>.focus-card{align-self:start}
+body.has-team[data-view=dashboard] #dashboardLayout[data-plan]{grid-template-rows:auto auto auto auto minmax(0,1fr) auto}
+body.has-team[data-view=dashboard] #dashboardLayout[data-plan] .next-gw-overview{grid-row:3/span 3}
