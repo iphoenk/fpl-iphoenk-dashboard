@@ -57,5 +57,5 @@ test('single theme toggle displays opposite mode and official calm color tokens'
 });
 test('About remains a reachable original navigation route',()=>{
  assert.match(read('desktop-shell.js'),/about:'About'/);
- assert.match(read('ui.html'),/view-about/);
+ assert.match(read('about-ui.js'),/view-about/);
 });
