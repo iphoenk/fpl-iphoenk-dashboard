@@ -17,10 +17,15 @@ function newsReason(player,context){
  const trend=context.trending.get(player.id);if(trend&&!labels.length){const performance=trend.find(r=>r.type==='performance'),transfers=trend.find(r=>r.type==='transfers');labels.push(performance?'Performa GW'+(state.bootstrap?.events.find(e=>e.is_current)?.id||state.gw)+' · '+fmt(performance.value)+' poin':fmt(transfers.value)+' transfer masuk GW ini');}
  return labels.join(' · ');
 }
-personalizedNews=function(){return selectPersonalNews({players:allPlayers(),teams:state.teams,articles:ext.news?.articles||[],context:dashboardNewsContext(),filter:ext.playerNewsFilter||'For You'});};
+function europeArticles(){
+ const key=ext.europeFetchedAt+'|'+allPlayers().length;
+ if(ext.europeAttached?.key!==key)ext.europeAttached={key,articles:attachMentionedPlayers(ext.europeNews||[],allPlayers(),state.teams)};
+ return ext.europeAttached.articles;
+}
+personalizedNews=function(){return selectPersonalNews({players:allPlayers(),teams:state.teams,articles:[...(ext.news?.articles||[]),...europeArticles()],context:dashboardNewsContext(),filter:ext.playerNewsFilter||'For You'});};
 function dashboardNewsArticle(item,context){
  const labels={Squad:'Our 15',Watchlist:'Watchlist',Targets:'Transfer target',Trending:'Trending'},article=item.article;
- const source=item.kind==='fitness'?'Official FPL':article.source||'The Guardian';
+ const source=item.kind==='fitness'?'Official FPL':(article.source||'The Guardian')+(article.source_type==='europe'?' · laga Eropa, bukan skor FPL':'');
  const href=item.kind==='article'&&/^https:\/\//.test(article.url||'')?article.url:null;
  return '<article class="news-rail-item focus-news-item">'+(item.urgent?'<span class="news-priority">Perlu diperhatikan · skuadmu</span>':'')+'<div class="news-category-tags">'+item.categories.map(c=>'<span>'+labels[c]+'</span>').join('')+'</div><div class="news-player-top">'+item.players.slice(0,3).map(p=>'<button data-player="'+p.id+'">'+esc(p.web_name)+'</button>').join('<span aria-hidden="true"> · </span>')+'</div><h3>'+(item.kind==='fitness'?esc(item.news):href?'<a href="'+esc(href)+'" target="_blank" rel="noopener">'+esc(article.headline)+' ↗</a>':esc(article.headline))+'</h3><p class="news-reason">'+item.players.slice(0,2).map(p=>esc(newsReason(p,context))).join('<br>')+'</p><small>'+esc(source)+' · '+(item.ongoing?'Status masih aktif · pembaruan ': '')+esc(newsPublishedDate(item.kind==='article'?article.date:item.time))+'</small></article>';
 }

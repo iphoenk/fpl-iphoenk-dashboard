@@ -1,4 +1,10 @@
+async function loadEuropeNews(){
+ if(ext.europeFetchedAt&&Date.now()-ext.europeFetchedAt<600000)return;
+ try{const response=await fetch('/api/news/headlines',{signal:AbortSignal.timeout(25000)});const data=await response.json();if(!response.ok)throw new Error('headlines');ext.europeNews=(data.articles||[]).filter(a=>a.source_type==='europe');ext.europeFetchedAt=Date.now();ext.europeAttached=null;}catch{ext.europeNews=ext.europeNews||[];}
+ if(state.view==='dashboard'&&typeof renderDashboardNews==='function')renderDashboardNews();
+}
 async function loadLiveNews(){
+ loadEuropeNews();
  if(ext.news&&Date.now()-ext.newsFetchedAt<600000){if($('liveNews'))$('liveNews').innerHTML=newsArticles();return;}
  if(ext.newsLoading)return;ext.newsLoading=true;ext.newsError=null;
  try{
