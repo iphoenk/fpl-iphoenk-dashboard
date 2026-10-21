@@ -269,3 +269,19 @@ body.has-team[data-view=dashboard] .focus-news-item h3{margin:2px 0 4px!importan
 body.has-team[data-view=dashboard] .focus-news-item .news-reason{margin:0 0 2px!important;font-size:11px!important;line-height:15px!important}
 body.has-team[data-view=dashboard] .focus-news-item>small{font-size:10px!important;line-height:14px!important}
 body.has-team[data-view=dashboard] .focus-news-item .news-player-top button{font-size:12px!important}
+/* Slimmer top bar */
+body.has-team{--bar-h:44px}
+body.has-team .approved-header-inner{padding:4px 20px!important}
+body.has-team .shell-title{font-size:15px!important;line-height:20px!important}
+@media(min-width:1100px){
+body.has-team .header-account-actions{gap:6px}
+body.has-team .header-account-actions :is(.team-context,.theme-toggle,.shell-refresh){min-height:30px!important;height:30px;padding:0 11px!important;font-size:12px!important;border-radius:9px!important;line-height:1}
+body.has-team .header-account-actions .theme-toggle{min-width:0!important;gap:6px}
+body.has-team .header-account-actions .theme-toggle svg{width:14px;height:14px}
+}
+
+/* Slimmer Player News heading */
+body.has-team[data-view=dashboard] .news-rail-heading{padding:8px 14px!important;min-height:0!important}
+body.has-team[data-view=dashboard] .news-rail-heading .btn{min-height:28px!important;height:28px;padding:0 10px!important;font-size:12px!important}
+body.has-team[data-view=dashboard] .news-rail-heading h2{font-size:14px!important;line-height:18px!important}
+body.has-team[data-view=dashboard] .player-news-filters{padding:4px 8px!important}
