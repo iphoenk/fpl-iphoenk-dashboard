@@ -18,13 +18,22 @@ const shellTitle=document.createElement('div');shellTitle.className='shell-title
 document.querySelector('.approved-header-inner')?.prepend(shellTitle);
 function shellSetCollapsed(on,persist){document.body.classList.toggle('side-collapsed',on);const t=byId('sideToggle');t.setAttribute('aria-pressed',String(on));t.setAttribute('aria-label',on?'Perluas menu':'Ciutkan menu');t.title=on?'Perluas menu':'Ciutkan menu';if(persist)try{localStorage.setItem('fpl-iphoenk-side',on?'rail':'open');}catch{}}
 function shellSyncGroups(view){shellGroupsDef.forEach(([key,,,views])=>{const open=views.length>1&&views.includes(view);const btn=shellSide.querySelector('[data-shell-group="'+key+'"]'),subs=shellSide.querySelector('[data-shell-subs="'+key+'"]');if(!btn)return;btn.classList.toggle('group-active',open);subs.classList.toggle('open',open);btn.setAttribute('aria-expanded',String(open));});}
-function shellFold(){if(document.body.dataset.view!=='dashboard')return;const set=(sel,prop)=>{const el=document.querySelector(sel);if(!el)return;const top=Math.round(el.getBoundingClientRect().top+scrollY);if(top>40)document.documentElement.style.setProperty(prop,top+'px');else document.documentElement.style.removeProperty(prop);};set('#dashboardOverview>.adv-section','--fold-top');}
+function shellFit(){
+ const lay=document.getElementById('dashboardLayout');if(!lay)return;
+ const on=document.body.classList.contains('has-team')&&document.body.dataset.view==='dashboard'&&innerWidth>=1100;
+ if(!on){if(lay.style.zoom)lay.style.zoom='';return;}
+ lay.style.zoom='1';
+ const box=lay.getBoundingClientRect(),foot=document.querySelector('.footer'),footH=foot?foot.getBoundingClientRect().height+8:0;
+ const avail=innerHeight-(box.top+scrollY)-footH-8,z=Math.max(.7,Math.min(1,avail/box.height)),next=z<.995?String(Math.round(z*100)/100):'';
+ lay.style.zoom=next;
+}
+let shellFitTimer=0;const shellFitSoon=()=>{clearTimeout(shellFitTimer);shellFitTimer=setTimeout(shellFit,60);};
 shellSide.addEventListener('click',e=>{const g=e.target.closest('[data-shell-group]');if(g){const key=g.dataset.shellGroup,first=shellGroupsDef.find(x=>x[0]===key)[3][0];if(document.body.classList.contains('side-collapsed')){shellSide.querySelector('[data-view="'+first+'"]').click();return;}const subs=shellSide.querySelector('[data-shell-subs="'+key+'"]'),open=!subs.classList.contains('open');subs.classList.toggle('open',open);g.setAttribute('aria-expanded',String(open));return;}if(e.target.closest('#sideToggle'))shellSetCollapsed(!document.body.classList.contains('side-collapsed'),true);});
 let shellSaved=null;try{shellSaved=localStorage.getItem('fpl-iphoenk-side');}catch{}
 shellSetCollapsed(shellSaved?shellSaved==='rail':innerWidth<1280,false);
-const shellSync=()=>{const view=document.body.dataset.view||'dashboard';shellTitle.textContent=shellViewLabels[view]||'';shellSyncGroups(view);shellFold();};
+const shellSync=()=>{const view=document.body.dataset.view||'dashboard';shellTitle.textContent=shellViewLabels[view]||'';shellSyncGroups(view);shellFitSoon();};
 new MutationObserver(()=>shellSync()).observe(document.body,{attributes:true,attributeFilter:['data-view']});
-addEventListener('resize',shellFold);new MutationObserver(shellFold).observe(document.body,{attributes:true,attributeFilter:['class']});
-const shellRO=new ResizeObserver(shellFold);['.team-hero','.overview-controls','.focus-grid'].forEach(q=>{const el=document.querySelector(q);if(el)shellRO.observe(el);});
-shellSync();setTimeout(shellFold,600);
+addEventListener('resize',shellFitSoon);new MutationObserver(shellFitSoon).observe(document.body,{attributes:true,attributeFilter:['class']});
+const shellView=document.getElementById('view-dashboard');if(shellView)new MutationObserver(shellFitSoon).observe(shellView,{childList:true,subtree:true});
+shellSync();setTimeout(shellFit,600);setTimeout(shellFit,2500);
 })();
