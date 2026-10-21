@@ -28,17 +28,32 @@ function renderForecastArchive(){
 const phaseAccuracyBefore=renderAccuracy;renderAccuracy=async function(){try{await phaseAccuracyBefore();}catch{$('view-accuracy').innerHTML='<div class="notice">Evaluasi sumber belum tersedia; arsip dashboard diperiksa terpisah.</div>';}const node=document.createElement('section');node.id='forecastArchivePanel';$('view-accuracy').prepend(node);renderForecastArchive();loadForecastArchive();};
 const phaseOverviewBefore=renderDashboardOverview;renderDashboardOverview=function(){phaseOverviewBefore();renderPhaseQuality();if(!phaseLoaded&&state.bootstrap){phaseLoaded=true;loadForecastArchive(true);}};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-archive-page]');if(!b)return;ext.archivePages=ext.archivePages||{};const key=b.dataset.archiveSource;ext.archivePages[key]=Math.max(0,(ext.archivePages[key]||0)+Number(b.dataset.archivePage));renderForecastArchive();});
-function fplFacts(item){
- const st={a:'Tersedia',d:'Diragukan',i:'Cedera',s:'Skorsing',u:'Tidak tersedia',n:'Tidak aktif'};
- const rows=(item.players||[]).slice(0,3).map(p=>{const bits=[st[p.status]||'Status belum jelas'];if(p.chance_of_playing_next_round!=null)bits.push(fmt(p.chance_of_playing_next_round)+'% peluang tampil');if(p.news)bits.push(esc(p.news));if(Number.isFinite(Number(p.form)))bits.push('form '+fmt(p.form,1));if(Number.isFinite(Number(p.selected_by_percent)))bits.push('dimiliki '+fmt(p.selected_by_percent,1)+'%');if(Number.isFinite(Number(p.event_points)))bits.push(fmt(p.event_points)+' poin GW terakhir');return '<strong>'+esc(p.web_name)+'</strong> · '+esc(state.teams[p.team]?.short_name||'')+' — '+bits.join(' · ');});
- return (rows.length?rows.join('<br>')+'<br>':'')+'<small>Penerbit tidak menyediakan ringkasan; data pemain dari Official FPL. Buka sumber untuk isi lengkap.</small>';
+function newsTopic(h){
+ const t=String(h||'').toLowerCase();
+ if(/injur|doubt|fitness|ruled out|knock|setback|sidelined|miss(es|ing)?\b|absent|illness|suspen/.test(t))return {k:'fit',l:'Kabar kebugaran'};
+ if(/return|back in|available|recover|cleared|fit again/.test(t))return {k:'back',l:'Kabar kembali bermain'};
+ if(/squad|called up|call-up|named in|international/.test(t))return {k:'squad',l:'Panggilan skuad/timnas'};
+ if(/rest|rotat|bench|start|line-?up|team news|xi\b|drop/.test(t))return {k:'xi',l:'Susunan pemain/rotasi'};
+ if(/transfer|sign|deal|loan|contract|bid/.test(t))return {k:'tr',l:'Kabar transfer'};
+ if(/goal|score|assist|hat-?trick|win|clean sheet|praise|shine|brace/.test(t))return {k:'perf',l:'Performa pemain'};
+ return {k:'gen',l:'Berita pemain'};
+}
+function fplFacts(item,context){
+ const st={a:'Tersedia',d:'Diragukan',i:'Cedera',s:'Skorsing',u:'Tidak tersedia',n:'Tidak aktif'},topic=newsTopic(item.article?.headline),ps=(item.players||[]).slice(0,3);
+ const names=ps.map(p=>esc(p.web_name)+' ('+esc(state.teams[p.team]?.short_name||'?')+')').join(', ')||'pemain terkait';
+ const own=ps.filter(p=>context?.own?.has(p.id)),flagged=ps.filter(p=>p.status&&p.status!=='a');
+ const lines=[topic.l+' untuk '+names+(own.length?' — termasuk pemain di skuadmu':'')+'.'];
+ ps.forEach(p=>{const bits=[st[p.status]||'status belum jelas'];if(p.chance_of_playing_next_round!=null)bits.push(fmt(p.chance_of_playing_next_round)+'% peluang tampil');if(p.news)bits.push(esc(p.news));if(Number.isFinite(Number(p.form)))bits.push('form '+fmt(p.form,1));if(Number.isFinite(Number(p.selected_by_percent)))bits.push('dimiliki '+fmt(p.selected_by_percent,1)+'%');lines.push('<strong>'+esc(p.web_name)+'</strong> di FPL: '+bits.join(' · ')+'.');});
+ const advice=topic.k==='fit'?(flagged.length?'FPL sudah menandai flag; pantau pembaruan sebelum deadline.':'FPL belum menandai flag; verifikasi kabar sebelum menetapkan XI dan kapten.'):topic.k==='back'?'Cek peluang tampil resmi sebelum memasukkannya ke XI.':topic.k==='xi'?'Rotasi bisa memengaruhi menit main; cek susunan resmi dekat kick-off.':topic.k==='tr'?'Belum berdampak ke FPL sampai pemain tampil; pantau menit mainnya.':topic.k==='perf'?'Performa lampau; nilai masa depan tetap bergantung fixture dan menit main.':'Pantau dampaknya pada menit main dan fixture.';
+ lines.push('<em>Dampak FPL:</em> '+advice);
+ return lines.join('<br>')+'<br><small>Ringkasan otomatis dari judul dan data Official FPL; buka sumber untuk isi lengkap.</small>';
 }
 // Headline expands inline; only the source opens the original publisher.
 const phaseNewsArticleBefore=dashboardNewsArticle;dashboardNewsArticle=function(item,context){
  const html=phaseNewsArticleBefore(item,context);if(item.kind!=='article')return html;
  const article=item.article,href=/^https:\/\//.test(article.url||'')?article.url:null;
  const snippet=String(article.summary||article.snippet||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
- const content='<details class="inline-news-details"><summary>'+esc(article.headline)+'</summary><div class="news-summary">'+(snippet?esc(snippet.slice(0,800)):fplFacts(item))+'</div></details>';
+ const content='<details class="inline-news-details"><summary>'+esc(article.headline)+'</summary><div class="news-summary">'+fplFacts(item,context)+'</div></details>';
  return html.replace(/<h3>[\s\S]*?<\/h3>/,content).replace('<small>'+esc(article.source||'The Guardian'),'<small>'+(href?'<a class="news-source-link" href="'+esc(href)+'" target="_blank" rel="noopener">'+esc(article.source||'The Guardian')+' ↗</a>':esc(article.source||'The Guardian')));
 };
 renderPhaseQuality();renderDashboardNews();
