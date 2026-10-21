@@ -132,11 +132,27 @@ body.has-team[data-view=dashboard] #dashboardOverview .panel-heading{display:fle
 body.has-team[data-view=dashboard] #dashboardOverview .panel-heading :is(h2,small){margin:0!important}
 body.has-team[data-view=dashboard] #dashboardOverview>.adv-section>.panel-head{padding:6px 16px!important}
 body.has-team[data-view=dashboard] #dashboardOverview .pitch-wrap{padding:4px 0!important}
-body.has-team[data-view=dashboard] #dashboardOverview .pitch{height:312px!important}
+body.has-team[data-view=dashboard] #dashboardOverview .pitch{height:auto!important;min-height:0!important;gap:10px;padding:12px 0;justify-content:center}
 body.has-team[data-view=dashboard] #dashboardOverview .refined-bench-label{height:16px;line-height:16px;margin:0}
 body.has-team[data-view=dashboard] #dashboardOverview .bench-row{padding:2px 0!important;margin:0!important}
-body.has-team[data-view=dashboard] #dashboardOverview .pitch{justify-content:space-around}
 body.has-team[data-view=dashboard] #dashboardPool{margin:0!important}
 body.has-team[data-view=dashboard] .focus-card:not(.focus-deadline) p{display:none}
+/* Type scale for the Overview: 10 kicker, 11 meta, 12 body, 13 base, 15 title, 20 KPI, 24 hero. Titles and KPI numbers share DM Sans. */
+body.has-team[data-view=dashboard]{--t-kicker:10px;--t-meta:11px;--t-body:12px;--t-base:13px;--t-title:15px;--t-kpi:20px;--t-hero:24px;--f-head:'DM Sans',Inter,system-ui,sans-serif}
+body.has-team[data-view=dashboard] :is(#dashboardOverview .panel-heading h2,.news-rail-heading h2,.overview-preview h3,.focus-card h3,.focus-deadline h3){font-family:var(--f-head)!important;font-size:var(--t-title)!important;line-height:20px!important;font-weight:700!important;letter-spacing:0!important}
+body.has-team[data-view=dashboard] :is(.focus-card h3,.focus-deadline h3){white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+body.has-team[data-view=dashboard] :is(.hero-kicker,.focus-kicker,.eyebrow,.hero-stat span,.hero-team-value span,.refined-bench-label){font-size:var(--t-kicker)!important;line-height:14px!important;letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+body.has-team[data-view=dashboard] :is(.hero-stat strong,.hero-team-value strong){font-family:var(--f-head)!important;font-size:var(--t-kpi)!important;line-height:24px!important;font-weight:700!important}
+body.has-team[data-view=dashboard] .team-hero h1{font-size:var(--t-hero)!important;line-height:30px!important;font-weight:700}
+body.has-team[data-view=dashboard] :is(.hero-stat small,.hero-manager,.focus-card p,.focus-deadline p,#dashboardOverview .panel-heading small,.news-freshness,.news-rail-foot,.overview-preview p,.overview-preview small,.news-rail-heading p){font-size:var(--t-meta)!important;line-height:15px!important}
+body.has-team[data-view=dashboard] :is(.overview-controls,.overview-move,.overview-rank,.focus-news-item .news-source){font-size:var(--t-body)}
+body.has-team[data-view=dashboard] :is(.overview-gw-switch button,.phase-quality>summary,.phase-quality summary strong){font-size:var(--t-base)!important}
+body.has-team[data-view=dashboard] :is(.btn.small,.focus-link,.news-rail-foot .btn,.player-news-filters button){font-size:var(--t-body)!important}
+body.has-team[data-view=dashboard] #dashboardOverview .player-name{font-size:var(--t-meta)!important;line-height:15px!important;font-weight:600}
+body.has-team[data-view=dashboard] #dashboardOverview .player-score{font-size:var(--t-body)!important;line-height:16px!important;font-weight:700}
+body.has-team[data-view=dashboard] :is(.fixture,.club-badge,.overview-preview .fixture){font-size:10px!important}
+body.has-team[data-view=dashboard] #dashboardPool>summary :is(span,strong){font-size:var(--t-base)!important}
 }
 @media(prefers-reduced-motion:reduce){body.has-team .app-side,body.has-team .approved-header,body.has-team .shell,body.has-team .notice,body.has-team .footer{transition:none!important}}
+
+@media(min-width:1100px){body.has-team .footer{display:none!important}body.has-team .header-account-actions .shell-refresh{min-height:40px;padding:6px 14px;border-radius:10px;white-space:nowrap;font-size:13px}}
