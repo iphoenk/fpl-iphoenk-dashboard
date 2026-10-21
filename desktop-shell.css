@@ -30,7 +30,7 @@ html[data-theme="dark"] .app-side-logo :is(.logo-full,.logo-mark){filter:invert(
 .app-side-system small{padding:0 12px 4px;color:var(--muted);font-size:12px}
 .app-side-system button{min-height:36px;font-weight:500}
 .app-side .rail-text{display:none;font-size:11px;font-weight:600}
-body.side-collapsed .side-text,body.side-collapsed .side-chev,body.side-collapsed .app-side-subs,body.side-collapsed .app-side-system small,body.side-collapsed .app-side-system button{display:none!important}
+body.side-collapsed .side-text,body.side-collapsed .side-chev,body.side-collapsed .app-side-subs,body.side-collapsed .app-side-system small{display:none!important}
 body.side-collapsed .app-side button{flex-direction:column;justify-content:center;gap:2px;padding:6px 0;min-height:52px;text-align:center}
 body.side-collapsed .app-side button .rail-text{display:block}
 body.has-team .approved-navigation,body.has-team .approved-brand{display:none!important}
@@ -187,3 +187,36 @@ body.has-team[data-view=dashboard] .player-news-filters button{flex:1 1 auto;min
 .news-title-line{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;min-width:0}
 .news-title-line h2{margin:0}
 .news-checked{font-size:11px;color:var(--muted);white-space:nowrap}
+
+/* Kualitas data lives at the bottom of the sidebar; system links keep icons in rail mode; deadline sits on the GW switch row */
+.quality-status{font-style:normal}
+.app-side-system .phase-quality{position:relative;border:0;border-radius:10px;background:transparent;margin:0}
+.app-side-system .phase-quality>summary{list-style:none;display:flex;align-items:center;gap:12px;min-height:40px;padding:4px 12px;border-radius:10px;cursor:pointer;color:var(--muted);font-size:14px;font-weight:500}
+.app-side-system .phase-quality>summary::-webkit-details-marker{display:none}
+.app-side-system .phase-quality>summary:hover{background:color-mix(in srgb,var(--text) 7%,transparent);color:var(--text)}
+.app-side-system .phase-quality>summary::before{content:'';flex:none;width:20px;height:20px;background:currentColor;-webkit-mask:var(--q-ic) center/contain no-repeat;mask:var(--q-ic) center/contain no-repeat;--q-ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3zM9 12l2 2 4-4'/%3E%3C/svg%3E")}
+.app-side-system .phase-quality>summary>span:first-child{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+.app-side-system .phase-quality>summary>span:first-child strong{font-weight:500;font-size:14px}
+.app-side-system .quality-sep{display:none}
+.app-side-system .quality-status{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app-side-system .phase-quality>summary>span[aria-hidden]{display:none}
+.app-side-system .phase-quality-body{position:fixed;left:calc(var(--side-w,240px) + 8px);bottom:12px;width:380px;max-width:calc(100vw - 280px);max-height:calc(100vh - 24px);overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);padding:16px;box-shadow:0 12px 36px #0003;z-index:80}
+body.side-collapsed .app-side-system .phase-quality>summary{flex-direction:column;justify-content:center;gap:2px;padding:6px 0;min-height:52px}
+body.side-collapsed .app-side-system .phase-quality>summary>span:first-child{display:none}
+body.side-collapsed .app-side-system .phase-quality>summary::after{content:'Data';font-size:11px;font-weight:600}
+body.side-collapsed .app-side-system button{padding:6px 0}
+.overview-controls .focus-deadline{display:flex!important;align-items:center;gap:14px;align-self:stretch;height:auto!important;min-height:0!important;margin:0!important;padding:0 14px!important;flex:none;width:auto!important;border-radius:12px;box-sizing:border-box}
+.overview-controls .focus-deadline>*{margin:0!important;grid-column:auto!important;grid-row:auto!important;white-space:nowrap}
+.overview-controls .focus-deadline :is(p,small){display:none!important}
+.overview-controls .focus-deadline .focus-kicker,.overview-controls .focus-deadline .eyebrow{font-size:10px}
+body.has-team[data-view=dashboard] .focus-grid{grid-template-rows:repeat(2,minmax(0,1fr))}
+
+.overview-controls .focus-deadline>div{display:flex;align-items:center;gap:10px;min-width:0}
+.overview-controls .focus-deadline h3{margin:0!important;font-size:var(--t-title)!important;overflow:visible!important;text-overflow:clip!important}
+.overview-controls .focus-deadline .focus-link{font-size:var(--t-body)!important;padding:0!important}
+body.has-team[data-view=dashboard] .overview-decision-previews .overview-preview>h3{overflow:visible;text-overflow:clip}
+body.has-team[data-view=dashboard] .overview-decision-previews .overview-preview>.btn{font-size:11px!important;padding:3px 10px!important}
+.overview-controls .focus-deadline{flex-direction:row!important;flex-wrap:nowrap!important}
+.overview-controls .focus-deadline>div{flex:none}
+.overview-controls .focus-deadline .focus-link{flex:none;white-space:nowrap}
+.app-side-system .phase-quality>summary{justify-content:flex-start!important}
