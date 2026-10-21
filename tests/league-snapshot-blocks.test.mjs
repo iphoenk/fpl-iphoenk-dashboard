@@ -1,0 +1,40 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import {readFileSync} from 'node:fs';
+const js=readFileSync(new URL('../decision-first.js',import.meta.url),'utf8');
+const css=readFileSync(new URL('../decision-first.css',import.meta.url),'utf8');
+const start=js.indexOf('  function leagueBlockStart('),end=js.indexOf('  const validLeagueNumber=',start);
+const ctx=vm.createContext({});
+vm.runInContext(js.slice(start,end)+';this.start=leagueBlockStart;this.page=leagueStandingsPage;this.rows=leagueBlockRows',ctx);
+const entries=(from,n)=>Array.from({length:n},(_,i)=>({entry:from+i,rank:from+i,total:700-(from+i)}));
+test('rank 6 automatically displays positions 1–10',()=>{assert.equal(ctx.start(6),1);assert.equal(ctx.page(1),1);assert.equal(ctx.rows(entries(1,50),1).length,10);assert.equal(ctx.rows(entries(1,50),1)[9].rank,10);});
+test('rank 274 automatically displays positions 271–280 via standings page 6',()=>{assert.equal(ctx.start(274),271);assert.equal(ctx.page(271),6);const rows=ctx.rows(entries(251,50),271);assert.equal(rows.length,10);assert.equal(rows[0].rank,271);assert.equal(rows[9].rank,280);assert.equal(rows[3].rank,274);});
+test('rank 51 yields positions 51–60, next and previous advance by ten',()=>{assert.equal(ctx.start(51),51);assert.equal(ctx.page(51),2);assert.equal(ctx.page(61),2);assert.equal(ctx.page(41),1);});
+test('leader and member fetched independently, stale league request guarded',()=>{
+ assert.match(js,/Promise\.all\(\[fetchStandingsPage\(id,1\),fetchStandingsPage\(id,leagueStandingsPage\(start\)\)\]\)/);
+ assert.match(js,/leader-total/);
+ assert.match(js,/String\(state\.entry\?\.id\)!==entryId/);
+ assert.match(js,/currentLeagueId\(\)!==Number\(id\)/);
+ assert.match(js,/standingsCache/);
+});
+test('ten-row navigator supports touch, keyboard, buttons and changes selection',()=>{
+ assert.match(js,/id="decisionLeagueSwipe"/);
+ assert.match(js,/data-league-block="-1"/);
+ assert.match(js,/data-league-block="1"/);
+ assert.match(js,/touchstart/);
+ assert.match(js,/touchend/);
+ assert.match(js,/ArrowRight/);
+ assert.match(js,/Math\.abs\(dx\)>=55/);
+ assert.match(css,/decision-league-toolbar/);
+});
+test('scenario A/B/C are compact with C and VC and source-qualified estimates',()=>{
+ assert.match(js,/A · Hold/);
+ assert.match(js,/B · 1 Transfer/);
+ assert.match(js,/C · 2 Transfers/);
+ assert.match(js,/decision-scenario-bottom/);
+ assert.match(js,/<b>VC<\/b>/);
+ assert.match(js,/No verified FT\/hit/);
+ assert.match(css,/decision-scenario-move/);
+ assert.match(css,/decision-plan \.decision-scenario\{\s*padding:11px 12px/);
+});

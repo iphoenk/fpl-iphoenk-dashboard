@@ -26,6 +26,8 @@ Official FPL supplies public identities, prices, fixtures, status, points and pu
 
 Prediction snapshots come from FPLens (https://github.com/abdelmalek-maskri/fplens), and supplementary public scouting snapshots from FPL Insights (https://github.com/JonnoMillar/fpl-insights), validated against current identities, deadline and GW. Source attribution is retained. News uses Guardian/FPL updates; a separate fixed-source public RSS endpoint is available for further integration. Community reports are not official confirmation.
 
+A public deterministic next-GW advisory endpoint is available at `GET /api/decision?entry_id=123456`. It uses Official FPL published picks, verified `ep_next`, legal 15/11 formations, bounded transfer search and fresh C/VC for each scenario; no Monte Carlo. It is explicitly NOT the private canonical V12 optimizer, does not know unpublished free transfers or hit costs, and uses indicative historical bank/sale prices. Stateless caching, in-process singleflight and bounded concurrency are tested, not a guarantee across serverless instances. No Neon database or FPL login is required for this public-only stage.
+
 V6/V12 engine integration is NOT active in this dashboard. See architecture notes before adding it. This is an independent companion, not affiliated with Premier League.
 
 ## Deployment

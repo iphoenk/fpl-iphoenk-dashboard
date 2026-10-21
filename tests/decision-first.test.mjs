@@ -27,18 +27,18 @@ test('classic mini-league selector persists by FPL entry, validates membership a
  assert.match(js,/decisionLeagueSelect/);
  assert.match(js,/fpl-iphoenk-league-/);
  assert.match(js,/leagueList\(\)\.some\(l=>Number\(l\.id\)===id\)/);
- assert.match(js,/loadLeague\(id\)/);
- assert.match(js,/active\?\.standings\?\.results/);
+ assert.match(js,/refreshLeagueSnapshot\(id\)/);
+ assert.match(js,/local\.standings\.results/);
  assert.match(js,/Klasemen belum dimuat/);
 });
 test('next GW displays hold, one transfer and alternatives without invented points',()=>{
  assert.match(js,/A · Hold/);
  assert.match(js,/B · 1 Transfer/);
- assert.match(js,/C · Alternatif/);
- assert.match(js,/projected!==null/);
- assert.match(js,/Perlu simulasi dan validasi prediksi/);
- assert.match(js,/is_captain/);
- assert.match(js,/is_vice_captain/);
+ assert.match(js,/C · 2 Transfers/);
+ assert.match(js,/PUBLIC_FPL_DETERMINISTIC_ADVISORY_V1/);
+ assert.match(js,/No validated option available/);
+ assert.match(js,/publicPlan/);
+ assert.match(js,/vice_captain/);
 });
 test('desktop and tablet are in one design family while mobile stacks',()=>{
  assert.match(css,/@media\(min-width:768px\) and \(max-width:1099px\)/);
@@ -58,4 +58,10 @@ test('single theme toggle displays opposite mode and official calm color tokens'
 test('About remains a reachable original navigation route',()=>{
  assert.match(read('desktop-shell.js'),/about:'About'/);
  assert.match(read('about-ui.js'),/view-about/);
+});
+
+test('Worker and Vercel build pipelines both include decision-first JS and CSS',()=>{
+ const worker=read('scripts/build.mjs');
+ assert.ok(worker.includes("'decision-first.js'"));
+ assert.ok(worker.includes("readFileSync('decision-first.css'"));
 });
