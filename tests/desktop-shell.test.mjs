@@ -26,3 +26,10 @@ test('rail toggle is the FPL iphoenk logo, text-free, with an accessible name',(
  assert.match(toggle,/aria-label="Ciutkan menu"/);
  assert.doesNotMatch(js,/Ciutkan menu<\/span>/);
 });
+test('overview fits the viewport by uniform zoom with a readable floor, only on desktop dashboard',()=>{
+ assert.match(js,/function shellFit\(\)/);
+ assert.match(js,/innerWidth>=1100/);
+ assert.match(js,/Math\.max\(\.7,Math\.min\(1,/);
+ assert.match(js,/data-view|dataset\.view==='dashboard'/);
+ assert.doesNotMatch(css,/100vh - var\(--fold-top/);
+});
