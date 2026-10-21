@@ -347,3 +347,7 @@ body.has-team[data-view=dashboard] #dashboardLayout[data-plan] .next-gw-overview
 body.has-team[data-view=dashboard] .focus-grid>.focus-card:not(.focus-deadline){align-items:stretch!important;text-align:center}
 body.has-team[data-view=dashboard] .focus-grid>.focus-card:not(.focus-deadline) h3{text-align:center}
 body.has-team[data-view=dashboard] .focus-grid>.focus-card:not(.focus-deadline)>.focus-link{align-self:center!important;margin-top:auto!important}
+
+/* Logo button: never a grey box (iPad keeps :hover/:active after a tap) */
+.app-side .app-side-logo,.app-side .app-side-logo:hover,.app-side .app-side-logo:active,.app-side .app-side-logo:focus{background:transparent!important;box-shadow:none!important;-webkit-tap-highlight-color:transparent}
+.app-side .app-side-logo:focus-visible{outline:2px solid var(--green,#2f9e6f);outline-offset:2px}
