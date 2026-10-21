@@ -33,6 +33,8 @@ let shellSaved=null;try{shellSaved=localStorage.getItem('fpl-iphoenk-side');}cat
 shellSetCollapsed(shellSaved?shellSaved==='rail':innerWidth<1280,false);
 const shellSync=()=>{const view=document.body.dataset.view||'dashboard';shellTitle.textContent=shellViewLabels[view]||'';shellSyncGroups(view);shellFitSoon();};
 new MutationObserver(()=>shellSync()).observe(document.body,{attributes:true,attributeFilter:['data-view']});
+function shellPlaceRefresh(){const b=document.getElementById('refreshButton'),top=document.querySelector('.header-account-actions'),foot=document.querySelector('.footer');if(!b||!top||!foot)return;if(innerWidth>=1100){const ctx=document.getElementById('activeTeamContext');if(b.parentNode!==top){b.classList.add('shell-refresh');ctx&&ctx.parentNode===top?top.insertBefore(b,ctx):top.prepend(b);}}else if(b.parentNode!==foot){b.classList.remove('shell-refresh');foot.appendChild(b);}}
+addEventListener('resize',shellPlaceRefresh);new MutationObserver(shellPlaceRefresh).observe(document.body,{childList:true,subtree:true});shellPlaceRefresh();
 addEventListener('resize',shellFitSoon);new MutationObserver(shellFitSoon).observe(document.body,{attributes:true,attributeFilter:['class']});
 const shellView=document.getElementById('view-dashboard');if(shellView)new MutationObserver(shellFitSoon).observe(shellView,{childList:true,subtree:true});
 shellSync();setTimeout(shellFit,600);setTimeout(shellFit,2500);
