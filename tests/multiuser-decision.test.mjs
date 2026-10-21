@@ -48,7 +48,7 @@ test('twenty concurrent users share bootstrap, deduplicate same ID and bound con
  assert.ok(results.every((r,i)=>r.status==='ready'&&r.entry_id===70000+i));
  assert.equal(per.size,20);assert.equal(calls,43);assert.ok(service.stats().peak<=4);
  await Promise.all(Array.from({length:20},()=>service.get(70000)));
- assert.equal(calls,41);
+ assert.equal(calls,43);
  assert.ok(peak<=8); // per entry, two Official requests in parallel; shared bootstrap is separate
 });
 test('API rejects invalid IDs and non-GET without upstream access',async()=>{
