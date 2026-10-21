@@ -59,3 +59,9 @@ test('About remains a reachable original navigation route',()=>{
  assert.match(read('desktop-shell.js'),/about:'About'/);
  assert.match(read('about-ui.js'),/view-about/);
 });
+
+test('Worker and Vercel build pipelines both include decision-first JS and CSS',()=>{
+ const worker=read('scripts/build.mjs');
+ assert.match(worker,/'decision-first\\.js'/);
+ assert.match(worker,/readFileSync\\('decision-first\\.css'/);
+});
