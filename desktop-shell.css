@@ -34,7 +34,7 @@ body.side-collapsed .side-text,body.side-collapsed .side-chev,body.side-collapse
 body.side-collapsed .app-side button{flex-direction:column;justify-content:center;gap:2px;padding:6px 0;min-height:52px;text-align:center}
 body.side-collapsed .app-side button .rail-text{display:block}
 body.has-team .approved-navigation,body.has-team .approved-brand{display:none!important}
-body.has-team .approved-header,body.has-team .shell,body.has-team .notice,body.has-team .footer{margin-left:var(--side-w);transition:margin-left .18s ease}
+body.has-team .approved-header,body.has-team .shell,body.has-team>.notice,body.has-team .footer{margin-left:var(--side-w);transition:margin-left .18s ease}
 body.has-team .approved-header{position:sticky;top:0;z-index:20;min-height:var(--bar-h);background:var(--bg)}
 body.has-team .approved-header-inner{min-height:var(--bar-h)!important;padding:8px 24px!important;justify-content:space-between!important;max-width:none!important}
 body.has-team .shell-title{display:block;font:700 18px/1.2 'DM Sans',sans-serif;color:var(--text)}
@@ -153,7 +153,7 @@ body.has-team[data-view=dashboard] #dashboardOverview .player-score{font-size:va
 body.has-team[data-view=dashboard] :is(.fixture,.club-badge,.overview-preview .fixture){font-size:10px!important}
 body.has-team[data-view=dashboard] #dashboardPool>summary :is(span,strong){font-size:var(--t-base)!important}
 }
-@media(prefers-reduced-motion:reduce){body.has-team .app-side,body.has-team .approved-header,body.has-team .shell,body.has-team .notice,body.has-team .footer{transition:none!important}}
+@media(prefers-reduced-motion:reduce){body.has-team .app-side,body.has-team .approved-header,body.has-team .shell,body.has-team>.notice,body.has-team .footer{transition:none!important}}
 
 @media(min-width:1100px){body.has-team .footer{display:none!important}body.has-team .header-account-actions .shell-refresh{min-height:40px;padding:6px 14px;border-radius:10px;white-space:nowrap;font-size:13px}}
 
@@ -183,3 +183,7 @@ body.has-team[data-view=dashboard] .overview-decision-previews .overview-preview
 /* Player News filters stay on one line */
 body.has-team[data-view=dashboard] .player-news-filters{display:flex!important;flex-wrap:nowrap!important;gap:0!important;padding:6px 8px!important;overflow:hidden}
 body.has-team[data-view=dashboard] .player-news-filters button{flex:1 1 auto;min-width:0;padding:4px 6px!important;white-space:nowrap;font-size:11px!important}
+
+.news-title-line{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;min-width:0}
+.news-title-line h2{margin:0}
+.news-checked{font-size:11px;color:var(--muted);white-space:nowrap}
