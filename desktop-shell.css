@@ -437,3 +437,5 @@ body.has-team:not(.side-collapsed) .overview-fixture-grid .overview-fixture-row>
 }
 body.has-team[data-view=dashboard] .overview-controls{min-width:0;max-width:100%}
 body.has-team[data-view=dashboard] .overview-controls .focus-deadline{flex:0 1 auto!important;min-width:0!important;max-width:100%;overflow:hidden}
+
+body.has-team[data-view=dashboard] #dashboardLayout[data-plan] .focus-grid>.focus-card:not(.focus-deadline) h3{white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
