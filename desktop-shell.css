@@ -251,3 +251,9 @@ body.has-team[data-view=dashboard] #dashboardOverview .pitch .player-name{paddin
 body.has-team[data-view=dashboard] #dashboardOverview .pitch .player-score{padding:3px 2px!important;font-size:11px!important;line-height:14px!important}
 body.has-team[data-view=dashboard] #dashboardOverview .bench-row .player{min-width:56px}
 body.has-team[data-view=dashboard] #dashboardOverview .bench-row .shirt{display:none}
+
+.th-sort{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:2px;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;white-space:nowrap}
+.th-sort:hover,.th-sort.active{color:var(--text)}
+.th-sort:focus-visible{outline:2px solid var(--lime);outline-offset:2px;border-radius:4px}
+.dashboard-pool>summary,.dashboard-pool>summary *{color:var(--text)}
+.dashboard-pool>summary small,.dashboard-pool>summary span:last-child{color:var(--text)!important}
