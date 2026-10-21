@@ -23,7 +23,7 @@ function updateDashboardHero(){
  dashboardShell();updateTeamContext();const entry=state.entry,h=state.picks?.entry_history,event=state.bootstrap?.events.find(e=>e.id===state.gw);
  $('dashboardTeamName').textContent=entry?.name||'Your team. Your next move.';
  const league=state.league?.league||entry?.leagues?.classic?.find(l=>l.league_type==='x')||null;
- $('dashboardManager').textContent=entry?[entry.player_first_name+' '+entry.player_last_name,league?.name,'FPL ID: '+entry.id].filter(Boolean).join(' · '):'Masukkan Entry ID satu kali. Squad, Planning, Mini-league, dan Scout langsung mengikuti.';
+ $('dashboardManager').textContent=entry?[entry.player_first_name+' '+entry.player_last_name,'FPL ID: '+entry.id].filter(Boolean).join(' · '):'Masukkan Entry ID satu kali. Squad, Planning, Mini-league, dan Scout langsung mengikuti.';
  const connectOpen=!entry||!!ext.entryEditing;$('dashboardConnect').classList.toggle('hidden',!connectOpen);$('editDashboardTeam').classList.toggle('hidden',!entry);$('editDashboardTeam').textContent=connectOpen?'Tutup':'Ganti tim ↗';
  const starting=state.picks?.picks.filter(p=>p.position<=11).map(p=>state.players[p.element]).filter(Boolean)||[],squad=currentSquad();
  const unfinishedTeams=new Set(state.fixtures.filter(f=>f.event===state.gw&&!f.finished).flatMap(f=>[f.team_h,f.team_a]));const pending=starting.filter(p=>unfinishedTeams.has(p.team));
