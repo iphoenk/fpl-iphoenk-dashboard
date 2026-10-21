@@ -1,0 +1,95 @@
+/* Desktop shell: five-group sidebar (collapsible to an icon rail) and a compact, no-scroll Overview.
+   Desktop only (>=1100px) and only once a team is connected; mobile keeps the approved bottom navigation. */
+.app-side,.shell-title{display:none}
+@media(min-width:1100px){
+body.has-team{--side-w:248px;--bar-h:56px}
+body.has-team.side-collapsed{--side-w:76px}
+body.has-team .app-side{display:flex;position:fixed;z-index:30;left:0;top:0;bottom:0;width:var(--side-w);flex-direction:column;gap:12px;padding:14px 12px;background:var(--panel);border-right:1px solid var(--line);overflow-y:auto;overflow-x:hidden;transition:width .18s ease}
+.app-side-brand{display:flex;align-items:center;gap:10px;padding:2px 4px;color:var(--text);text-decoration:none;min-height:44px}
+.app-side-brand img{height:42px;width:auto;max-width:100%;object-fit:contain}
+.app-side-mark{display:none;width:36px;height:36px;margin:0 auto}
+.app-side nav{display:flex;flex-direction:column;gap:2px}
+.app-side button{font-family:inherit;font-size:14px;font-weight:600;line-height:1.2;display:flex;align-items:center;gap:12px;width:100%;min-height:42px;padding:0 12px;border:0;border-radius:10px;background:transparent;color:var(--muted);text-align:left;cursor:pointer}
+.app-side button:hover{background:color-mix(in srgb,var(--text) 7%,transparent);color:var(--text)}
+.app-side button.active,.app-side button.group-active{color:var(--lime)}
+.app-side button.active{background:color-mix(in srgb,var(--lime) 14%,transparent)}
+.app-side svg{flex:none;width:20px;height:20px}
+.app-side .side-text{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:inherit;text-transform:none;letter-spacing:0;color:inherit}
+.app-side .side-chev{width:16px;height:16px;transition:transform .15s}
+.app-side [aria-expanded=true] .side-chev{transform:rotate(90deg)}
+.app-side-subs{display:none;flex-direction:column;gap:2px;margin:0 0 4px}
+.app-side-subs.open{display:flex}
+.app-side-subs button{min-height:36px;padding-left:44px;font-weight:500}
+.app-side-system{margin-top:auto;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:2px}
+.app-side-system small{padding:0 12px 4px;color:var(--muted);font-size:12px}
+.app-side-system button{min-height:36px;font-weight:500}
+.app-side-toggle{border:1px solid var(--line)!important;margin-top:6px}
+.app-side-toggle svg{transition:transform .15s}
+.app-side .rail-text{display:none;font-size:11px;font-weight:600}
+body.side-collapsed .app-side-brand img{display:none}
+body.side-collapsed .app-side-mark{display:block}
+body.side-collapsed .side-text,body.side-collapsed .side-chev,body.side-collapsed .app-side-subs,body.side-collapsed .app-side-system small,body.side-collapsed .app-side-system button{display:none!important}
+body.side-collapsed .app-side button{flex-direction:column;justify-content:center;gap:2px;padding:6px 0;min-height:52px;text-align:center}
+body.side-collapsed .app-side button .rail-text{display:block}
+body.side-collapsed .app-side-toggle svg{transform:rotate(180deg)}
+body.has-team .approved-navigation,body.has-team .approved-brand{display:none!important}
+body.has-team .approved-header,body.has-team .shell,body.has-team .notice,body.has-team .footer{margin-left:var(--side-w);transition:margin-left .18s ease}
+body.has-team .approved-header{position:sticky;top:0;z-index:20;min-height:var(--bar-h);background:var(--bg)}
+body.has-team .approved-header-inner{min-height:var(--bar-h)!important;padding:8px 24px!important;justify-content:space-between!important;max-width:none!important}
+body.has-team .shell-title{display:block;font:700 18px/1.2 'DM Sans',sans-serif;color:var(--text)}
+body.has-team .main{max-width:none;padding:16px 24px 24px!important}
+body.has-team .provider-status{position:fixed;top:9px;left:calc(var(--side-w) + 190px);z-index:25;width:min(560px,calc(100vw - var(--side-w) - 560px));margin:0;padding:0;border:0;background:none}
+body.has-team .provider-status>summary{height:38px;display:flex;align-items:center;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.has-team .provider-status>div{position:absolute;top:44px;left:0;right:0;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);box-shadow:0 12px 32px rgba(0,0,0,.28);font-size:12px}
+body.has-team .main>.topbar,body.has-team .main>.intro{display:none!important}
+/* Compact Overview: the existing sections are re-placed on one grid, nothing is removed except the duplicate summary panel. */
+body.has-team[data-view=dashboard] #dashboardLayout{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,380px);column-gap:16px;row-gap:12px;grid-template-rows:auto auto auto minmax(0,1fr) auto auto;align-items:stretch}
+body.has-team[data-view=dashboard] :is(.dashboard-brief,.focus-grid,.dashboard-columns){display:contents}
+body.has-team[data-view=dashboard] .team-hero{grid-column:1;grid-row:1;margin:0;padding:12px 20px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 20px;align-items:center;min-height:0}
+body.has-team[data-view=dashboard] .team-hero-top{display:contents}
+body.has-team[data-view=dashboard] .team-hero-top>div:first-child{grid-column:1;grid-row:1;min-width:0;display:block!important}
+body.has-team[data-view=dashboard] .team-hero-top>div:first-child>*{margin:0!important}
+body.has-team[data-view=dashboard] .hero-kicker{display:block;font-size:11px;line-height:14px}
+body.has-team[data-view=dashboard] .team-hero h1{display:inline-block!important;width:auto!important;font-size:26px;line-height:32px;vertical-align:baseline}
+body.has-team[data-view=dashboard] .hero-manager{display:inline-block!important;padding-left:12px;font-size:12px;line-height:16px;vertical-align:baseline}
+body.has-team[data-view=dashboard] .hero-edit{display:none}
+body.has-team[data-view=dashboard] .hero-team-value{grid-column:2;grid-row:1;display:flex;gap:18px;align-items:center;padding:0;border:0;background:none}
+body.has-team[data-view=dashboard] .hero-team-value small{display:none}
+body.has-team[data-view=dashboard] .hero-team-value strong{font-size:20px}
+body.has-team[data-view=dashboard] .hero-stats{grid-column:1/-1;grid-row:2;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px!important;padding:8px 0 0!important;margin:0;border-top:1px solid var(--line)}
+body.has-team[data-view=dashboard] .hero-stat{display:flex!important;flex-direction:column;gap:0!important;padding:0;min-width:0}
+body.has-team[data-view=dashboard] .hero-stat>*{margin:0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+body.has-team[data-view=dashboard] .hero-stat span,body.has-team[data-view=dashboard] .hero-stat small{font-size:11px;line-height:14px!important}
+body.has-team[data-view=dashboard] .hero-stat strong{font-size:24px!important;line-height:28px!important}
+body.has-team[data-view=dashboard] .focus-grid>.focus-deadline{grid-column:2;grid-row:1}
+body.has-team[data-view=dashboard] .overview-controls{grid-column:1;grid-row:2;margin:0;align-items:center}
+body.has-team[data-view=dashboard] .focus-grid>.focus-card:nth-child(1){grid-column:2;grid-row:2}
+body.has-team[data-view=dashboard] .focus-grid>.focus-card:nth-child(2){grid-column:2;grid-row:3}
+body.has-team[data-view=dashboard] .focus-card{margin:0;padding:12px 16px;min-height:0!important;height:auto}
+body.has-team[data-view=dashboard] .focus-card h3{margin:2px 0!important;font-size:17px;line-height:22px}
+body.has-team[data-view=dashboard] .focus-card p{font-size:12px;line-height:16px;margin:0!important;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+body.has-team[data-view=dashboard] .focus-card .focus-link{padding:4px 0;margin:0;min-height:0}
+body.has-team[data-view=dashboard] .focus-grid>.focus-deadline{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px 12px}
+body.has-team[data-view=dashboard] .focus-grid>.focus-card:not(.focus-deadline){display:grid!important;grid-template-columns:minmax(0,1fr) auto;column-gap:12px;row-gap:0!important;align-items:start}
+body.has-team[data-view=dashboard] .focus-grid>.focus-card:not(.focus-deadline)>*{grid-column:1;margin:0!important}
+body.has-team[data-view=dashboard] .focus-grid>.focus-card:not(.focus-deadline)>.focus-link{grid-column:2;grid-row:1/span 3;align-self:center;white-space:nowrap}
+body.has-team[data-view=dashboard] :is(.dashboard-main,#dashboardOverview){display:contents}
+body.has-team[data-view=dashboard] :is(.next-gw-overview,#dashboardOverview>.adv-section){grid-column:1;grid-row:3/span 2;min-width:0}
+body.has-team[data-view=dashboard] .overview-decision-previews{grid-column:1;grid-row:5;min-width:0}
+body.has-team[data-view=dashboard] .dashboard-news{grid-column:2;grid-row:4;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden;contain:size}
+body.has-team[data-view=dashboard] #approvedGameweekSummary{display:none}
+body.has-team[data-view=dashboard] .approved-news-panel{flex:1;min-height:0;display:flex;flex-direction:column}
+body.has-team[data-view=dashboard] #dashboardNewsContent{flex:1;min-height:0;overflow:auto}
+body.has-team[data-view=dashboard] #dashboardPool{grid-column:1/-1;grid-row:6}
+body.has-team[data-view=dashboard] #dashboardOverview>.adv-section{height:calc(100vh - var(--fold-top,340px) - 16px);min-height:500px;display:flex;flex-direction:column}
+body.has-team[data-view=dashboard] #dashboardOverview>.adv-section>.panel-head{padding:10px 16px!important;min-height:0!important}
+body.has-team[data-view=dashboard] #dashboardOverview>.adv-section>.panel-body{flex:1;min-height:0;display:flex;flex-direction:column;padding:0 16px 12px}
+body.has-team[data-view=dashboard] #dashboardOverview .pitch-wrap{flex:1;min-height:0}
+body.has-team[data-view=dashboard] #dashboardOverview .pitch{height:100%;min-height:300px!important;justify-content:space-around}
+body.has-team[data-view=dashboard] #dashboardOverview .pitch .shirt{height:26px;width:30px;margin-bottom:2px}
+body.has-team[data-view=dashboard] #dashboardOverview :is(.player-name,.player-score){padding:2px}
+body.has-team[data-view=dashboard] #dashboardOverview .refined-bench-label{min-height:0;height:24px;padding:0;margin:4px 0 0;line-height:24px}
+body.has-team[data-view=dashboard] #dashboardOverview .bench-row{gap:8px}
+body.has-team[data-view=dashboard] #dashboardOverview .bench-row .shirt{display:none!important}
+body.has-team[data-view=dashboard] #dashboardOverview .bench-row .player{min-height:0;padding:4px 6px}
+}
