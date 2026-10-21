@@ -99,3 +99,4 @@ body.has-team[data-view=dashboard] #dashboardOverview .bench-row{gap:8px}
 body.has-team[data-view=dashboard] #dashboardOverview .bench-row .shirt{display:none!important}
 body.has-team[data-view=dashboard] #dashboardOverview .bench-row .player{min-height:0;padding:4px 6px}
 }
+@media(prefers-reduced-motion:reduce){body.has-team .app-side,body.has-team .approved-header,body.has-team .shell,body.has-team .notice,body.has-team .footer{transition:none!important}}
