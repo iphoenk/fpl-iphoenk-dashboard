@@ -18,20 +18,9 @@ const shellTitle=document.createElement('div');shellTitle.className='shell-title
 document.querySelector('.approved-header-inner')?.prepend(shellTitle);
 function shellSetCollapsed(on,persist){document.body.classList.toggle('side-collapsed',on);const t=byId('sideToggle');t.setAttribute('aria-pressed',String(on));t.setAttribute('aria-label',on?'Expand menu':'Collapse menu');t.title=on?'Expand menu':'Collapse menu';if(persist)try{localStorage.setItem('fpl-iphoenk-side',on?'rail':'open');}catch{}}
 function shellSyncGroups(view){shellGroupsDef.forEach(([key,,,views])=>{const open=views.length>1&&views.includes(view);const btn=shellSide.querySelector('[data-shell-group="'+key+'"]'),subs=shellSide.querySelector('[data-shell-subs="'+key+'"]');if(!btn)return;btn.classList.toggle('group-active',open);subs.classList.toggle('open',open);btn.setAttribute('aria-expanded',String(open));});}
-function shellFit(){
- const lay=document.getElementById('dashboardLayout');if(!lay)return;
- const on=document.body.classList.contains('has-team')&&document.body.dataset.view==='dashboard'&&innerWidth>=1100;
- if(!on){if(lay.style.zoom)lay.style.zoom='';return;}
- if(lay.querySelector('.next-gw-overview:not([hidden])')){lay.dataset.plan='1';lay.style.zoom='.84';return;}
- delete lay.dataset.plan;
- lay.style.zoom='1';
- const foot=document.querySelector('.footer'),footH=foot&&foot.offsetParent?foot.getBoundingClientRect().height+8:0;
- const fits=()=>{const r=lay.getBoundingClientRect();return r.bottom+footH+8<=innerHeight;};
- let z=1;
- if(!fits()){let lo=.7,hi=1;lay.style.zoom=String(lo);if(!fits()){z=lo;}else{for(let i=0;i<7;i++){const mid=(lo+hi)/2;lay.style.zoom=String(mid);if(fits())lo=mid;else hi=mid;}z=lo;}}
- z=Math.max(.7,Math.min(1,z));const next=z<.995?String(Math.floor(z*100)/100):'';
- lay.style.zoom=next;
-}
+// Natural scrolling preserves legible typography across desktop and tablet.
+function shellFit(){const lay=document.getElementById('dashboardLayout');if(!lay)return;lay.style.removeProperty('zoom');lay.removeAttribute('data-plan');}
+
 let shellFitTimer=0;const shellFitSoon=()=>{clearTimeout(shellFitTimer);shellFitTimer=setTimeout(shellFit,60);};
 shellSide.addEventListener('click',e=>{const g=e.target.closest('[data-shell-group]');if(g){const key=g.dataset.shellGroup,first=shellGroupsDef.find(x=>x[0]===key)[3][0];if(document.body.classList.contains('side-collapsed')){shellSide.querySelector('[data-view="'+first+'"]').click();return;}const subs=shellSide.querySelector('[data-shell-subs="'+key+'"]'),open=!subs.classList.contains('open');subs.classList.toggle('open',open);g.setAttribute('aria-expanded',String(open));return;}if(e.target.closest('#sideToggle'))shellSetCollapsed(!document.body.classList.contains('side-collapsed'),true);});
 let shellSaved=null;try{shellSaved=localStorage.getItem('fpl-iphoenk-side');}catch{}
