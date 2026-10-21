@@ -8,3 +8,5 @@ body[data-view='dashboard'] .team-hero{padding:22px 26px}body[data-view='dashboa
 @media(max-width:700px){body[data-view='dashboard'] .team-hero{padding:18px}body[data-view='dashboard'] #dashboardTeamName{font-size:24px}body[data-view='dashboard'] .hero-stat strong{font-size:23px}}
 body[data-view='dashboard'] .brief-heading{display:none}body[data-view='dashboard'] #dashboardBrief{margin-top:18px}
 body[data-view='dashboard'] .focus-card .focus-link{margin-top:auto;padding-top:12px}body[data-view='dashboard'] .focus-card{gap:7px}body[data-view='dashboard'] .focus-card h3{margin:4px 0}
+
+.overview-move .preview-gain{margin-left:auto;font-size:12px;font-weight:700}
