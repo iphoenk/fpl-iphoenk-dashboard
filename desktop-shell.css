@@ -220,3 +220,7 @@ body.has-team[data-view=dashboard] .overview-decision-previews .overview-preview
 .overview-controls .focus-deadline>div{flex:none}
 .overview-controls .focus-deadline .focus-link{flex:none;white-space:nowrap}
 .app-side-system .phase-quality>summary{justify-content:flex-start!important}
+/* Bench names are never truncated */
+body.has-team .bench-row .player{width:auto!important;min-width:68px;max-width:none!important;flex:none}
+body.has-team .bench-row .player-name,body.has-team .bench-row .player-score{width:100%;min-width:0;max-width:none!important;overflow:visible!important;text-overflow:clip!important;white-space:nowrap;padding-left:8px!important;padding-right:8px!important;box-sizing:border-box}
+body.has-team .bench-row{gap:10px;flex-wrap:wrap}
