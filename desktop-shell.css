@@ -38,6 +38,9 @@ body.has-team .approved-header{position:sticky;top:0;z-index:20;min-height:var(-
 body.has-team .approved-header-inner{min-height:var(--bar-h)!important;padding:8px 24px!important;justify-content:space-between!important;max-width:none!important}
 body.has-team .shell-title{display:block;font:700 18px/1.2 'DM Sans',sans-serif;color:var(--text)}
 body.has-team .main{max-width:none;padding:16px 24px 24px!important}
+body.has-team .provider-status{position:fixed;top:9px;left:calc(var(--side-w) + 190px);z-index:25;width:min(560px,calc(100vw - var(--side-w) - 560px));margin:0;padding:0;border:0;background:none}
+body.has-team .provider-status>summary{height:38px;display:flex;align-items:center;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.has-team .provider-status>div{position:absolute;top:44px;left:0;right:0;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);box-shadow:0 12px 32px rgba(0,0,0,.28);font-size:12px}
 body.has-team .main>.topbar,body.has-team .main>.intro{display:none!important}
 /* Compact Overview: the existing sections are re-placed on one grid, nothing is removed except the duplicate summary panel. */
 body.has-team[data-view=dashboard] #dashboardLayout{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,380px);column-gap:16px;row-gap:12px;grid-template-rows:auto auto auto minmax(0,1fr) auto auto;align-items:stretch}
@@ -78,11 +81,11 @@ body.has-team[data-view=dashboard] #approvedGameweekSummary{display:none}
 body.has-team[data-view=dashboard] .approved-news-panel{flex:1;min-height:0;display:flex;flex-direction:column}
 body.has-team[data-view=dashboard] #dashboardNewsContent{flex:1;min-height:0;overflow:auto}
 body.has-team[data-view=dashboard] #dashboardPool{grid-column:1/-1;grid-row:6}
-body.has-team[data-view=dashboard] #dashboardOverview>.adv-section{height:calc(100vh - var(--fold-top,340px) - 16px);min-height:440px;display:flex;flex-direction:column}
+body.has-team[data-view=dashboard] #dashboardOverview>.adv-section{height:calc(100vh - var(--fold-top,340px) - 16px);min-height:500px;display:flex;flex-direction:column}
 body.has-team[data-view=dashboard] #dashboardOverview>.adv-section>.panel-head{padding:10px 16px!important;min-height:0!important}
 body.has-team[data-view=dashboard] #dashboardOverview>.adv-section>.panel-body{flex:1;min-height:0;display:flex;flex-direction:column;padding:0 16px 12px}
 body.has-team[data-view=dashboard] #dashboardOverview .pitch-wrap{flex:1;min-height:0}
-body.has-team[data-view=dashboard] #dashboardOverview .pitch{height:100%;min-height:0!important;justify-content:space-around}
+body.has-team[data-view=dashboard] #dashboardOverview .pitch{height:100%;min-height:300px!important;justify-content:space-around}
 body.has-team[data-view=dashboard] #dashboardOverview .pitch .shirt{height:26px;width:30px;margin-bottom:2px}
 body.has-team[data-view=dashboard] #dashboardOverview :is(.player-name,.player-score){padding:2px}
 body.has-team[data-view=dashboard] #dashboardOverview .refined-bench-label{min-height:0;height:24px;padding:0;margin:4px 0 0;line-height:24px}
