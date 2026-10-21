@@ -342,3 +342,8 @@ body.has-team:not([data-view=dashboard]) .shell>.main>:not(.provider-status){zoo
 body.has-team[data-view=dashboard] #dashboardLayout[data-plan] .focus-grid>.focus-card{align-self:start}
 body.has-team[data-view=dashboard] #dashboardLayout[data-plan]{grid-template-rows:auto auto auto auto minmax(0,1fr) auto}
 body.has-team[data-view=dashboard] #dashboardLayout[data-plan] .next-gw-overview{grid-row:3/span 3}
+
+/* Squad check / Transfer radar: centred heading and action, symmetric cards */
+body.has-team[data-view=dashboard] .focus-grid>.focus-card:not(.focus-deadline){align-items:stretch!important;text-align:center}
+body.has-team[data-view=dashboard] .focus-grid>.focus-card:not(.focus-deadline) h3{text-align:center}
+body.has-team[data-view=dashboard] .focus-grid>.focus-card:not(.focus-deadline)>.focus-link{align-self:center!important;margin-top:auto!important}
