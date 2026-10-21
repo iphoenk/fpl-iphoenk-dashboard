@@ -2,7 +2,7 @@
    Desktop only (>=1100px) and only once a team is connected; mobile keeps the approved bottom navigation. */
 .app-side,.shell-title{display:none}
 @media(min-width:1100px){
-body.has-team{--side-w:248px;--bar-h:56px}
+body.has-team{--side-w:204px;--bar-h:56px}
 body.has-team.side-collapsed{--side-w:76px}
 body.has-team .app-side{display:flex;position:fixed;z-index:30;left:0;top:0;bottom:0;width:var(--side-w);flex-direction:column;gap:12px;padding:14px 12px;background:var(--panel);border-right:1px solid var(--line);overflow-y:auto;overflow-x:hidden;transition:width .18s ease}
 .app-side-head{display:flex;align-items:center;min-height:60px}
@@ -417,3 +417,23 @@ body.has-team .table-wrap table th{padding-top:9px!important;padding-bottom:9px!
 body.has-team .table-wrap table td :is(button,.chip,.name-chip,.player-chip){display:inline-flex;align-items:center;min-height:26px;padding:0 10px!important;line-height:1!important}
 body.has-team .table-wrap table tbody tr{height:40px}
 }
+
+/* Expanded sidebar: slimmer, so the content keeps its proportions */
+@media(min-width:1100px){
+body.has-team:not(.side-collapsed) .app-side{padding:12px 10px;gap:8px}
+body.has-team:not(.side-collapsed) .app-side button{font-size:13px;min-height:36px;padding:0 10px;gap:10px}
+body.has-team:not(.side-collapsed) .app-side svg{width:18px;height:18px}
+body.has-team:not(.side-collapsed) .app-side .side-chev{width:14px;height:14px}
+body.has-team:not(.side-collapsed) .app-side-subs button{min-height:32px;padding-left:38px;font-size:12.5px}
+body.has-team:not(.side-collapsed) .app-side-system button{min-height:32px;font-size:12.5px}
+body.has-team:not(.side-collapsed) .app-side-system small{font-size:11px;padding:0 10px 4px}
+body.has-team:not(.side-collapsed) .app-side-logo .logo-full{height:46px}
+body.has-team:not(.side-collapsed) .app-side .app-side-logo{height:52px;min-height:52px}
+body.has-team .overview-fixture-grid .fixture{min-width:0!important;overflow:hidden;font-size:clamp(8px,.72vw,10px)!important;padding:3px 1px!important}
+}
+@media(min-width:1100px) and (max-width:1279px){
+body.has-team:not(.side-collapsed) .overview-fixture-grid .overview-fixture-row>span{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+body.has-team:not(.side-collapsed) .overview-fixture-grid .overview-fixture-row>span>.fixture:nth-child(n+3){display:none}
+}
+body.has-team[data-view=dashboard] .overview-controls{min-width:0;max-width:100%}
+body.has-team[data-view=dashboard] .overview-controls .focus-deadline{flex:0 1 auto!important;min-width:0!important;max-width:100%;overflow:hidden}
