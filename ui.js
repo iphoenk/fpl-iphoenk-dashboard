@@ -108,6 +108,6 @@ for(const id of ['scoutSearch','scoutPosition','scoutBudget','scoutSort'])$(id).
 $('refreshButton').onclick=async()=>{const button=$('refreshButton');button.disabled=true;try{clearAlert();await loadBase();if(state.entry)await loadTeam(state.entry.id);if(state.league)await loadLeague(state.league.league.id,state.leaguePage);}catch(error){alertMessage(error.message);}finally{button.disabled=false;}};
 /*__EXTENSIONS__*/
 renderStats();renderInsights();showView(requestedView||'dashboard');
-try{await loadBase();const saved=safeRead('dugout-entry');if(saved&&!state.manualEntryAttempt){$('entryInput').value=saved;await loadTeam(saved);}}catch(error){$('dataStatus').innerHTML='<span style="color:var(--orange)">●</span> Koneksi tertunda';$('deadline').textContent='Belum tersedia';alertMessage(error.message+' Gunakan tombol Muat ulang data di bawah untuk mencoba lagi.');$('radar').innerHTML='<div class="empty">Sumber data belum dapat dijangkau.</div>';}
+try{await loadBase();const saved=safeRead('dugout-entry');if(saved&&!state.manualEntryAttempt){$('entryInput').value=saved;await loadTeam(saved);}}catch(error){$('dataStatus').innerHTML='<span style="color:var(--orange)">●</span> Koneksi tertunda';$('deadline').textContent='Belum tersedia';alertMessage(error.message+' Gunakan tombol Reload untuk mencoba lagi.');$('radar').innerHTML='<div class="empty">Sumber data belum dapat dijangkau.</div>';}
 
 
