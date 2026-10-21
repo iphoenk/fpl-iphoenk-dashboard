@@ -92,6 +92,8 @@ function applyOverviewMode(){
  overviewSwitch.querySelector('[data-overview-mode="next"]').textContent='Plan Next GW'+(state.next?.id?' · GW'+state.next.id:'');
  if(next)renderNextGwOverview();
 }
+// Coming back to Beranda from another page always starts on This GW, not on a previously opened Plan Next GW.
+{let lastView=document.body.dataset.view;new MutationObserver(()=>{const v=document.body.dataset.view;if(v===lastView)return;const wasOther=lastView!=='dashboard';lastView=v;if(v==='dashboard'&&wasOther&&overviewMode!=='this'){overviewMode='this';applyOverviewMode();}}).observe(document.body,{attributes:true,attributeFilter:['data-view']});}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-overview-mode]');if(!b)return;overviewMode=b.dataset.overviewMode;applyOverviewMode();});
 const planOverviewBefore=renderDashboardOverview;renderDashboardOverview=function(){planOverviewBefore();applyOverviewMode();};
 applyOverviewMode();
