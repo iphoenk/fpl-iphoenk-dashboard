@@ -23,15 +23,17 @@ body.has-team .app-side{display:flex;position:fixed;z-index:30;left:0;top:0;bott
 .app-side-system{margin-top:auto;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:2px}
 .app-side-system small{padding:0 12px 4px;color:var(--muted);font-size:12px}
 .app-side-system button{min-height:36px;font-weight:500}
-.app-side-toggle{border:1px solid var(--line)!important;margin-top:6px}
-.app-side-toggle svg{transition:transform .15s}
+.app-side-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.app-side .app-side-toggle{width:36px;min-height:36px;height:36px;padding:0;justify-content:center;flex:none;border:1px solid var(--line);border-radius:10px}
+.app-side-toggle svg{width:20px;height:20px}
 .app-side .rail-text{display:none;font-size:11px;font-weight:600}
 body.side-collapsed .app-side-brand img{display:none}
 body.side-collapsed .app-side-mark{display:block}
 body.side-collapsed .side-text,body.side-collapsed .side-chev,body.side-collapsed .app-side-subs,body.side-collapsed .app-side-system small,body.side-collapsed .app-side-system button{display:none!important}
 body.side-collapsed .app-side button{flex-direction:column;justify-content:center;gap:2px;padding:6px 0;min-height:52px;text-align:center}
 body.side-collapsed .app-side button .rail-text{display:block}
-body.side-collapsed .app-side-toggle svg{transform:rotate(180deg)}
+body.side-collapsed .app-side-head{justify-content:center}
+body.side-collapsed .app-side-brand{display:none}
 body.has-team .approved-navigation,body.has-team .approved-brand{display:none!important}
 body.has-team .approved-header,body.has-team .shell,body.has-team .notice,body.has-team .footer{margin-left:var(--side-w);transition:margin-left .18s ease}
 body.has-team .approved-header{position:sticky;top:0;z-index:20;min-height:var(--bar-h);background:var(--bg)}
