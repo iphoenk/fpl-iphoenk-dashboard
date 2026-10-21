@@ -23,7 +23,7 @@ test('desktop shell styles apply only on desktop widths and for connected teams'
 });
 test('rail toggle is the FPL iphoenk logo, text-free, with an accessible name',()=>{
  const toggle=js.match(/<button type="button" class="app-side-logo"[^>]*>/)[0];
- assert.match(toggle,/aria-label="Ciutkan menu"/);
+ assert.match(toggle,/aria-label="Collapse menu"/);
  assert.doesNotMatch(js,/Ciutkan menu<\/span>/);
 });
 test('overview fits the viewport by uniform zoom with a readable floor, only on desktop dashboard',()=>{
