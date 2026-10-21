@@ -64,6 +64,7 @@ export const PUBLIC_NEWS_FEEDS=[
  {id:'official-fpl',name:'Official FPL / Premier League',type:'official',url:googleNewsFeed('site:premierleague.com (FPL OR fantasy OR injury OR team news) when:7d')},
  {id:'official-clubs',name:'Official club news',type:'club',url:googleNewsFeed('('+NEWS_CLUB_DOMAINS.map(d=>'site:'+d).join(' OR ')+') (injury OR team news OR press conference OR fitness) when:7d')},
  {id:'media',name:'Football media',type:'media',url:googleNewsFeed('("Fantasy Premier League" OR "Premier League team news") when:7d')},
+ {id:'europe',name:'Laga Eropa (UCL/UEL/UECL)',type:'europe',url:googleNewsFeed('("Champions League" OR "Europa League" OR "Conference League") ("starting XI" OR "starting lineup" OR bench OR benched OR rested OR rotation OR substitute OR "team news" OR "ruled out" OR injury) ("Premier League" OR Arsenal OR Liverpool OR "Manchester City" OR Chelsea OR Tottenham OR "Aston Villa" OR Newcastle OR "Crystal Palace" OR Everton OR Brighton OR Fulham OR Brentford OR "Nottingham Forest") when:2d')},
  {id:'video',name:'YouTube',type:'video',url:googleNewsFeed('site:youtube.com (FPL OR "Premier League" "press conference") when:7d')},
  {id:'social',name:'Social / X',type:'social',url:googleNewsFeed('site:x.com (FPL OR "team news") when:7d')},
  {id:'forum',name:'r/FantasyPL',type:'forum',url:'https://www.reddit.com/r/FantasyPL/new/.rss?limit=25'}
@@ -85,7 +86,7 @@ export function parsePublicNewsFeed(xml,feed){
   if(feed.type==='social'&&!['x.com','twitter.com','mobile.twitter.com'].includes(host))continue;
   if(feed.type==='forum'&&!/^https:\/\/(?:www\.)?reddit\.com\//i.test(url))continue;
   const source=decodeNewsText(sourceMatch?.[2])||feed.name,headline=title.endsWith(' - '+source)?title.slice(0,-source.length-3):title;
-  articles.push({headline,url,source,source_url:sourceUrl||null,source_type:feed.type,verification:['official','club'].includes(feed.type)?'official':feed.type==='media'?'reporting':'community',date:new Date(time).toISOString(),infer_players:true});
+  articles.push({headline,url,source,source_url:sourceUrl||null,source_type:feed.type,verification:['official','club'].includes(feed.type)?'official':['media','europe'].includes(feed.type)?'reporting':'community',date:new Date(time).toISOString(),infer_players:true});
  }
  return articles;
 }

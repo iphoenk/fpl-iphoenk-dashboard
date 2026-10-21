@@ -16,6 +16,9 @@ export function articleMentionsPlayer(article,player,players){
  if(!ambiguous)return true;
  const first=newsNameKey(player.first_name).split(' ')[0];return first.length>=3&&new RegExp('(?:^| )'+first+'(?: [a-z0-9]+){0,2} '+name+'(?: |$)').test(text);
 }
+export function attachMentionedPlayers(articles,players,teams){
+ return (articles||[]).map(article=>{const refs=players.filter(p=>articleMentionsPlayer(article,p,players)).slice(0,6).map(p=>({element:p.id,web_name:p.web_name,team_name:teams[p.team]?.short_name}));return refs.length?{...article,players:refs}:null;}).filter(Boolean);
+}
 export function selectPersonalNews({players,teams,articles,context,filter='For You',now=Date.now()}){
  const byId=new Map(players.map(p=>[p.id,p])),week=7*86400000;
  const matches=id=>{const categories=newsCategories(id,context);return filter==='For You'?categories.length>0:categories.includes(filter);};
