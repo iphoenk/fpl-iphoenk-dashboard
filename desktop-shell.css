@@ -259,3 +259,13 @@ body.has-team[data-view=dashboard] #dashboardOverview .bench-row .shirt{display:
 .dashboard-pool>summary small,.dashboard-pool>summary span:last-child{color:var(--text)!important}
 body.has-team[data-view=dashboard] .overview-fixture-grid .fixture{padding:2px 5px!important;font-size:9px!important;white-space:nowrap}
 body.has-team[data-view=dashboard] .overview-fixture-grid .overview-fixture-row{flex-wrap:nowrap!important}
+
+/* Player News: tags beside the player name, tighter items so about five fit */
+body.has-team[data-view=dashboard] .focus-news-item .news-player-top{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:0 0 2px}
+body.has-team[data-view=dashboard] .focus-news-item .news-category-tags{display:inline-flex;gap:4px;margin:0 0 0 4px;padding:0}
+body.has-team[data-view=dashboard] .focus-news-item .news-category-tags>span{font-size:10px;padding:2px 7px;line-height:14px}
+body.has-team[data-view=dashboard] .focus-news-item{padding:10px 16px!important}
+body.has-team[data-view=dashboard] .focus-news-item h3{margin:2px 0 4px!important;font-size:13px!important;line-height:18px!important}
+body.has-team[data-view=dashboard] .focus-news-item .news-reason{margin:0 0 2px!important;font-size:11px!important;line-height:15px!important}
+body.has-team[data-view=dashboard] .focus-news-item>small{font-size:10px!important;line-height:14px!important}
+body.has-team[data-view=dashboard] .focus-news-item .news-player-top button{font-size:12px!important}
