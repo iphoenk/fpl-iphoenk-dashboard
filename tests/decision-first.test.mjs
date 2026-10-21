@@ -27,8 +27,8 @@ test('classic mini-league selector persists by FPL entry, validates membership a
  assert.match(js,/decisionLeagueSelect/);
  assert.match(js,/fpl-iphoenk-league-/);
  assert.match(js,/leagueList\(\)\.some\(l=>Number\(l\.id\)===id\)/);
- assert.match(js,/loadLeague\(id\)/);
- assert.match(js,/active\?\.standings\?\.results/);
+ assert.match(js,/refreshLeagueSnapshot\(id\)/);
+ assert.match(js,/local\.standings\.results/);
  assert.match(js,/Klasemen belum dimuat/);
 });
 test('next GW displays hold, one transfer and alternatives without invented points',()=>{
