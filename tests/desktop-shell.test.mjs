@@ -26,10 +26,11 @@ test('rail toggle is the FPL iphoenk logo, text-free, with an accessible name',(
  assert.match(toggle,/aria-label="Collapse menu"/);
  assert.doesNotMatch(js,/Ciutkan menu<\/span>/);
 });
-test('overview fits the viewport by uniform zoom with a readable floor, only on desktop dashboard',()=>{
+test('dashboard keeps natural scrolling and readable fonts instead of forced zoom',()=>{
  assert.match(js,/function shellFit\(\)/);
- assert.match(js,/innerWidth>=1100/);
- assert.match(js,/Math\.max\(\.7,Math\.min\(1,/);
- assert.match(js,/data-view|dataset\.view==='dashboard'/);
+ assert.match(js,/removeProperty\('zoom'\)/);
+ assert.doesNotMatch(js,/lay\.style\.zoom/);
+ assert.doesNotMatch(js,/Math\.max\(\.7,Math\.min\(1,/);
+ assert.match(css,/data-view=dashboard/);
  assert.doesNotMatch(css,/100vh - var\(--fold-top/);
 });
