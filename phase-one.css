@@ -8,3 +8,10 @@ body[data-view="dashboard"] .main{padding-top:24px}.focus-card h3{letter-spacing
 
 html[data-theme='dark'] .adv-card .big{color:#e6edf7}html[data-theme='dark'] .adv-card .big small{color:#b9c8da}
 
+
+.archive-results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+.archive-results .archive-result{min-width:0;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.archive-results .archive-result h3{margin:0 0 6px;font-size:15px;line-height:1.3;overflow-wrap:anywhere}
+.archive-results .archive-result p{margin:0 0 4px}
+.archive-results .archive-hash{font-size:11px;word-break:break-all}
+@media(max-width:900px){.archive-results{grid-template-columns:1fr}}
