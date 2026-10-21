@@ -232,3 +232,27 @@ body.has-team[data-view=dashboard] .decision-deep-content .approved-local-tabs[h
 @media(prefers-reduced-motion:reduce){
  body.has-team .app-side,body.has-team :is(.decision-panel,.decision-action){animation:none!important;transition:none!important}
 }
+
+/* Classic mini-league: all 15 ownership cards form one swipeable horizontal rail.
+   Keep the normal compact pagination on other sections and league tables. */
+#view-liga .ownership-scroll{
+  display:flex; flex-wrap:nowrap; gap:12px; width:100%; max-width:100%; min-width:0;
+  padding:8px 2px 16px; overflow-x:auto; overflow-y:hidden;
+  scroll-snap-type:x proximity; scroll-padding-inline:2px; overscroll-behavior-x:contain;
+  -webkit-overflow-scrolling:touch; scrollbar-width:thin; scrollbar-color:var(--line) transparent;
+}
+#view-liga .ownership-scroll>.ownership-card{
+  flex:0 0 clamp(148px,16vw,178px); min-width:0; max-width:none;
+  scroll-snap-align:start; border:1px solid var(--line);
+  background:var(--panel); color:var(--text); border-radius:10px;
+}
+#view-liga .ownership-scroll>.ownership-card .donut{
+  background:conic-gradient(var(--lime) calc(var(--pct) * 1%),var(--line) 0);
+}
+#view-liga .ownership-scroll>.ownership-card .donut>div{background:var(--panel);color:var(--text)}
+#view-liga .ownership-scroll>.ownership-card :is(p,small){color:var(--muted)}
+#view-liga .ownership-scroll>.ownership-card .owned{color:var(--lime)}
+@media(max-width:767px){
+ #view-liga .ownership-scroll{gap:10px;scroll-snap-type:x mandatory}
+ #view-liga .ownership-scroll>.ownership-card{flex-basis:clamp(142px,44vw,174px)}
+}

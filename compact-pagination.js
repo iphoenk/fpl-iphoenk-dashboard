@@ -3,7 +3,8 @@ function compactPageEnd(total,end){return Math.max(10,Math.min(Math.ceil(Math.ma
 (()=>{
  const registered=new WeakMap();
  let backTarget=null;
- const selector='table > tbody, .adv-grid, .ownership-scroll, .captain-evidence-grid, .captain-history, .compact-feature-list, #savedPlans';
+ // Ownership shows all fifteen cards in a horizontally swipeable rail, never compact-paginated.
+ const selector='table > tbody, .adv-grid, .captain-evidence-grid, .captain-history, .compact-feature-list, #savedPlans';
  function paginate(list){
   const items=Array.from(list.children);
   const league=!!list.closest('#leaguePanel');
