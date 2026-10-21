@@ -302,3 +302,5 @@ body.has-team[data-view=dashboard] .focus-list li>b{font-weight:600;white-space:
 body.has-team[data-view=dashboard] .focus-list li.is-flag>b{color:var(--amber,#d99a1b)}
 body.has-team[data-view=dashboard] .focus-list li.is-ok>b{font-weight:500;color:var(--muted)}
 body.has-team[data-view=dashboard] .focus-card .focus-link{margin-top:auto!important;font-size:var(--t-body)!important}
+
+body.has-team[data-view=dashboard] .news-rail-heading .news-checked{margin-left:auto;margin-right:10px;align-self:center}
