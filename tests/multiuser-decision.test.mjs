@@ -7,8 +7,9 @@ function add(pos,team,ep,cost=45){
  const p={id:id++,web_name:'Player'+id,element_type:pos,team,ep_next:String(ep),now_cost:cost,status:'a'};players.push(p);return p;
 }
 for(let team=1;team<=14;team++)for(const pos of [1,2,3,4])for(let k=0;k<3;k++)add(pos,team,1+team/3+k/4,40+team);
-const squad=[...players.filter(p=>p.element_type===1).slice(0,2),...players.filter(p=>p.element_type===2).slice(0,5),
- ...players.filter(p=>p.element_type===3).slice(0,5),...players.filter(p=>p.element_type===4).slice(0,3)];
+const take=(pos,teams)=>teams.map(team=>players.find(p=>p.element_type===pos&&p.team===team));
+const squad=[...take(1,[1,2]),...take(2,[3,4,5,6,7]),...take(3,[8,9,10,11,12]),
+ players.find(p=>p.element_type===4&&p.team===13),players.find(p=>p.element_type===4&&p.team===14),players.find(p=>p.element_type===4&&p.team===13&&p.id!==players.find(x=>x.element_type===4&&x.team===13).id)];
 const bootstrap={elements:players,events:[{id:7,is_current:true},{id:8,is_next:true}]};
 const picks={picks:squad.map((p,i)=>({element:p.id,position:i+1,selling_price:p.now_cost})),entry_history:{bank:120,event:7}};
 test('A/B/C reoptimize legal XI, four bench, captain/vice with no fake hits',()=>{
