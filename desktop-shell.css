@@ -5,9 +5,15 @@
 body.has-team{--side-w:248px;--bar-h:56px}
 body.has-team.side-collapsed{--side-w:76px}
 body.has-team .app-side{display:flex;position:fixed;z-index:30;left:0;top:0;bottom:0;width:var(--side-w);flex-direction:column;gap:12px;padding:14px 12px;background:var(--panel);border-right:1px solid var(--line);overflow-y:auto;overflow-x:hidden;transition:width .18s ease}
-.app-side-brand{display:flex;align-items:center;gap:10px;padding:2px 4px;color:var(--text);text-decoration:none;min-height:44px}
-.app-side-brand img{height:42px;width:auto;max-width:100%;object-fit:contain}
-.app-side-mark{display:none;width:36px;height:36px;margin:0 auto}
+.app-side-head{display:flex;align-items:center;min-height:48px}
+.app-side .app-side-logo{width:100%;min-height:48px;height:48px;padding:0 4px;gap:0;justify-content:flex-start;background:transparent;border-radius:10px;cursor:pointer}
+.app-side .app-side-logo:hover{background:var(--soft,rgba(0,0,0,.04))}
+.app-side-logo .logo-full{height:46px;width:auto;max-width:100%;object-fit:contain}
+.app-side-logo .logo-mark{display:none;width:44px;height:44px;margin:0 auto;background-size:220px auto;background-position:-13.75px -16.5px;background-repeat:no-repeat}
+body.side-collapsed .app-side-logo{justify-content:center;padding:0}
+body.side-collapsed .app-side-logo .logo-full{display:none}
+body.side-collapsed .app-side-logo .logo-mark{display:block}
+html[data-theme="dark"] .app-side-logo :is(.logo-full,.logo-mark){filter:invert(1) hue-rotate(180deg) brightness(1.25);mix-blend-mode:screen}
 .app-side nav{display:flex;flex-direction:column;gap:2px}
 .app-side button{font-family:inherit;font-size:14px;font-weight:600;line-height:1.2;display:flex;align-items:center;gap:12px;width:100%;min-height:42px;padding:0 12px;border:0;border-radius:10px;background:transparent;color:var(--muted);text-align:left;cursor:pointer}
 .app-side button:hover{background:color-mix(in srgb,var(--text) 7%,transparent);color:var(--text)}
@@ -23,17 +29,10 @@ body.has-team .app-side{display:flex;position:fixed;z-index:30;left:0;top:0;bott
 .app-side-system{margin-top:auto;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:2px}
 .app-side-system small{padding:0 12px 4px;color:var(--muted);font-size:12px}
 .app-side-system button{min-height:36px;font-weight:500}
-.app-side-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.app-side .app-side-toggle{width:36px;min-height:36px;height:36px;padding:0;justify-content:center;flex:none;border:1px solid var(--line);border-radius:10px}
-.app-side-toggle svg{width:20px;height:20px}
 .app-side .rail-text{display:none;font-size:11px;font-weight:600}
-body.side-collapsed .app-side-brand img{display:none}
-body.side-collapsed .app-side-mark{display:block}
 body.side-collapsed .side-text,body.side-collapsed .side-chev,body.side-collapsed .app-side-subs,body.side-collapsed .app-side-system small,body.side-collapsed .app-side-system button{display:none!important}
 body.side-collapsed .app-side button{flex-direction:column;justify-content:center;gap:2px;padding:6px 0;min-height:52px;text-align:center}
 body.side-collapsed .app-side button .rail-text{display:block}
-body.side-collapsed .app-side-head{justify-content:center}
-body.side-collapsed .app-side-brand{display:none}
 body.has-team .approved-navigation,body.has-team .approved-brand{display:none!important}
 body.has-team .approved-header,body.has-team .shell,body.has-team .notice,body.has-team .footer{margin-left:var(--side-w);transition:margin-left .18s ease}
 body.has-team .approved-header{position:sticky;top:0;z-index:20;min-height:var(--bar-h);background:var(--bg)}
