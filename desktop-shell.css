@@ -237,3 +237,7 @@ body.has-team[data-view=dashboard] .focus-grid>.focus-card>.focus-link{align-sel
 body.has-team[data-view=dashboard] .focus-grid>.focus-card:not(.focus-deadline){display:flex!important;flex-direction:column;grid-template-columns:none!important;align-items:flex-start!important;justify-content:center;gap:6px!important}
 body.has-team[data-view=dashboard] .focus-grid>.focus-card:not(.focus-deadline)>*{grid-column:auto!important;grid-row:auto!important}
 body.has-team[data-view=dashboard] .focus-grid>.focus-card:not(.focus-deadline)>.focus-link{grid-column:auto!important;grid-row:auto!important;align-self:flex-start!important}
+/* Thinner GW switch + deadline row */
+body.has-team[data-view=dashboard] .overview-gw-switch{padding:3px!important;min-height:0!important}
+body.has-team[data-view=dashboard] .overview-gw-switch button{min-height:30px!important;padding:3px 14px!important;line-height:1.2}
+body.has-team[data-view=dashboard] .overview-controls .focus-deadline{padding:0 14px!important;min-height:0!important}
