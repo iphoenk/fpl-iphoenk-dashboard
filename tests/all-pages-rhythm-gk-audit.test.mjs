@@ -44,7 +44,7 @@ test('missing outfield snapshot never silently invents model scores or errors in
 test('model methodology stays accessible in a collapsed details with an explanatory summary',()=>{
  for(const pos of ['GK','DEF']){
   const html=render(pos);
-  assert.match(html,/<details class="overview-methodology"><summary>Sumber & metodologi<\/summary>/);
+  assert.match(html,/<details class="overview-methodology"><summary>Source & methodology<\/summary>/);
   assert.match(html,/<\/details>/);
  }
 });
