@@ -4,7 +4,7 @@ import {mkdirSync,writeFileSync} from 'node:fs';
 
 const base=process.env.FPL_PREVIEW_URL?.replace(/\/+$/,'');
 const entry=process.env.FPL_ACCEPTANCE_ENTRY||'3462711';
-if(!base||!/^https:\/\/[a-z0-9.-]+\.vercel\.app$/i.test(base))throw Error('Exact Vercel preview URL required');
+if(!base||!(/^https:\/\/[a-z0-9.-]+\.vercel\.app$/i.test(base)||/^http:\/\/(?:127\.0\.0\.1|localhost):4173$/i.test(base)))throw Error('Expected HTTPS Vercel preview or local acceptance server');
 const output={preview_url:base,created_at:new Date().toISOString(),kind:'EMULATED_BROWSER_ENGINE_NOT_PHYSICAL_DEVICE',
  checks:[],errors:[],status:'INCOMPLETE'};
 mkdirSync('artifacts',{recursive:true});
