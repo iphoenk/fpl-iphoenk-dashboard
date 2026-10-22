@@ -621,3 +621,111 @@ body.has-team[data-view=dashboard] .decision-plan .decision-scenario-note{
  }
  body.has-team[data-view=dashboard] .decision-league-toolbar{font-size:11px}
 }
+
+
+/* Issue #63: keep the mobile identity and public prices on one row,
+   with the four official GW metrics immediately below. */
+@media (max-width:767px) {
+  /* overflow-x:hidden creates an unintended vertical scroll container in Safari,
+     which can stop position:sticky from following the document viewport. */
+  body.has-team { overflow-x:clip!important; }
+  body.has-team:not(.connecting-team) .approved-header {
+    position:sticky!important;
+    top:0!important;
+    z-index:70!important;
+    background:var(--panel)!important;
+    box-shadow:0 2px 12px rgba(20,33,55,.06)!important;
+  }
+  body.has-team:not(.connecting-team) .mobile-bottom-nav {
+    position:fixed!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+    z-index:70!important;
+    padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))!important;
+  }
+  body.has-team[data-view=dashboard] #dashboardLayout > .team-hero .team-hero-top {
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(128px,42%)!important;
+    align-items:center!important;
+    gap:9px!important;
+  }
+  body.has-team[data-view=dashboard] #dashboardLayout > .team-hero .team-hero-top > div:first-child {
+    display:block!important;
+    min-width:0!important;
+    width:auto!important;
+  }
+  body.has-team[data-view=dashboard] #dashboardLayout > .team-hero .hero-team-value {
+    box-sizing:border-box!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    justify-content:center!important;
+    gap:5px!important;
+    width:auto!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:2px 0 2px 10px!important;
+    border:0!important;
+    border-left:1px solid var(--line)!important;
+    border-radius:0!important;
+    background:transparent!important;
+  }
+  body.has-team[data-view=dashboard] #dashboardLayout > .team-hero .hero-team-value > div {
+    display:flex!important;
+    flex-direction:column!important;
+    gap:1px!important;
+    align-items:flex-start!important;
+    min-width:0!important;
+  }
+  body.has-team[data-view=dashboard] #dashboardLayout > .team-hero .hero-team-value span {
+    font-size:9px!important;
+    line-height:12px!important;
+    letter-spacing:0!important;
+    white-space:normal!important;
+  }
+  body.has-team[data-view=dashboard] #dashboardLayout > .team-hero .hero-team-value strong {
+    font-size:clamp(15px,4.2vw,17px)!important;
+    line-height:19px!important;
+    white-space:nowrap!important;
+    font-variant-numeric:tabular-nums!important;
+  }
+  /* An isolated goalkeeper can use the horizontal space the four-across rules
+     unnecessarily capped at 25%. Keep complete surnames, not mid-word wraps. */
+  body.has-team[data-view=dashboard] .decision-pitch .pitch-row:has(> .player:only-child) > .player {
+    width:min(112px,42%)!important;
+    max-width:112px!important;
+  }
+  body.has-team[data-view=dashboard] .decision-pitch .pitch-row:has(> .player:nth-child(3):last-child) > .player {
+    width:min(96px,29%)!important;
+    max-width:30%!important;
+  }
+  body.has-team[data-view=dashboard] .decision-pitch .pitch-row .player-name {
+    overflow-wrap:normal!important;
+    word-break:normal!important;
+    hyphens:none!important;
+    letter-spacing:-.025em!important;
+    text-overflow:clip!important;
+  }
+  body.has-team[data-view=dashboard] .decision-pitch .pitch-row:has(> .player:only-child) .player-name {
+    white-space:nowrap!important;
+    overflow:visible!important;
+    font-size:11px!important;
+  }
+  body.has-team[data-view=dashboard] .decision-pitch .pitch-row:has(> .player:nth-child(4):last-child) .player-name {
+    font-size:9px!important;
+  }
+}
+@media (max-width:360px) {
+  body.has-team[data-view=dashboard] #dashboardLayout > .team-hero #dashboardTeamName {
+    font-size:19px!important;
+    line-height:23px!important;
+  }
+  body.has-team[data-view=dashboard] #dashboardLayout > .team-hero .hero-manager {
+    font-size:11px!important;
+    line-height:15px!important;
+  }
+  body.has-team[data-view=dashboard] #dashboardLayout > .team-hero .hero-team-value {
+    padding-left:8px!important;
+  }
+}
