@@ -101,3 +101,11 @@ test('shared snapshot and entry start before a slow bootstrap completes',async()
  assert.ok(early.some(url=>url.endsWith('/entry/3462711/')),'identity must overlap bootstrap');
  assert.equal(computeWhileWaiting,0,'network waits must not occupy compute slots');
 });
+
+test('live cold twenty-user intake retains a finite default IO cap',()=>{
+ const service=createPublicDecisionService({fetcher:mock(0).fetcher,clock:()=>NOW});
+ const state=service.stats();
+ assert.equal(state.upstreamLimit,12);
+ assert.equal(state.computeLimit,4);
+ assert.equal(state.scope,'PER_INSTANCE_BEST_EFFORT');
+});
