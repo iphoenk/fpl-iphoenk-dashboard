@@ -6,6 +6,21 @@ const ROOT='https://fantasy.premierleague.com/api/';
 const V6='https://raw.githubusercontent.com/iphoenk/FPL-iphoenk-engine/runtime-data-v6/data/v6/';
 const GLOBAL='https://raw.githubusercontent.com/iphoenk/fpl-dashboard/main/public/data/';
 const number=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))?Number(v):null;
+const SOURCE_CODES=new Set(['UPSTREAM_HTTP','UPSTREAM_TIMEOUT','UPSTREAM_NETWORK','UPSTREAM_INVALID_JSON','UPSTREAM_TOO_LARGE']);
+function sourceFailure(code,source,status){
+ const error=Error(code);error.publicSource=source;error.publicCode=code;
+ if(Number.isInteger(status))error.upstreamStatus=status;
+ return error;
+}
+function failureDetails(error){
+ if(error?.message==='BUSY')return {error_code:'SERVICE_BUSY',error_source:'APPLICATION'};
+ if(SOURCE_CODES.has(error?.publicCode)&&['OFFICIAL_FPL','V6_PROVENANCE','GLOBAL_MODEL'].includes(error?.publicSource))
+  return {error_code:error.publicCode,error_source:error.publicSource,
+   ...(Number.isInteger(error.upstreamStatus)?{upstream_status:error.upstreamStatus}:{})};
+ if(['BAD_BOOTSTRAP','BAD_OFFICIAL_ENTRY','GW_UNAVAILABLE'].includes(error?.message))
+  return {error_code:error.message,error_source:'OFFICIAL_FPL'};
+ return {error_code:'ADVISORY_INTERNAL_ERROR',error_source:'APPLICATION'};
+}
 function boundedPool(limit,waitingLimit){
  let active=0,peak=0;const waiting=[];
  function submit(fn){
@@ -20,13 +35,15 @@ function boundedPool(limit,waitingLimit){
  return {submit,stats:()=>({active,waiting:waiting.length,peak,limit})};
 }
 export function createPublicDecisionService({
- fetcher=fetch,clock=Date.now,maxActive=12,maxWaiting=120,maxCompute=4,timeoutMs=9000
+ fetcher=fetch,clock=Date.now,maxActive=12,maxWaiting=120,maxCompute=4,timeoutMs=9000,
+ onFailure=event=>console.warn(JSON.stringify(event))
 }={}){
  if(!Number.isInteger(maxActive)||maxActive<1||!Number.isInteger(maxWaiting)||maxWaiting<0||
     !Number.isInteger(maxCompute)||maxCompute<1)throw Error('Invalid concurrency settings');
  const io=boundedPool(maxActive,maxWaiting),cpu=boundedPool(maxCompute,maxWaiting);
  const resources=new Map(),inflight=new Map(),cache=new Map(),pending=new Map();
- let calls=0,officialCalls=0,decisionRequests=0,decisionCacheHits=0,resourceCacheHits=0;
+ let calls=0,officialCalls=0,decisionRequests=0,decisionCacheHits=0,resourceCacheHits=0,failedDecisions=0;
+ const failureCounts={};
  const cpuStart=globalThis.process?.cpuUsage?.();let instance=null;
  async function read(key,url,ttl,byteLimit){
   const now=clock(),record=resources.get(key);
@@ -34,11 +51,15 @@ export function createPublicDecisionService({
   if(inflight.has(key))return inflight.get(key);
   const p=io.submit(async()=>{
    calls++;if(url.startsWith(ROOT))officialCalls++;
-   const result=await fetcher(url,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(timeoutMs)});
-   if(!result.ok)throw Error('UPSTREAM_'+result.status);
-   if(Number(result.headers.get('content-length'))>byteLimit)throw Error('UPSTREAM_TOO_LARGE');
-   const raw=await result.text();if(raw.length>byteLimit)throw Error('UPSTREAM_TOO_LARGE');
-   const value=JSON.parse(raw);
+   const source=url.startsWith(ROOT)?'OFFICIAL_FPL':url.startsWith(V6)?'V6_PROVENANCE':'GLOBAL_MODEL';
+   let result,raw,value;
+   try{result=await fetcher(url,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(timeoutMs)});}
+   catch(error){throw sourceFailure(['TimeoutError','AbortError'].includes(error?.name)?'UPSTREAM_TIMEOUT':'UPSTREAM_NETWORK',source);}
+   if(!result.ok)throw sourceFailure('UPSTREAM_HTTP',source,result.status);
+   if(Number(result.headers.get('content-length'))>byteLimit)throw sourceFailure('UPSTREAM_TOO_LARGE',source);
+   try{raw=await result.text();}catch(error){throw sourceFailure(['TimeoutError','AbortError'].includes(error?.name)?'UPSTREAM_TIMEOUT':'UPSTREAM_NETWORK',source);}
+   if(raw.length>byteLimit)throw sourceFailure('UPSTREAM_TOO_LARGE',source);
+   try{value=JSON.parse(raw);}catch{throw sourceFailure('UPSTREAM_INVALID_JSON',source);}
    resources.delete(key);resources.set(key,{value,expires:clock()+ttl});
    while(resources.size>280)resources.delete(resources.keys().next().value);
    return value;
@@ -129,6 +150,12 @@ export function createPublicDecisionService({
     while(cache.size>120)cache.delete(cache.keys().next().value);
    }
    return data;
+  }).catch(error=>{
+   failedDecisions++;const details=failureDetails(error);
+   const category=details.error_source+':'+details.error_code+(details.upstream_status?':'+details.upstream_status:'');
+   failureCounts[category]=(failureCounts[category]||0)+1;
+   try{onFailure({event:'public_decision_failure',...details});}catch{}
+   throw error;
   }).finally(()=>pending.delete(key));
   pending.set(key,task);
   return task;
@@ -136,7 +163,7 @@ export function createPublicDecisionService({
  function stats(){const i=io.stats(),c=cpu.stats();return {
   instance:instance??(instance=crypto.randomUUID()),scope:'PER_INSTANCE_BEST_EFFORT',active:c.active,waiting:c.waiting,peak:c.peak,upstreamCalls:calls,officialCalls,decisionRequests,decisionCacheHits,resourceCacheHits,cache:cache.size,
   processCpuMsSinceServiceStart:cpuStart?Object.values(globalThis.process.cpuUsage(cpuStart)).reduce((a,b)=>a+b,0)/1000:null,
-  upstreamActive:i.active,upstreamWaiting:i.waiting,upstreamPeak:i.peak,
+  failedDecisions,failureCounts:{...failureCounts},upstreamActive:i.active,upstreamWaiting:i.waiting,upstreamPeak:i.peak,
   upstreamLimit:i.limit,computeLimit:c.limit
  };}
  return {get,stats};
@@ -167,7 +194,8 @@ export async function publicDecisionResponse(request,{service=sharedService}={})
   return Response.json(data,{headers:{...headers,'X-Content-Type-Options':'nosniff','Server-Timing':'decision;dur='+(performance.now()-started).toFixed(1)}});
  }catch(error){
   const busy=error?.message==='BUSY';
-  return Response.json({status:'unavailable',error:busy?'Please retry shortly':'Official FPL public data unavailable',retryable:true},
-    {status:busy?429:503,headers:{...noStore,'Retry-After':busy?'10':'30'}});
+  const details=failureDetails(error),internal=details.error_code==='ADVISORY_INTERNAL_ERROR';
+  return Response.json({status:'unavailable',error:busy?'Please retry shortly':internal?'Public advisory calculation unavailable':'Public source data unavailable',retryable:true,...details},
+    {status:busy?429:internal?500:503,headers:{...noStore,'Retry-After':busy?'10':'30'}});
  }
 }
