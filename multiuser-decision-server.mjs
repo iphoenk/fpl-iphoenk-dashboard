@@ -161,7 +161,7 @@ export function createPublicDecisionService({
   return task;
  }
  function stats(){const i=io.stats(),c=cpu.stats();return {
-  instance:instance??(instance=crypto.randomUUID()),scope:'PER_INSTANCE_BEST_EFFORT',active:c.active,waiting:c.waiting,peak:c.peak,upstreamCalls:calls,officialCalls,decisionRequests,decisionCacheHits,resourceCacheHits,cache:cache.size,
+  instance:instance??(instance=crypto.randomUUID()),region:globalThis.process?.env?.VERCEL_REGION||null,scope:'PER_INSTANCE_BEST_EFFORT',active:c.active,waiting:c.waiting,peak:c.peak,upstreamCalls:calls,officialCalls,decisionRequests,decisionCacheHits,resourceCacheHits,cache:cache.size,
   processCpuMsSinceServiceStart:cpuStart?Object.values(globalThis.process.cpuUsage(cpuStart)).reduce((a,b)=>a+b,0)/1000:null,
   failedDecisions,failureCounts:{...failureCounts},upstreamActive:i.active,upstreamWaiting:i.waiting,upstreamPeak:i.peak,
   upstreamLimit:i.limit,computeLimit:c.limit
