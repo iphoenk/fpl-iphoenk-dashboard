@@ -9,8 +9,8 @@ const css=read('decision-first.css');
 test('Who owns whom renders all 15 highest-owned players in a single rail',()=>{
  assert.match(league,/list\.slice\(0,15\)\.map\(p=>/);
  assert.match(league,/'<div class="ownership-scroll">'\+details\+'<\/div>'/);
- assert.match(league,/15 pemain teratas ditampilkan sekaligus/);
- assert.match(league,/Geser horizontal untuk melihat semuanya/);
+ assert.match(league,/The top 15 players are shown at once/);
+ assert.match(league,/Scroll horizontally to see them all/);
 });
 
 test('generic compact paginator explicitly does not paginate ownership rail',()=>{
