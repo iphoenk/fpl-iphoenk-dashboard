@@ -38,3 +38,15 @@ V6 scope remains verified public provenance/source health, not full player factu
 - PRODUCTION VERIFIED: not claimed for this change. No merge or production promotion performed.
 - Maximum one-second latency is NOT yet proven. One local real-source request returned HTTP 200 in 2.236 seconds while Windows reported system paging/allocation failures. Treat that environment as unsuitable for a reliable performance benchmark; do not turn the result into PASS. A complete response, rather than a fast error or empty placeholder, is required for latency acceptance.
 - Physical iPhone 17 Pro Max/Samsung S23 Ultra browser acceptance remains unverified. Earlier responsive widths are browser simulation only.
+
+## Live Official FPL and browser acceptance, 22 October (GitHub-hosted)
+
+Run [#39749710444](https://github.com/iphoenk/fpl-iphoenk-dashboard/actions/runs/39749710444), SHA 14889552793c02a0e06b8064ecde27cb5670685b, built the same Worker locally on GitHub's Ubuntu runner. Requests queried live Official FPL data. Twenty-user intake was genuine concurrent GETs from distinct public league 9477 entries, not synthetic mocks. The production Vercel deployment was **not** tested by this measurement.
+
+- 36/36 distinct-ID cold requests and 36/36 subsequent warm requests were valid. 0 JSON-contract, 8-formation, XI/bench, C/VC or delta violations. Horizon 1/3/5 was also checked for entry 3462711.
+- p95 cold/warm ms by phase: 1 user 457.9/3.6; 5 users 684.9/6.2; 10 users 780.6/7.2; 20 users 1620.7/10.5. Strict 1000ms cold p95 **FAIL** at 20; warm **PASS**. These values are local Worker+real upstream times, not Vercel deployment latency.
+- Browser CI job **PASS**: WebKit simulated 393, 430 and 768 pixel viewports; Chromium 1440. No document overflow or missing eight-formation evidence. Actual physical iPhone Safari remains **UNVERIFIED**. Artifacts include screenshots.
+- Vercel branch preview itself responded **401 (deployment protection)** from GitHub Actions. No project security setting was weakened, and no bypass secret was placed in GitHub. Thus real Vercel preview latency and error rates remain **BLOCKED BY AUTH**.
+- Default upstream IO limit is raised from 6 to 12 (compute remains 4; bounded waits stay 120) as a performance *candidate*. Require fresh live run, Official request/error audit, and browser acceptance after the change before claiming improved cold p95 or production readiness.
+
+Final gate remains NOT GREEN until live acceptance of the updated cap and protected Vercel preview access with authorized test credentials. The public 1-GW and 3/5-GW responses retain their noncanonical V12/V6 provenance limits.
