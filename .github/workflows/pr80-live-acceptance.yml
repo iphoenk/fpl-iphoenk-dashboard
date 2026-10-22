@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 16
     env:
-      FPL_PREVIEW_URL: https://fpl-iphoenk-54v8aalb8-iphoenk-4883.vercel.app
+      FPL_PREVIEW_URL: https://fpl-iphoenk-git-feat-deterministic-lineup-evidence-iphoenk-4883.vercel.app
       FPL_ACCEPTANCE_LEAGUE: '9477'
       FPL_ACCEPTANCE_ENTRY: '3462711'
       FPL_ACCEPTANCE_TIMEOUT_MS: '20000'
@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 18
     env:
-      FPL_PREVIEW_URL: https://fpl-iphoenk-54v8aalb8-iphoenk-4883.vercel.app
+      FPL_PREVIEW_URL: https://fpl-iphoenk-git-feat-deterministic-lineup-evidence-iphoenk-4883.vercel.app
       FPL_ACCEPTANCE_ENTRY: '3462711'
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
