@@ -76,12 +76,19 @@ export function createPublicDecisionService({
   return v6Pending;
  }
 
+ let globalModelUnavailableUntil=0;
  async function globalModel(){
+  // Short negative cache prevents every CPU-wave retrying one unavailable
+  // shared source. Never substitute stale/invalid model values.
+  if(clock()<globalModelUnavailableUntil)return null;
   const [m,p]=await Promise.allSettled([
    read('challenger-meta',GLOBAL+'meta.json',300000,100000),
    read('challenger-players',GLOBAL+'players.json',300000,1500000)
   ]);
-  return m.status==='fulfilled'&&p.status==='fulfilled'?{meta:m.value,players:p.value}:null;
+  if(m.status!=='fulfilled'||p.status!=='fulfilled'){
+   globalModelUnavailableUntil=clock()+30000;return null;
+  }
+  return {meta:m.value,players:p.value};
  }
  async function compute(id,horizon=3){
   const [data,v6]=await Promise.all([bootstrap(),provenance()]);
