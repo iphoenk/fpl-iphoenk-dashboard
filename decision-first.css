@@ -827,3 +827,46 @@ body.has-team .advanced-skeleton-row.short{width:63%}
   }
 }
 
+
+/* 22 Oct Safari acceptance: compact league footer, always a SINGLE row.
+   Retain the complete league name in the select; ellipsize only this footer. */
+body.has-team[data-view=dashboard] .decision-league .decision-league-foot{
+ display:grid!important;grid-template-columns:minmax(0,1fr) max-content max-content!important;
+ align-items:center!important;justify-content:stretch!important;flex-wrap:nowrap!important;
+ gap:clamp(4px,1.4vw,10px)!important;width:100%;min-width:0
+}
+body.has-team[data-view=dashboard] .decision-league .decision-league-name{
+ display:block;min-width:0;max-width:100%;overflow:hidden;
+ text-overflow:ellipsis;white-space:nowrap;font-size:11px
+}
+body.has-team[data-view=dashboard] .decision-league .decision-league-status{
+ display:block;white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis;
+ min-width:0;font-size:clamp(9px,2.7vw,11px);font-variant-numeric:tabular-nums
+}
+body.has-team[data-view=dashboard] .decision-league .decision-league-arrows{
+ display:flex!important;gap:5px;align-items:center;flex-wrap:nowrap;
+ justify-content:flex-end;min-width:0;flex:none
+}
+body.has-team[data-view=dashboard] .decision-league .decision-league-arrows button{
+ width:34px!important;min-width:34px!important;height:36px!important;
+ min-height:36px!important;padding:0!important;font-size:17px
+}
+body.has-team[data-view=dashboard] .decision-league .decision-table-wrap table{
+ width:100%;min-width:320px;table-layout:fixed
+}
+body.has-team[data-view=dashboard] .decision-league .decision-table-wrap :is(th,td):first-child{width:38px}
+body.has-team[data-view=dashboard] .decision-league .decision-table-wrap :is(th,td):nth-child(2){width:42%}
+body.has-team[data-view=dashboard] .decision-league .decision-table-wrap :is(th,td):nth-child(3){width:45px}
+body.has-team[data-view=dashboard] .decision-league .decision-table-wrap :is(th,td):nth-child(4){width:52px}
+body.has-team[data-view=dashboard] .decision-league .decision-table-wrap :is(th,td):nth-child(5){width:48px}
+@media(max-width:767px){
+ body.has-team[data-view=dashboard] .decision-league .decision-league-foot{
+  display:grid!important;flex-direction:row!important;align-items:center!important;
+  gap:4px!important
+ }
+ body.has-team[data-view=dashboard] .decision-league .decision-league-name{font-size:10px}
+ body.has-team[data-view=dashboard] .decision-league .decision-league-arrows button{
+  width:32px!important;min-width:32px!important;height:34px!important;min-height:34px!important
+ }
+ body.has-team[data-view=dashboard] .decision-league .decision-table-wrap :is(th,td){padding-left:4px;padding-right:3px}
+}
