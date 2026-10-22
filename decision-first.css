@@ -779,3 +779,35 @@ body.has-team[data-view=dashboard] .decision-horizon span{min-width:0;overflow-w
     max-height:43px!important;
   }
 }
+
+/* October 22: concise league pagination directly after 'halaman FPL', not above standings. */
+body.has-team[data-view=dashboard] .decision-league-foot{align-items:center;gap:8px;flex-wrap:wrap}
+body.has-team[data-view=dashboard] .decision-league-foot-right{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap;min-width:0;margin-left:auto}
+body.has-team[data-view=dashboard] .decision-league-status{white-space:normal;overflow-wrap:anywhere}
+body.has-team[data-view=dashboard] .decision-league-foot .decision-league-arrows{display:inline-flex;align-items:center;gap:7px;flex:none}
+body.has-team[data-view=dashboard] .decision-league-kpis small{display:block;margin-top:3px;color:var(--muted);font-size:9px;line-height:1.25}
+@media(max-width:767px){
+ body.has-team[data-view=dashboard] .decision-league-foot{flex-direction:column;align-items:stretch}
+ body.has-team[data-view=dashboard] .decision-league-foot-right{align-self:flex-end;justify-content:flex-end;margin:0}
+ body.has-team[data-view=dashboard] .decision-league-foot .decision-league-arrows button{min-width:36px;min-height:36px}
+}
+
+/* Keep rank AND player identity in view while horizontally swiping the pool. */
+body.has-team #dashboardPredictions .table-wrap{position:relative;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+body.has-team #dashboardPredictions .table-wrap table{border-collapse:separate;border-spacing:0;min-width:790px}
+body.has-team #dashboardPredictions .table-wrap table :is(th,td):first-child{
+ position:sticky;left:0;z-index:3;width:35px;min-width:35px;max-width:35px;
+ background:var(--panel);box-shadow:1px 0 0 var(--line)}
+body.has-team #dashboardPredictions .table-wrap table :is(th,td):nth-child(2){
+ position:sticky;left:35px;z-index:3;min-width:139px;width:139px;
+ background:var(--panel);box-shadow:2px 0 0 var(--line)}
+body.has-team #dashboardPredictions .table-wrap table th:nth-child(-n+2){z-index:5}
+body.has-team #dashboardPredictions .table-wrap table tr:hover td:nth-child(-n+2){
+ background:color-mix(in srgb,var(--lime) 4%,var(--panel))}
+@media(max-width:767px){
+ body.has-team #dashboardPredictions .table-wrap table :is(th,td):nth-child(2){width:125px;min-width:125px}
+ body.has-team #dashboardPredictions .table-wrap .player-label{min-width:0;gap:4px}
+ body.has-team #dashboardPredictions .table-wrap .player-label .club-badge{flex:none}
+ body.has-team #dashboardPredictions .table-wrap table td:nth-child(2) button{
+  max-width:81px;white-space:normal;overflow-wrap:anywhere;text-align:left}
+}
