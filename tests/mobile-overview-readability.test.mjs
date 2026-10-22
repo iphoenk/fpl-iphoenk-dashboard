@@ -40,3 +40,13 @@ test('decision pitch, league and plan remain reachable on mobile',()=>{
  assert.match(app,/planCard\(\)/);
  assert.match(app,/decisionLeagueSelect/);
 });
+
+
+test('latest mobile header is consistently slim across Overview and My Team',()=>{
+ const last=css.slice(css.lastIndexOf('/* Issue #67: one genuinely slim'));
+ assert.match(last,/@media \(max-width:767px\)/);
+ assert.match(last,/body\.has-team:not\(\.connecting-team\) \.approved-header\s*\{[^}]*height:48px!important/s);
+ assert.match(last,/\.approved-header-inner\s*\{[^}]*height:47px!important/s);
+ assert.match(last,/\.approved-brand img\s*\{[^}]*max-height:43px!important/s);
+ assert.doesNotMatch(last,/data-view=dashboard/);
+});
