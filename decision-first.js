@@ -136,6 +136,7 @@
       // any other card/page that claims a "best transfer" must read this,
       // not recompute its own ranking from a different model/snapshot.
       ext.publicDecision={entryId:publicPlan.entryId,gw:publicPlan.gw,report:publicPlan.report,error:publicPlan.error};
+      document.dispatchEvent(new CustomEvent('fpl:decision-updated'));
       if(typeof renderDashboardBrief==='function')renderDashboardBrief();
     }
   }
