@@ -53,7 +53,13 @@ export function multiGwDecision({entry,picks,bootstrap,planningGw,snapshot,horiz
  const hold=plan(owned,horizon);
  if(!hold)return null;
  const bank=n(picks.entry_history?.bank);
- const sales=new Map(picks.picks.map(p=>[p.element,n(p.selling_price)]));
+ const publishedSales=new Map(picks.picks.map(p=>[p.element,n(p.selling_price)]));
+ const validPublishedSale=p=>Number.isInteger(publishedSales.get(p.id))&&publishedSales.get(p.id)>0;
+ const proxyCount=owned.filter(p=>!validPublishedSale(p)).length;
+ // A public historical bank may be present, but account-specific current
+ // selling prices usually are not. Official now_cost is a price proxy ONLY,
+ // never an assertion of actual sell value or executability.
+ const sales=new Map(owned.map(p=>[p.id,validPublishedSale(p)?publishedSales.get(p.id):p.now_cost]));
  const known=Number.isInteger(bank)&&bank>=0&&owned.every(p=>Number.isInteger(sales.get(p.id))&&sales.get(p.id)>0);
  const pretty=id=>official.get(id)?.web_name||'Unknown';
  const describe=(moves)=>moves.map(m=>({out:{id:m.out,web_name:pretty(m.out)},in:{id:m.in,web_name:pretty(m.in)}}));
@@ -69,14 +75,15 @@ export function multiGwDecision({entry,picks,bootstrap,planningGw,snapshot,horiz
   canonical_v12:false,v12_methodology:'DETERMINISTIC_PACKAGE_SEARCH_AND_LINEUP_NONCANONICAL',
   monte_carlo:false,planning_gw:planningGw,entry_id:Number(entry.id),horizon,
   source_squad_gw:Number(picks.entry_history?.event)||null,
-  economics_status:known?'PUBLIC_HISTORICAL_INDICATIVE':'UNAVAILABLE',
+  economics_status:known?(proxyCount?'PUBLIC_CURRENT_PRICE_PROXY_INDICATIVE':'PUBLIC_HISTORICAL_INDICATIVE'):'UNAVAILABLE',
+  economics_evidence:{bank_basis:'LAST_PUBLISHED_GW_BANK',sale_basis:proxyCount?'CURRENT_OFFICIAL_MARKET_PRICE_PROXY':'PUBLISHED_PICK_SELLING_PRICE',proxy_player_count:proxyCount,actual_affordability_verified:false},
   search_scope:'BOUNDED_MULTIGW_NONCANONICAL',
   evidence:{model_built_at:verified.built_at,verified_players:verified.coverage,
    source_health:verified.source_health,challenger:verified.challenger,retro_backtest:verified.retro_backtest,
    canonical_v12_projections_used:false},
   assumptions:['Official FPL identity, squad, prices and fixtures are authoritative',
    'Multi-GW projections come from the public independent model (not Official ep_next or Canonical V12)',
-   'Published squad and historical economics are indicative, not owner-authenticated',
+   'Published squad and historical bank are indicative; current market prices proxy missing personal selling prices',
    'Free transfers and hits unknown; gross gain never means net gain',
    'No Monte Carlo; pair search bounded and not globally optimal'],
   scenarios:{A:scenario('HOLD',hold),B:null,C:null}};
@@ -103,10 +110,19 @@ export function multiGwDecision({entry,picks,bootstrap,planningGw,snapshot,horiz
     gain:rnd(value.expected_points-hold.expected_points)});
  }
  singles.sort((a,b)=>b.gain-a.gain||a.out-b.out||a.in-b.in);
- const bestSingle=singles.find(s=>s.gain>0);
+ const bestSingle=singles[0];
  if(bestSingle)res.scenarios.B=scenario('ONE_TRANSFER',bestSingle.value,[{out:bestSingle.out,in:bestSingle.in}],bestSingle.cash);
  let bestPair=null,pairCount=0;
- const shortlist=singles.slice(0,24);
+ // Spread shortlisted singles across different outgoing players. Otherwise
+ // the highest scoring one-for-one options can all sell the same player,
+ // leaving no non-overlapping pair to evaluate.
+ const shortlist=[];const perOutgoing=new Map();
+ for(const candidate of singles){
+  const count=perOutgoing.get(candidate.out)||0;
+  if(count>=3)continue;
+  shortlist.push(candidate);perOutgoing.set(candidate.out,count+1);
+  if(shortlist.length>=45)break;
+ }
  for(let i=0;i<shortlist.length;i++)for(let j=i+1;j<shortlist.length;j++){
   const a=shortlist[i],b=shortlist[j];
   if(a.out===b.out||a.in===b.in)continue;
@@ -119,7 +135,7 @@ export function multiGwDecision({entry,picks,bootstrap,planningGw,snapshot,horiz
   const value=plan(roster,horizon);
   if(!value)continue;
   const gain=rnd(value.expected_points-hold.expected_points);
-  if(gain>0&&(!bestPair||gain>bestPair.gain))bestPair={a,b,cash,value,gain};
+  if(!bestPair||gain>bestPair.gain)bestPair={a,b,cash,value,gain};
  }
  if(bestPair)res.scenarios.C=scenario('TWO_TRANSFERS',bestPair.value,
   [{out:bestPair.a.out,in:bestPair.a.in},{out:bestPair.b.out,in:bestPair.b.in}],bestPair.cash);
