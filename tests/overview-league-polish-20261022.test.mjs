@@ -44,8 +44,8 @@ test('advisory reports errors, unavailable and actual 1-GW fallback honestly',()
 test('transfers show skeleton before async data, official fitness uses its own flags',()=>{
  assert.match(adv,/advancedLoadingSkeleton\(view\);renderAdvanced\(view\)/);
  assert.match(css,/\.advanced-skeleton-row/);
- assert.match(news,/0 flag resmi FPL/);
- assert.match(news,/TRANSFER RADAR · RESMI '\+horizonLabel/);
+ assert.match(news,/0 official FPL flags/);
+ assert.match(news,/TRANSFER RADAR · OFFICIAL '\+horizonLabel/);
 });
 test('Transfer Radar reads the same server-authoritative /api/decision report as the A/B/C card, not a separate client ranking',()=>{
  // Regression guard for the bug where the Overview Transfer Radar card
