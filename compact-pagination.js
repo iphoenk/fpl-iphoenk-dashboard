@@ -15,13 +15,13 @@ function shouldCompactPaginate(list){return !list.closest('#squadTable');}
   // Mixed layouts are sections, not a list of repeated cards.
   if(list.matches('.adv-grid')&&!items.every(n=>n.matches('.adv-card')))return;
   const upstream=league?{previous:document.getElementById('leaguePrev')?.onclick,next:document.getElementById('leagueNext')?.onclick,hasPrevious:state.leaguePage>1,hasNext:!!state.league?.standings?.has_next}:null;
-  const nav=document.createElement('nav');nav.className='compact-pagination';nav.setAttribute('aria-label','Navigasi daftar');
+  const nav=document.createElement('nav');nav.className='compact-pagination';nav.setAttribute('aria-label','List navigation');
   const previous=document.createElement('button'),next=document.createElement('button'),label=document.createElement('span');
-  previous.className=next.className='btn small';previous.type=next.type='button';previous.textContent='← Sebelumnya';next.textContent='Next →';label.setAttribute('aria-live','polite');
+  previous.className=next.className='btn small';previous.type=next.type='button';previous.textContent='← Previous';next.textContent='Next →';label.setAttribute('aria-live','polite');
   nav.append(previous,label,next);
   const anchor=list.matches('tbody')?list.closest('.table-wrap')||list.closest('table'):list;
   if(league){const host=document.getElementById('leaguePagination');host.replaceChildren(nav);}else anchor.after(nav);let page=league&&backTarget?.id===state.league?.league.id&&backTarget?.page===state.leaguePage?Math.floor((items.length-1)/10):0;if(league)backTarget=null;
-  const render=()=>{items.forEach((item,i)=>{item.hidden=i<page*10||i>=(page+1)*10;});previous.disabled=page===0&&!upstream?.hasPrevious;next.disabled=(page+1)*10>=items.length&&!upstream?.hasNext;label.textContent=(page*10+1)+'–'+Math.min((page+1)*10,items.length)+' dari '+items.length+(league?' · kelompok '+state.leaguePage:'');};
+  const render=()=>{items.forEach((item,i)=>{item.hidden=i<page*10||i>=(page+1)*10;});previous.disabled=page===0&&!upstream?.hasPrevious;next.disabled=(page+1)*10>=items.length&&!upstream?.hasNext;label.textContent=(page*10+1)+'–'+Math.min((page+1)*10,items.length)+' of '+items.length+(league?' · group '+state.leaguePage:'');};
   previous.onclick=()=>{if(page===0){if(league)backTarget={id:state.league.league.id,page:state.leaguePage-1};upstream?.previous?.();return;}page--;render();};next.onclick=()=>{if((page+1)*10>=items.length){upstream?.next?.();return;}page++;render();};
   registered.set(list,{nav,items});render();
  }
