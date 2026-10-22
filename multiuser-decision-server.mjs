@@ -27,7 +27,7 @@ export function createPublicDecisionService({
  const io=boundedPool(maxActive,maxWaiting),cpu=boundedPool(maxCompute,maxWaiting);
  const resources=new Map(),inflight=new Map(),cache=new Map(),pending=new Map();
  let calls=0,officialCalls=0,decisionRequests=0,decisionCacheHits=0,resourceCacheHits=0;
- const cpuStart=globalThis.process?.cpuUsage?.(),instance=crypto.randomUUID();
+ const cpuStart=globalThis.process?.cpuUsage?.();let instance=null;
  async function read(key,url,ttl,byteLimit){
   const now=clock(),record=resources.get(key);
   if(record&&record.expires>now){resourceCacheHits++;resources.delete(key);resources.set(key,record);return record.value;}
@@ -129,7 +129,7 @@ export function createPublicDecisionService({
   return task;
  }
  function stats(){const i=io.stats(),c=cpu.stats();return {
-  instance,scope:'PER_INSTANCE_BEST_EFFORT',active:c.active,waiting:c.waiting,peak:c.peak,upstreamCalls:calls,officialCalls,decisionRequests,decisionCacheHits,resourceCacheHits,cache:cache.size,
+  instance:instance??(instance=crypto.randomUUID()),scope:'PER_INSTANCE_BEST_EFFORT',active:c.active,waiting:c.waiting,peak:c.peak,upstreamCalls:calls,officialCalls,decisionRequests,decisionCacheHits,resourceCacheHits,cache:cache.size,
   processCpuMsSinceServiceStart:cpuStart?Object.values(globalThis.process.cpuUsage(cpuStart)).reduce((a,b)=>a+b,0)/1000:null,
   upstreamActive:i.active,upstreamWaiting:i.waiting,upstreamPeak:i.peak,
   upstreamLimit:i.limit,computeLimit:c.limit

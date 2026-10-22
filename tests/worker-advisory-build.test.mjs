@@ -11,3 +11,7 @@ test('Worker forwards a canonical no-slash league URL with its actual standings 
  const run=spawnSync(process.execPath,['--input-type=module','-e',"const {default:w}=await import('./worker/index.js');let seen;globalThis.fetch=async url=>{seen=String(url);return Response.json({standings:{page:2,results:[]}})};await w.fetch(new Request('https://example.test/api/leagues-classic/9477/standings?page_standings=2'),{},{});if(!seen.endsWith('/standings/?page_standings=2'))throw Error('Lost page: '+seen);"],{encoding:'utf8'});
  assert.equal(run.status,0,run.stderr);
 });
+test('Worker startup does not generate randomness outside a request context',()=>{
+ const run=spawnSync(process.execPath,['--input-type=module','-e',"let requestContext=false;Object.defineProperty(globalThis,'crypto',{value:{randomUUID(){if(!requestContext)throw Error('Global randomness forbidden');return 'test-request-instance';}}});const {default:w}=await import('./worker/index.js');requestContext=true;const r=await w.fetch(new Request('https://example.test/api/decision/health'),{},{});if((await r.json()).concurrency.instance!=='test-request-instance')process.exit(1);"],{encoding:'utf8'});
+ assert.equal(run.status,0,run.stderr);
+});
