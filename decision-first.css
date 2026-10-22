@@ -756,30 +756,6 @@ body.has-team[data-view=dashboard] .decision-horizon{display:flex;align-items:ce
 body.has-team[data-view=dashboard] .decision-horizon select{padding:5px 9px;min-height:32px;border:1px solid var(--line);border-radius:7px;color:var(--text);background:var(--panel);font-size:12px}
 body.has-team[data-view=dashboard] .decision-horizon span{min-width:0;overflow-wrap:anywhere;font-size:10px}
 
-/* Issue #67: one genuinely slim, consistent mobile masthead.
-   Explicit parent height defeats the legacy --bar-h and inner min-height. */
-@media (max-width:767px) {
-  body.has-team:not(.connecting-team) .approved-header {
-    box-sizing:border-box!important;
-    height:48px!important;
-    min-height:48px!important;
-    max-height:48px!important;
-  }
-  body.has-team:not(.connecting-team) .approved-header-inner {
-    box-sizing:border-box!important;
-    min-height:0!important;
-    height:47px!important;
-    max-height:47px!important;
-    padding:0 12px!important;
-    gap:8px!important;
-  }
-  body.has-team:not(.connecting-team) .approved-brand img {
-    width:clamp(114px,31vw,122px)!important;
-    height:auto!important;
-    max-height:43px!important;
-  }
-}
-
 /* October 22: concise league pagination directly after 'halaman FPL', not above standings. */
 body.has-team[data-view=dashboard] .decision-league-foot{align-items:center;gap:8px;flex-wrap:wrap}
 body.has-team[data-view=dashboard] .decision-league-foot-right{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap;min-width:0;margin-left:auto}
@@ -826,3 +802,28 @@ body.has-team .advanced-skeleton-row{height:35px;width:100%;border-radius:6px;
 body.has-team .advanced-skeleton-row.short{width:63%}
 @keyframes loading-row{from{background-position:100% 0}to{background-position:-100% 0}}
 @media(prefers-reduced-motion:reduce){body.has-team .advanced-skeleton-row{animation:none}}
+
+/* Issue #67: one genuinely slim, consistent mobile masthead.
+   Explicit parent height defeats the legacy --bar-h and inner min-height. */
+@media (max-width:767px) {
+  body.has-team:not(.connecting-team) .approved-header {
+    box-sizing:border-box!important;
+    height:48px!important;
+    min-height:48px!important;
+    max-height:48px!important;
+  }
+  body.has-team:not(.connecting-team) .approved-header-inner {
+    box-sizing:border-box!important;
+    min-height:0!important;
+    height:47px!important;
+    max-height:47px!important;
+    padding:0 12px!important;
+    gap:8px!important;
+  }
+  body.has-team:not(.connecting-team) .approved-brand img {
+    width:clamp(114px,31vw,122px)!important;
+    height:auto!important;
+    max-height:43px!important;
+  }
+}
+
