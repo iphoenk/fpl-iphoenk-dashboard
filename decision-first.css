@@ -750,3 +750,28 @@ body.has-team[data-view=dashboard] .decision-plan .decision-scenario-note{
     padding-left:12px!important;
   }
 }
+
+
+/* Issue #67: one genuinely slim, consistent mobile masthead.
+   Explicit parent height defeats the legacy --bar-h and inner min-height. */
+@media (max-width:767px) {
+  body.has-team:not(.connecting-team) .approved-header {
+    box-sizing:border-box!important;
+    height:48px!important;
+    min-height:48px!important;
+    max-height:48px!important;
+  }
+  body.has-team:not(.connecting-team) .approved-header-inner {
+    box-sizing:border-box!important;
+    min-height:0!important;
+    height:47px!important;
+    max-height:47px!important;
+    padding:0 12px!important;
+    gap:8px!important;
+  }
+  body.has-team:not(.connecting-team) .approved-brand img {
+    width:clamp(114px,31vw,122px)!important;
+    height:auto!important;
+    max-height:43px!important;
+  }
+}
