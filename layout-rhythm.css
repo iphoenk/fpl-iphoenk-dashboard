@@ -1,0 +1,270 @@
+/*
+ * Unified visual rhythm, 22 Oct 2026.
+ * The legacy desktop grid used display:contents, while the decision-first
+ * mobile Overview moved those nodes into a disclosure. One ownership layer
+ * prevents grid-row inheritance and double/missing card margins.
+ * Do not override logo/header, dock geometry, colors or analytics.
+ */
+body.has-team {
+  --rhythm-1:8px;
+  --rhythm-2:12px;
+  --rhythm-3:16px;
+  --rhythm-4:20px;
+  --rhythm-radius:15px;
+}
+@media(max-width:767px) {
+  body.has-team .page-view:not(.hidden) {
+    min-width:0;
+    max-width:100%;
+  }
+  body.has-team .page-view :is(.panel,.adv-section,.adv-card,.notice) {
+    min-width:0;
+    box-sizing:border-box;
+  }
+  /* Page sections share consistent spacing, without adding margins to
+     every nested card inside grids. Applies to every mobile route. */
+  body.has-team .page-view:not(.hidden)> :is(
+    .advanced-header,.adv-section,.panel,.adv-grid,.grid-main,.stats,
+    .toolbar,.notice,.section-gap,.advanced-skeleton,.player-news-filters
+  ) + :is(
+    .advanced-header,.adv-section,.panel,.adv-grid,.grid-main,.stats,
+    .toolbar,.notice,.section-gap,.advanced-skeleton,.player-news-filters
+  ) {
+    margin-block-start:var(--rhythm-3)!important;
+  }
+  body.has-team .page-view :is(.adv-grid,.adv-grid.two,.adv-grid.four) {
+    column-gap:var(--rhythm-2);
+    row-gap:var(--rhythm-3);
+    min-width:0;
+  }
+  body.has-team .page-view .panel,
+  body.has-team .page-view .adv-section {
+    border-radius:var(--rhythm-radius);
+  }
+  body.has-team .page-view .adv-card {
+    border-radius:13px;
+  }
+  body.has-team .page-view :is(.panel-head,.advanced-header) {
+    box-sizing:border-box;
+    gap:var(--rhythm-2);
+    min-width:0;
+  }
+  body.has-team .page-view :is(.toolbar,.filters,.pagination,.adv-tabs) {
+    row-gap:var(--rhythm-2);
+  }
+  body.has-team .page-view :is(.table-wrap,.adv-chart) {
+    max-width:100%;
+  }
+  body.has-team .page-view :is(.toolbar,.filters) :is(input,select) {
+    max-width:100%;
+    box-sizing:border-box;
+  }
+  body.has-team :is(#view-tim,#view-liga,#view-transfers,#view-planning,#view-labs,#view-fixtures,#view-watchlist,#view-news) .panel-body {
+    box-sizing:border-box;
+    min-width:0;
+  }
+
+  /* Decision-first Overview is flex, not the old 3-column display:contents
+     grid. Reset inherited row/column placement at this specific boundary. */
+  body.has-team[data-view=dashboard] #dashboardLayout {
+    min-width:0;
+  }
+  body.has-team[data-view=dashboard] .decision-deep-content {
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:var(--rhythm-3)!important;
+    padding:var(--rhythm-2)!important;
+    min-width:0;
+  }
+  body.has-team[data-view=dashboard] .decision-deep-content > :is(
+    .dashboard-brief,.dashboard-columns,.overview-controls,.overview-gw-switch,
+    .approved-local-tabs,.next-gw-overview,.overview-decision-previews,#dashboardPool
+  ) {
+    grid-area:auto!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    position:static!important;
+    float:none!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    margin:0!important;
+    align-self:stretch!important;
+  }
+  body.has-team[data-view=dashboard] .decision-deep-content > .dashboard-brief {
+    display:block!important;
+  }
+  body.has-team[data-view=dashboard] .decision-deep-content > .dashboard-columns {
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:var(--rhythm-3)!important;
+    grid-template-columns:none!important;
+  }
+  body.has-team[data-view=dashboard] .decision-deep-content .dashboard-main {
+    display:block!important;
+    position:static!important;
+    width:100%!important;
+    min-width:0!important;
+    margin:0!important;
+  }
+  body.has-team[data-view=dashboard] .decision-deep-content #dashboardOverview {
+    display:block!important;
+    position:static!important;
+    min-width:0!important;
+    width:100%!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  body.has-team[data-view=dashboard] .decision-deep-content .dashboard-news {
+    display:block!important;
+    position:static!important;
+    width:100%!important;
+    min-width:0!important;
+    margin:0!important;
+  }
+  /* Stable vertical rhythm in the actual Squad / Radar / Deadline stack.
+     Child margins rather than grid gap also work if an ancestor historically
+     used display:contents. Do not apply both gap and margins. */
+  body.has-team[data-view=dashboard] .decision-deep-content .dashboard-brief .focus-grid {
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    grid-template-columns:none!important;
+    grid-template-rows:none!important;
+    grid-auto-flow:row!important;
+    gap:0!important;
+    row-gap:0!important;
+    margin:0!important;
+    padding:0!important;
+    min-width:0!important;
+  }
+  body.has-team[data-view=dashboard] .decision-deep-content .dashboard-brief .focus-grid > .focus-card {
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:flex-start!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    padding:var(--rhythm-3)!important;
+    border-radius:var(--rhythm-radius)!important;
+    border:1px solid var(--line)!important;
+    background:var(--panel)!important;
+  }
+  body.has-team[data-view=dashboard] .decision-deep-content .dashboard-brief .focus-grid > .focus-card + .focus-card {
+    margin-top:var(--rhythm-3)!important;
+  }
+  body.has-team[data-view=dashboard] .decision-deep-content .dashboard-brief .brief-heading {
+    margin:0 0 var(--rhythm-2)!important;
+    min-height:0!important;
+  }
+  body.has-team[data-view=dashboard] .decision-deep-content .dashboard-brief .focus-list {
+    margin:var(--rhythm-2) 0 0!important;
+    padding:0!important;
+  }
+  body.has-team[data-view=dashboard] .decision-deep-content .dashboard-brief .focus-list li {
+    padding:7px 0!important;
+    line-height:1.45!important;
+  }
+
+  /* Keep the position selector close to Deadline, not 80-100px away.
+     All four tabs remain visible and use their existing green/navy state. */
+  body.has-team[data-view=dashboard] #dashboardOverview > .dashboard-pos-tabs {
+    margin:0 0 var(--rhythm-3)!important;
+    padding:8px!important;
+  }
+  body.has-team[data-view=dashboard] #dashboardOverview > .adv-section-title {
+    margin:0 0 var(--rhythm-2)!important;
+  }
+  body.has-team[data-view=dashboard] #dashboardOverview > .adv-section,
+  body.has-team[data-view=dashboard] #dashboardOverview > .panel {
+    margin:var(--rhythm-3) 0 0!important;
+  }
+  body.has-team[data-view=dashboard] #dashboardOverview > :is(.overview-methodology,.source-note,.notice) {
+    margin:0!important;
+    min-width:0;
+  }
+
+  /* The long model provenance is retained on tap, not a permanent
+     six-line paragraph between tabs and cards. */
+  body.has-team[data-view=dashboard] .overview-methodology {
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:11px;
+    background:var(--panel);
+    color:var(--text);
+  }
+  body.has-team[data-view=dashboard] .overview-methodology > summary {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    list-style:none;
+    cursor:pointer;
+    box-sizing:border-box;
+    min-height:43px;
+    padding:9px 12px;
+    font-size:12px;
+    line-height:1.4;
+    font-weight:600;
+    color:var(--text);
+  }
+  body.has-team[data-view=dashboard] .overview-methodology > summary::-webkit-details-marker {display:none}
+  body.has-team[data-view=dashboard] .overview-methodology > summary::after {
+    content:'⌄';
+    flex:none;
+    font-size:15px;
+    color:var(--muted);
+  }
+  body.has-team[data-view=dashboard] .overview-methodology[open] > summary::after {transform:rotate(180deg)}
+  body.has-team[data-view=dashboard] .overview-methodology > summary:focus-visible {
+    outline:2px solid var(--lime);
+    outline-offset:2px;
+  }
+  body.has-team[data-view=dashboard] .overview-methodology-body {
+    padding:4px 12px 13px;
+    border-top:1px solid var(--line);
+    font-size:12px;
+    line-height:1.55;
+    overflow-wrap:anywhere;
+  }
+  body.has-team[data-view=dashboard] .overview-methodology-body > * {
+    margin:8px 0 0!important;
+  }
+  body.has-team[data-view=dashboard] .decision-deep-content #dashboardPool {
+    margin:0!important;
+    min-width:0;
+  }
+  body.has-team[data-view=dashboard] .decision-deep-content .gameweek-details {
+    margin-block:var(--rhythm-3)!important;
+  }
+  body.has-team[data-view=dashboard] .decision-deep-content .dashboard-news {
+    border-radius:var(--rhythm-radius);
+  }
+  /* 155px clearance ensures the last action remains reachable above the dock. */
+  body.has-team .main {
+    padding-bottom:calc(155px + env(safe-area-inset-bottom,0px))!important;
+  }
+  body.has-team .page-view :is(.panel,.adv-card,.focus-card,details) {
+    scroll-margin-top:76px;
+    scroll-margin-bottom:105px;
+  }
+}
+@media(min-width:768px) and (max-width:1099px) {
+  body.has-team .page-view:not(.hidden)> :is(.panel,.adv-section,.adv-grid,.advanced-header,.grid-main)
+  + :is(.panel,.adv-section,.adv-grid,.advanced-header,.grid-main) {
+    margin-top:var(--rhythm-3);
+  }
+  body.has-team .page-view :is(.adv-grid,.adv-grid.two) {
+    gap:var(--rhythm-3);
+  }
+  body.has-team .page-view :is(.table-wrap,.adv-chart) {max-width:100%}
+}
+@media(min-width:1100px){
+  /* Desktop's purposeful multi-column arrangement is not replaced.
+     Only shared section spacing is made explicit. */
+  body.has-team .page-view .adv-grid {gap:var(--rhythm-3)}
+}
