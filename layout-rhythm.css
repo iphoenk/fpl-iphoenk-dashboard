@@ -153,6 +153,8 @@ body.has-team {
     border-radius:var(--rhythm-radius)!important;
     border:1px solid var(--line)!important;
     background:var(--panel)!important;
+    /* Legacy desktop placed deadline first; restore semantic card order on phones. */
+    order:0!important;
   }
   body.has-team[data-view=dashboard] .decision-deep-content .dashboard-brief .focus-grid > .focus-card + .focus-card {
     margin-top:var(--rhythm-3)!important;
