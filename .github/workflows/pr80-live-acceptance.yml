@@ -1,4 +1,4 @@
-name: PR80 Live Acceptance
+name: PR80 Live Official FPL + WebKit Acceptance
 on:
   pull_request:
     branches: [main]
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 16
     env:
-      FPL_PREVIEW_URL: https://fpl-iphoenk-git-feat-deterministic-lineup-evidence-iphoenk-4883.vercel.app
+      FPL_PREVIEW_URL: http://127.0.0.1:4173
       FPL_ACCEPTANCE_LEAGUE: '9477'
       FPL_ACCEPTANCE_ENTRY: '3462711'
       FPL_ACCEPTANCE_TIMEOUT_MS: '20000'
@@ -22,7 +22,17 @@ jobs:
         with:
           node-version: '24'
       - name: HTTP GET concurrency, actual FPL IDs, 1/3/5 GW, all 8 formations
-        run: node scripts/acceptance-live-preview.mjs
+        run: |
+          npm ci --ignore-scripts
+          npm run build
+          node scripts/preview.mjs > /tmp/fpl-acceptance-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill $server_pid || true' EXIT
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4173/api/decision/health > /dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/acceptance-live-preview.mjs
       - name: Upload reproducible API acceptance evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -36,19 +46,30 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 18
     env:
-      FPL_PREVIEW_URL: https://fpl-iphoenk-git-feat-deterministic-lineup-evidence-iphoenk-4883.vercel.app
+      FPL_PREVIEW_URL: http://127.0.0.1:4173
       FPL_ACCEPTANCE_ENTRY: '3462711'
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
       - name: Install isolated Playwright (not a production dependency)
         run: npm install --no-save --ignore-scripts playwright@1.56.1
       - name: Install WebKit + Chromium on CI runner
         run: npx playwright install --with-deps webkit chromium
       - name: Browser acceptance at four viewport sizes
-        run: node scripts/acceptance-webkit.mjs
+        run: |
+          npm run build
+          node scripts/preview.mjs > /tmp/fpl-acceptance-webkit-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill $server_pid || true' EXIT
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4173/api/decision/health > /dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/acceptance-webkit.mjs
       - name: Upload WebKit screenshot and acceptance report
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
