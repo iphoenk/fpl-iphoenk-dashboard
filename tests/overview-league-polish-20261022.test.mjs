@@ -41,9 +41,19 @@ test('advisory reports errors, unavailable and actual 1-GW fallback honestly',()
  assert.match(ui,/Tidak ada nilai proyeksi yang dibuat-buat/);
  assert.match(ui,/FT\/hit belum terverifikasi/);
 });
-test('transfers show skeleton before async data, official fitness and radar model are separated',()=>{
+test('transfers show skeleton before async data, official fitness uses its own flags',()=>{
  assert.match(adv,/advancedLoadingSkeleton\(view\);renderAdvanced\(view\)/);
  assert.match(css,/\.advanced-skeleton-row/);
  assert.match(news,/0 flag resmi FPL/);
- assert.match(news,/TRANSFER RADAR · MODEL 3 GW/);
+ assert.match(news,/TRANSFER RADAR · RESMI '\+horizonLabel/);
+});
+test('Transfer Radar reads the same server-authoritative /api/decision report as the A/B/C card, not a separate client ranking',()=>{
+ // Regression guard for the bug where the Overview Transfer Radar card
+ // (heuristic transferSuggestions()) disagreed with the A/B/C decision-first
+ // card (server multiGwDecision) on which transfer was "best".
+ assert.match(ui,/ext\.publicDecision=\{entryId:publicPlan\.entryId,gw:publicPlan\.gw,report:publicPlan\.report,error:publicPlan\.error\}/);
+ assert.match(news,/ext\.publicDecision&&Number\(ext\.publicDecision\.entryId\)===Number\(state\.entry\.id\)/);
+ assert.match(news,/pd\.scenarios\?\.B/);
+ assert.match(news,/pd\.scenarios\?\.C/);
+ assert.doesNotMatch(news.slice(news.indexOf('function renderDashboardBrief'),news.indexOf('function renderDashboardBrief')+3000),/transferSuggestions\(/);
 });

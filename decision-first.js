@@ -130,7 +130,14 @@
         (report.contract==='PUBLIC_FPL_MULTIGW_ADVISORY_V2'&&report.horizon!==selectedHorizon))throw Error('Invalid public decision context');
       publicPlan.report=report;
     }catch(error){if(token===publicPlan.request){publicPlan.report=null;publicPlan.error=error?.message||'Sumber tidak dapat diakses';}}
-    if(token===publicPlan.request){publicPlan.loading=false;renderDecision();}
+    if(token===publicPlan.request){
+      publicPlan.loading=false;renderDecision();
+      // Single source of truth for transfer recommendations across the app:
+      // any other card/page that claims a "best transfer" must read this,
+      // not recompute its own ranking from a different model/snapshot.
+      ext.publicDecision={entryId:publicPlan.entryId,gw:publicPlan.gw,report:publicPlan.report,error:publicPlan.error};
+      if(typeof renderDashboardBrief==='function')renderDashboardBrief();
+    }
   }
   function planCard(){
     const gw=Number(state.next?.id),report=publicPlan.entryId===Number(state.entry?.id)&&publicPlan.gw===gw?publicPlan.report:null;
