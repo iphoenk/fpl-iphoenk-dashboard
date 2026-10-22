@@ -16,8 +16,8 @@ function approvedTeamMetrics(){
 function approvedSummary(){const m=approvedTeamMetrics(),bench=m.history?.points_on_bench;summaryPanel.innerHTML='<div class="panel-head"><h2>Gameweek summary</h2><span class="approved-gw">GW'+(state.gw||'—')+'</span></div><div class="approved-summary-body">'+[['Gross points',fmt(m.gross)],['Transfer hit',m.hit?'<span class="negative">−'+fmt(m.hit)+'</span>':fmt(m.hit)],['Net points',fmt(m.net)],['Points on bench',fmt(bench)]].map(([label,value])=>'<div class="approved-summary-row"><span>'+label+'</span><strong>'+value+'</strong></div>').join('')+'</div>';}
 const approvedHeroBefore=updateDashboardHero;
 updateDashboardHero=function(){approvedHeroBefore();const m=approvedTeamMetrics();
- $('dashboardHeroStats').innerHTML=heroMetric('GW POINTS · NET',fmt(m.net),m.gross==null?'Menunggu data tim':fmt(m.gross)+' poin − '+fmt(m.hit)+' transfer hit',true)+heroMetric('TOTAL POINTS',fmt(m.entry?.summary_overall_points),'Season total')+heroMetric('OVERALL RANK',fmt(m.entry?.summary_overall_rank),'Ranking resmi FPL')+heroMetric('CAPTAIN',esc(m.captain?.web_name||'—'),m.capPoints==null?'Poin belum tersedia':'Poin pemain '+fmt(m.capPoints)+' · Kapten '+fmt(m.capPoints*(m.capPick?.multiplier||1)));
- $('dashboardPlaying').textContent=m.history?'Bank '+money(m.history.bank)+' · '+currentSquad().filter(p=>p.status!=='a').length+' players flagged · Next GW projection '+fmt(m.projected,1):'Hubungkan tim untuk melihat analisis.';
+ $('dashboardHeroStats').innerHTML=heroMetric('GW POINTS · NET',fmt(m.net),m.gross==null?'Waiting for team data':fmt(m.gross)+' points − '+fmt(m.hit)+' transfer hit',true)+heroMetric('TOTAL POINTS',fmt(m.entry?.summary_overall_points),'Season total')+heroMetric('OVERALL RANK',fmt(m.entry?.summary_overall_rank),'Official FPL ranking')+heroMetric('CAPTAIN',esc(m.captain?.web_name||'—'),m.capPoints==null?'Points not yet available':'Player points '+fmt(m.capPoints)+' · Captain '+fmt(m.capPoints*(m.capPick?.multiplier||1)));
+ $('dashboardPlaying').textContent=m.history?'Bank '+money(m.history.bank)+' · '+currentSquad().filter(p=>p.status!=='a').length+' players flagged · Next GW projection '+fmt(m.projected,1):'Connect your team to see the analysis.';
  approvedSummary();
 };
 const approvedNewsBefore=renderDashboardNews;renderDashboardNews=function(){approvedNewsBefore();approvedSummary();};
@@ -31,19 +31,19 @@ $('dashboardLayout').append($('dashboardPool'));
 
 const teamVisitNotice=document.createElement('section');
 teamVisitNotice.className='notice hidden';
-teamVisitNotice.setAttribute('aria-label','Tim yang sedang dilihat');
+teamVisitNotice.setAttribute('aria-label','Team currently being viewed');
 document.querySelector('.shell').before(teamVisitNotice);
 const teamContextBeforeVisit=updateTeamContext;
 updateTeamContext=function(){
  teamContextBeforeVisit();
  teamVisitNotice.classList.toggle('hidden',!state.visitingTeam);
- if(state.visitingTeam)teamVisitNotice.innerHTML='<div><strong>Melihat tim: '+esc(state.entry?.name||'')+'</strong><p>'+esc([state.entry?.player_first_name,state.entry?.player_last_name].filter(Boolean).join(' '))+' · <strong>FPL ID: '+esc(state.entry?.id)+'</strong></p><p>Tim utama kamu tetap tersimpan.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-return-home>Kembali ke tim saya</button><button class="btn" data-goto="liga">← Kembali ke mini league</button></div>';
+ if(state.visitingTeam)teamVisitNotice.innerHTML='<div><strong>Viewing team: '+esc(state.entry?.name||'')+'</strong><p>'+esc([state.entry?.player_first_name,state.entry?.player_last_name].filter(Boolean).join(' '))+' · <strong>FPL ID: '+esc(state.entry?.id)+'</strong></p><p>Your main team remains saved.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-return-home>Back to my team</button><button class="btn" data-goto="liga">← Back to mini league</button></div>';
 };
 teamVisitNotice.addEventListener('click',async e=>{
  const button=e.target.closest('[data-return-home]');if(!button)return;
  const id=state.homeEntryId||safeRead('dugout-entry');if(!id){openConnection();return;}
- button.disabled=true;button.textContent='Memuat tim saya…';
+ button.disabled=true;button.textContent='Loading my team…';
  await loadTeam(id,state.gw,{visit:false});
  if(!state.visitingTeam)showView('tim');
- else {button.disabled=false;button.textContent='Kembali ke tim saya';}
+ else {button.disabled=false;button.textContent='Back to my team';}
 });
