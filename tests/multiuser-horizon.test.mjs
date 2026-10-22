@@ -1,6 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {multiGwDecision,validateGlobalModel} from '../multiuser-horizon.mjs';
+import {createPublicDecisionService} from '../multiuser-decision-server.mjs';
 const NOW=Date.parse('2026-10-22T01:00:00Z'),GW=8;
 let id=1;const elements=[];
 for(let team=1;team<=20;team++)for(const type of [1,2,3,4])for(let k=0;k<5;k++)
@@ -45,4 +46,42 @@ test('1/5 GW horizon works, missing historic prices only permits HOLD, no invent
  const noBank={...picks,entry_history:{event:7}};
  const r=evaluate({picks:noBank});
  assert.equal(r.status,'partial');assert.equal(r.scenarios.B,null);assert.equal(r.scenarios.C,null);
+});
+
+test('20 distinct IDs use one validated shared global snapshot with bounded IO/compute',async()=>{
+ const events=[{id:7,is_current:true,deadline_time:'2026-10-18T11:00:00Z'},
+               {id:8,is_next:true,deadline_time:'2026-10-23T17:30:00Z'}];
+ const calls=new Map();let active=0,peak=0;
+ const fetcher=async url=>{
+  calls.set(url,(calls.get(url)||0)+1);active++;peak=Math.max(peak,active);
+  try{
+   await new Promise(resolve=>setTimeout(resolve,1));
+   const u=new URL(url),path=u.pathname;
+   if(path.endsWith('/bootstrap-static/'))return Response.json({...bootstrap,events});
+   if(path.endsWith('/meta.json'))return Response.json(meta);
+   if(path.endsWith('/players.json'))return Response.json(players);
+   if(path.endsWith('/latest_index.json'))return Response.json({sources:[],generated_at:new Date(NOW-10000).toISOString()});
+   if(path.endsWith('/publish_integrity.json'))return Response.json({status:'PASS',observed_at:new Date(NOW-10000).toISOString()});
+   if(path.endsWith('/picks/'))return Response.json(picks);
+   const match=path.match(/\/entry\/(\d+)\/$/);
+   if(match)return Response.json({id:Number(match[1]),name:'Mock'+match[1]});
+   return Response.json({error:'not found'},{status:404});
+  }finally{active--;}
+ };
+ const service=createPublicDecisionService({fetcher,clock:()=>NOW,maxActive:6,maxCompute:4});
+ const started=Date.now();
+ const all=await Promise.all(Array.from({length:20},(_,i)=>service.get(70001+i,3)));
+ const elapsed=Date.now()-started;
+ assert.equal(all.length,20);
+ assert.ok(all.every((r,i)=>r.status==='ready'&&r.entry_id===70001+i&&r.contract==='PUBLIC_FPL_MULTIGW_ADVISORY_V2'));
+ assert.ok(all.every(r=>r.scenarios.A.weeks.length===3&&r.monte_carlo===false&&r.canonical_v12===false));
+ assert.ok(peak<=6);assert.ok(service.stats().upstreamPeak<=6);
+ assert.ok(service.stats().peak<=4);
+ assert.equal([...calls].filter(([url])=>url.endsWith('/meta.json'))[0][1],1);
+ assert.equal([...calls].filter(([url])=>url.endsWith('/players.json'))[0][1],1);
+ assert.equal([...calls].filter(([url])=>url.endsWith('/bootstrap-static/'))[0][1],1);
+ const before=service.stats().upstreamCalls;
+ await Promise.all(Array.from({length:20},(_,i)=>service.get(70001+i,3)));
+ assert.equal(service.stats().upstreamCalls,before);
+ assert.ok(elapsed<30000,'mock 20-client benchmark exceeded 30s');
 });
