@@ -20,7 +20,7 @@ function boundedPool(limit,waitingLimit){
  return {submit,stats:()=>({active,waiting:waiting.length,peak,limit})};
 }
 export function createPublicDecisionService({
- fetcher=fetch,clock=Date.now,maxActive=6,maxWaiting=120,maxCompute=4,timeoutMs=9000
+ fetcher=fetch,clock=Date.now,maxActive=12,maxWaiting=120,maxCompute=4,timeoutMs=9000
 }={}){
  if(!Number.isInteger(maxActive)||maxActive<1||!Number.isInteger(maxWaiting)||maxWaiting<0||
     !Number.isInteger(maxCompute)||maxCompute<1)throw Error('Invalid concurrency settings');
