@@ -85,3 +85,27 @@ test('20 distinct IDs use one validated shared global snapshot with bounded IO/c
  assert.equal(service.stats().upstreamCalls,before);
  assert.ok(elapsed<30000,'mock 20-client benchmark exceeded 30s');
 });
+
+
+test('public picks without private selling prices still expose clearly indicative B/C routes',()=>{
+ const noSales={...picks,picks:picks.picks.map(({element,position})=>({element,position}))};
+ const r=evaluate({picks:noSales,horizon:1});
+ assert.equal(r.status,'ready');
+ assert.equal(r.economics_status,'PUBLIC_CURRENT_PRICE_PROXY_INDICATIVE');
+ assert.equal(r.economics_evidence.proxy_player_count,15);
+ assert.equal(r.economics_evidence.actual_affordability_verified,false);
+ assert.ok(r.scenarios.B,'one-transfer candidate should be visible');
+ assert.ok(r.scenarios.C,'diverse pair search should return a two-transfer candidate');
+ for(const s of [r.scenarios.B,r.scenarios.C]){
+  assert.equal(s.executable,false);assert.equal(s.hit_points,null);assert.equal(s.net_gain,null);
+  assert.equal(s.starting_xi.length,11);assert.equal(s.bench.length,4);
+ }
+});
+
+test('best tested options can tie HOLD rather than fabricating positive gains',()=>{
+ const flat=players.map(p=>({...p,xpm:Array(8).fill(5)}));
+ const r=evaluate({horizon:1,snapshot:{meta,players:flat}});
+ assert.ok(r.scenarios.B);assert.ok(r.scenarios.C);
+ assert.equal(r.scenarios.B.gross_gain_vs_hold,0);
+ assert.equal(r.scenarios.C.gross_gain_vs_hold,0);
+});
