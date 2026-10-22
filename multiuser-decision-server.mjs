@@ -26,13 +26,14 @@ export function createPublicDecisionService({
     !Number.isInteger(maxCompute)||maxCompute<1)throw Error('Invalid concurrency settings');
  const io=boundedPool(maxActive,maxWaiting),cpu=boundedPool(maxCompute,maxWaiting);
  const resources=new Map(),inflight=new Map(),cache=new Map(),pending=new Map();
- let calls=0;
+ let calls=0,officialCalls=0,decisionRequests=0,decisionCacheHits=0,resourceCacheHits=0;
+ const cpuStart=globalThis.process?.cpuUsage?.();let instance=null;
  async function read(key,url,ttl,byteLimit){
   const now=clock(),record=resources.get(key);
-  if(record&&record.expires>now){resources.delete(key);resources.set(key,record);return record.value;}
+  if(record&&record.expires>now){resourceCacheHits++;resources.delete(key);resources.set(key,record);return record.value;}
   if(inflight.has(key))return inflight.get(key);
   const p=io.submit(async()=>{
-   calls++;
+   calls++;if(url.startsWith(ROOT))officialCalls++;
    const result=await fetcher(url,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(timeoutMs)});
    if(!result.ok)throw Error('UPSTREAM_'+result.status);
    if(Number(result.headers.get('content-length'))>byteLimit)throw Error('UPSTREAM_TOO_LARGE');
@@ -91,31 +92,38 @@ export function createPublicDecisionService({
   return {meta:m.value,players:p.value};
  }
  async function compute(id,horizon=3){
-  const [data,v6]=await Promise.all([bootstrap(),provenance()]);
+  // Independent shared sources and identity overlap the bootstrap transfer.
+  // Only published picks require bootstrap's deadline-derived GW first.
+  const facts=Promise.all([bootstrap(),official('entry/'+id+'/',90000,1000000)]);
+  const provenanceTask=provenance(),snapshotTask=globalModel();
+  const [data,entry]=await facts;
   const upcoming=data.events.find(x=>x.is_next)||data.events.find(x=>!x.finished);
   // Public squad is readable only after the preceding FPL deadline.
   const pub=data.events.filter(x=>Date.parse(x.deadline_time)<=clock()).sort((a,b)=>b.id-a.id)[0];
   if(!upcoming?.id||!pub?.id)throw Error('GW_UNAVAILABLE');
-  const [entry,picks]=await Promise.all([
-   official('entry/'+id+'/',90000,1000000),
-   official('entry/'+id+'/event/'+pub.id+'/picks/',120000,1000000)
+  const [picks,v6,snapshot]=await Promise.all([
+   official('entry/'+id+'/event/'+pub.id+'/picks/',120000,1000000),
+   provenanceTask,snapshotTask
   ]);
   if(Number(entry?.id)!==id||!Array.isArray(picks?.picks)||picks.picks.length!==15)throw Error('BAD_OFFICIAL_ENTRY');
-  const [snapshot]=await Promise.all([globalModel()]);
+  return cpu.submit(()=>{
   const enhanced=multiGwDecision({entry,picks,bootstrap:data,planningGw:upcoming.id,snapshot,horizon,now:clock()});
   const decision=enhanced||publicDecision({entry,picks,bootstrap:data,planningGw:upcoming.id});
   const sourceMode=enhanced?'SHARED_MULTIGW_SNAPSHOT':'OFFICIAL_ONE_GW_FALLBACK';
-  return {...decision,generated_at:new Date(clock()).toISOString(),
+  return {...decision,requested_horizon:horizon,effective_horizon:enhanced?horizon:1,
+   fallback_reason:enhanced?null:'MULTIGW_SNAPSHOT_UNAVAILABLE_OR_INVALID',generated_at:new Date(clock()).toISOString(),
    source:{provider:'Official FPL',entry_id:id,published_gw:pub.id,planning_gw:upcoming.id,v6,model_mode:sourceMode},
    concurrency:{mode:'SHARED_INSTANCE_BOUNDED',monte_carlo:'DISABLED'}};
+  });
  }
  async function get(id,horizon=3){
   if(!Number.isSafeInteger(id)||id<1||id>9999999999)throw Error('BAD_ENTRY_ID');
+  decisionRequests++;
   const key=id+':'+horizon;
   const saved=cache.get(key);
-  if(saved&&clock()-saved.time<45000)return saved.data;
+  if(saved&&clock()-saved.time<45000){decisionCacheHits++;return saved.data;}
   if(pending.has(key))return pending.get(key);
-  const task=cpu.submit(()=>compute(id,horizon)).then(data=>{
+  const task=compute(id,horizon).then(data=>{
    if(['ready','partial'].includes(data.status)){
     cache.delete(key);cache.set(key,{time:clock(),data});
     while(cache.size>120)cache.delete(cache.keys().next().value);
@@ -126,7 +134,8 @@ export function createPublicDecisionService({
   return task;
  }
  function stats(){const i=io.stats(),c=cpu.stats();return {
-  active:c.active,waiting:c.waiting,peak:c.peak,upstreamCalls:calls,cache:cache.size,
+  instance:instance??(instance=crypto.randomUUID()),scope:'PER_INSTANCE_BEST_EFFORT',active:c.active,waiting:c.waiting,peak:c.peak,upstreamCalls:calls,officialCalls,decisionRequests,decisionCacheHits,resourceCacheHits,cache:cache.size,
+  processCpuMsSinceServiceStart:cpuStart?Object.values(globalThis.process.cpuUsage(cpuStart)).reduce((a,b)=>a+b,0)/1000:null,
   upstreamActive:i.active,upstreamWaiting:i.waiting,upstreamPeak:i.peak,
   upstreamLimit:i.limit,computeLimit:c.limit
  };}
@@ -151,10 +160,11 @@ export async function publicDecisionResponse(request,{service=sharedService}={})
     (hs.length>0&&!['1','3','5'].includes(hs[0]))||!/^[1-9]\d{0,9}$/.test(ids[0]))
   return Response.json({status:'unavailable',error:'Invalid FPL entry ID'},{status:400,headers:noStore});
  try{
+  const started=performance.now();
   const data=await service.get(Number(ids[0]),hs.length?Number(hs[0]):3);
   const headers=['ready','partial'].includes(data.status)?
    {'Cache-Control':'public, max-age=15, s-maxage=45','Vercel-CDN-Cache-Control':'public, s-maxage=45'}:noStore;
-  return Response.json(data,{headers:{...headers,'X-Content-Type-Options':'nosniff'}});
+  return Response.json(data,{headers:{...headers,'X-Content-Type-Options':'nosniff','Server-Timing':'decision;dur='+(performance.now()-started).toFixed(1)}});
  }catch(error){
   const busy=error?.message==='BUSY';
   return Response.json({status:'unavailable',error:busy?'Please retry shortly':'Official FPL public data unavailable',retryable:true},

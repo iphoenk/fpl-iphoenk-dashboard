@@ -48,6 +48,14 @@ test('20 concurrent FPL IDs, Official bootstrap and V6 evidence shared, IO cappe
  const before=service.stats().upstreamCalls;
  await Promise.all(Array.from({length:20},(_,i)=>service.get(1000+i)));
  assert.equal(service.stats().upstreamCalls,before);
+ assert.equal(service.stats().officialCalls,41);
+ assert.equal(service.stats().decisionRequests,40);
+ assert.equal(service.stats().decisionCacheHits,20);
+ assert.ok(service.stats().processCpuMsSinceServiceStart>=0);
+ assert.equal(results[0].requested_horizon,3);
+ assert.equal(results[0].effective_horizon,1);
+ await service.get(1020);
+ assert.ok(service.stats().resourceCacheHits>0);
 });
 test('20 requests for same account deduplicate resource and advisory compute',async()=>{
  const m=mock(5),service=createPublicDecisionService({fetcher:m.fetcher,clock:()=>NOW,maxActive:3});
@@ -75,4 +83,21 @@ test('V6 outage does not reclassify Official facts or invent model authority',as
  const r=await service.get(15);
  assert.equal(r.status,'ready');assert.equal(r.source.provider,'Official FPL');assert.equal(r.source.v6.status,'UNAVAILABLE');
  assert.equal(r.canonical_v12,false);assert.equal(r.search_scope,'BOUNDED_NONCANONICAL');
+});
+
+test('shared snapshot and entry start before a slow bootstrap completes',async()=>{
+ const m=mock(0),seen=[];let release;
+ const blocked=new Promise(resolve=>{release=resolve;});
+ const fetcher=async url=>{
+  seen.push(url);
+  if(url.endsWith('bootstrap-static/'))await blocked;
+  return m.fetcher(url);
+ };
+ const service=createPublicDecisionService({fetcher,clock:()=>NOW});
+ const result=service.get(3462711);
+ await new Promise(resolve=>setImmediate(resolve));
+ const early=[...seen],computeWhileWaiting=service.stats().active;release();await result;
+ assert.ok(early.some(url=>url.endsWith('/meta.json')),'snapshot must overlap bootstrap');
+ assert.ok(early.some(url=>url.endsWith('/entry/3462711/')),'identity must overlap bootstrap');
+ assert.equal(computeWhileWaiting,0,'network waits must not occupy compute slots');
 });

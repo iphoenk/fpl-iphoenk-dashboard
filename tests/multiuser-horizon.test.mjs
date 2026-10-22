@@ -30,6 +30,13 @@ test('verified multi-GW projection: true 3-week optimized XI, no MC and no fabri
   assert.equal(scenario.executable,false);
   assert.ok(scenario.starting_xi.includes(scenario.captain));
   assert.ok(scenario.starting_xi.includes(scenario.vice_captain));
+  assert.equal(scenario.weeks.length,3);
+  for(const week of scenario.weeks){
+   assert.equal(week.formation_comparison.length,8);
+   assert.equal(week.optimizer.legal_xi_count,550);
+   assert.equal(week.formation_comparison[0].formation,week.formation);
+   assert.equal(week.formation_comparison[0].expected_points,week.expected_points);
+  }
  }
  assert.ok(r.search_evidence.legal_single_routes>0);
 });
