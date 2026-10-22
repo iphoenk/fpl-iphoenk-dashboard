@@ -46,7 +46,7 @@ test('twenty concurrent users share bootstrap, deduplicate same ID and bound con
  const service=createPublicDecisionService({fetcher,maxActive:4});
  const results=await Promise.all(Array.from({length:20},(_,i)=>service.get(70000+i)));
  assert.ok(results.every((r,i)=>r.status==='ready'&&r.entry_id===70000+i));
- assert.equal(per.size,20);assert.equal(calls,43);assert.ok(service.stats().peak<=4);
+ assert.equal(per.size,20);assert.equal(calls,45);assert.ok(service.stats().peak<=4);
  await Promise.all(Array.from({length:20},()=>service.get(70000)));
  assert.equal(calls,43);
  assert.ok(peak<=8); // per entry, two Official requests in parallel; shared bootstrap is separate
@@ -67,5 +67,5 @@ test('identical cold users coalesce, real errors are not cached',async()=>{
  };
  const s=createPublicDecisionService({fetcher});
  const both=await Promise.all([s.get(55),s.get(55)]);
- assert.equal(both[0].entry_id,55);assert.equal(n,5);
+ assert.equal(both[0].entry_id,55);assert.equal(n,7);
 });

@@ -114,18 +114,19 @@
       '<div id="decisionLeagueSwipe" class="decision-table-wrap" role="region" tabindex="0" aria-label="Klasemen 10 tim, swipe horizontal untuk berpindah blok"><table><thead><tr><th>Rank</th><th>Tim</th><th>GW</th><th>Total</th><th>Trend</th></tr></thead><tbody>'+(lines||'<tr><td colspan="5" class="decision-empty">'+(active?.loading?'Memuat 10 tim…':active?.error?'Klasemen gagal dimuat, gunakan panah untuk mencoba lagi.':'Pilih liga untuk memuat peserta')+'</td></tr>')+'</tbody></table></div>'+
       '<footer class="decision-foot"><span>'+safeName(member?.name||'Classic League')+'</span><span>'+status+'</span></footer></article>';
   }
-  const publicPlan={entryId:null,gw:null,loading:false,report:null,request:0};
+  const publicPlan={entryId:null,gw:null,horizon:3,loading:false,report:null,request:0};
   async function refreshPublicPlan(){
     const id=Number(state.entry?.id),gw=Number(state.next?.id);
     if(!id||!gw)return;
-    const token=++publicPlan.request;
+    const token=++publicPlan.request,selectedHorizon=publicPlan.horizon;
     Object.assign(publicPlan,{entryId:id,gw,loading:true,report:null});
     renderDecision();
     try{
-      const report=await api('decision?entry_id='+id);
-      if(token!==publicPlan.request||Number(state.entry?.id)!==id||Number(state.next?.id)!==gw)return;
+      const report=await api('decision?entry_id='+id+'&horizon='+publicPlan.horizon);
+      if(token!==publicPlan.request||Number(state.entry?.id)!==id||Number(state.next?.id)!==gw||selectedHorizon!==publicPlan.horizon)return;
       if(Number(report?.entry_id)!==id||Number(report?.planning_gw)!==gw||
-        report?.contract!=='PUBLIC_FPL_DETERMINISTIC_ADVISORY_V1'||report?.canonical_v12!==false||report?.monte_carlo!==false)throw Error('Invalid public decision context');
+        !['PUBLIC_FPL_DETERMINISTIC_ADVISORY_V1','PUBLIC_FPL_MULTIGW_ADVISORY_V2'].includes(report?.contract)||report?.canonical_v12!==false||report?.monte_carlo!==false||
+        (report.contract==='PUBLIC_FPL_MULTIGW_ADVISORY_V2'&&report.horizon!==selectedHorizon))throw Error('Invalid public decision context');
       publicPlan.report=report;
     }catch(_){if(token===publicPlan.request)publicPlan.report=null;}
     if(token===publicPlan.request){publicPlan.loading=false;renderDecision();}
@@ -144,8 +145,8 @@
         '<button class="decision-action" data-goto="'+(s.transfers?'transfers':'planning')+'">Analyse ↗</button></div>'+
         '<small class="decision-scenario-note">GW '+gw+' · '+safeName(s.formation)+delta+' · No verified FT/hit</small></div>';
     };
-    return '<article class="decision-panel decision-plan"><header class="decision-panel-head"><div><h2>Plan Next GW'+(gw?' · GW '+gw:'')+'</h2><p>Official FPL one-GW estimates · public advisory · no Monte Carlo</p></div><button class="decision-link" data-goto="planning">Planner ↗</button></header>'+
-      '<div class="decision-scenarios">'+scenario('A','A · Hold')+scenario('B','B · 1 Transfer')+scenario('C','C · 2 Transfers')+'</div>'+
+    return '<article class="decision-panel decision-plan"><header class="decision-panel-head"><div><h2>Plan Next GW'+(gw?' · GW '+gw:'')+'</h2><p>'+(report?.contract==='PUBLIC_FPL_MULTIGW_ADVISORY_V2'?'Public model · V12-informed deterministic':'Official FPL 1-GW fallback')+' · no Monte Carlo</p></div><button class="decision-link" data-goto="planning">Planner ↗</button></header>'+
+      '<div class="decision-horizon">Horizon <select id="decisionHorizonSelect" aria-label="Horizon optimasi">'+[1,3,5].map(h=>'<option value="'+h+'"'+(publicPlan.horizon===h?' selected':'')+'>'+h+' GW</option>').join('')+'</select> <span>'+(report?.evidence?.model_built_at?'Snapshot '+safeName(report.evidence.model_built_at.slice(0,16)):'Official fallback / source unavailable')+'</span></div><div class="decision-scenarios">'+scenario('A','A · Hold')+scenario('B','B · 1 Transfer')+scenario('C','C · 2 Transfers')+'</div>'+
       '<footer class="decision-foot"><span>'+(report?safeName(report.economics_status):'Official data pending')+'</span><span>No login · Not canonical V12 · No invented transfer hits</span></footer></article>';
   }
   function renderDecision(){
@@ -178,6 +179,9 @@
     return response;
   };
   document.addEventListener('change',e=>{
+    if(e.target?.id==='decisionHorizonSelect'){
+      const h=Number(e.target.value);if([1,3,5].includes(h)){publicPlan.horizon=h;refreshPublicPlan();}return;
+    }
     if(e.target?.id!=='decisionLeagueSelect')return;
     const id=Number(e.target.value);
     if(!leagueList().some(l=>Number(l.id)===id))return;
