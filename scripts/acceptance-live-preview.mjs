@@ -11,8 +11,8 @@ const sla=Number(process.env.FPL_ACCEPTANCE_P95_MS||1000);
 const report={created_at:new Date().toISOString(),preview_url:root,league_id:leagueId,
   owner_entry_id:ownerId,protocol:'HTTP_GET_PUBLIC_ONLY',sla_p95_ms:sla,
   phases:[],horizons:[],errors:[],status:'INCOMPLETE'};
-if(!root||!/^https:\/\/[a-z0-9.-]+\.vercel\.app$/i.test(root)){
- console.error('FPL_PREVIEW_URL must be the exact HTTPS Vercel preview hostname');
+if(!root||!(/^https:\/\/[a-z0-9.-]+\.vercel\.app$/i.test(root)||/^http:\/\/(?:127\.0\.0\.1|localhost):4173$/i.test(root))){
+ console.error('FPL_PREVIEW_URL must be a protected HTTPS Vercel preview or loopback acceptance server');
  process.exit(2);
 }
 const http=async url=>{
@@ -107,6 +107,7 @@ async function phase(kind,count,ids,horizon=1){
 }
 try{
  const health=await http(root+'/api/decision/health');
+ report.metrics_before=health.data?.concurrency||null;
  report.health={http:health.http,elapsed_ms:health.elapsed_ms,
    available:health.data?.status==='READY',scope:health.data?.concurrency?.scope||null};
  if(!report.health.available)throw Error('Preview health is not READY: HTTP '+health.http+' '+(health.error||''));
@@ -125,6 +126,18 @@ try{
    contract:r.data?.contract||null,source_mode:r.data?.source?.model_mode||null,errors:problems};
   report.horizons.push(x);
   if(problems.length)report.errors.push(...problems.map(error=>({kind:'horizon',horizon,error})));
+ }
+ const endHealth=await http(root+'/api/decision/health');
+ report.metrics_after=endHealth.data?.concurrency||null;
+ if(report.metrics_before&&report.metrics_after&&report.metrics_before.instance===report.metrics_after.instance){
+  report.instance_deltas={officialCalls:report.metrics_after.officialCalls-report.metrics_before.officialCalls,
+   upstreamCalls:report.metrics_after.upstreamCalls-report.metrics_before.upstreamCalls,
+   decisionRequests:report.metrics_after.decisionRequests-report.metrics_before.decisionRequests,
+   cacheHits:report.metrics_after.decisionCacheHits-report.metrics_before.decisionCacheHits,
+   upstreamPeak:report.metrics_after.upstreamPeak,computePeak:report.metrics_after.peak,
+   cpuMsSinceServiceStart:report.metrics_after.processCpuMsSinceServiceStart};
+  if(report.instance_deltas.upstreamPeak>report.metrics_after.upstreamLimit||report.instance_deltas.computePeak>report.metrics_after.computeLimit)
+   report.errors.push({kind:'concurrency',error:'Bounded-pool peak exceeded capacity'});
  }
  const p95cold=Math.max(...report.phases.filter(p=>p.kind==='cold').map(p=>p.p95_ms));
  const p95warm=Math.max(...report.phases.filter(p=>p.kind==='warm').map(p=>p.p95_ms));
