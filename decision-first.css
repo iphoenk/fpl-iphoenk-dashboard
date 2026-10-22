@@ -907,3 +907,25 @@ body.has-team[data-view=dashboard] .decision-league .decision-table-wrap :is(th,
 @media (prefers-reduced-motion:reduce){
  body.has-team .app-side button{transition:none}
 }
+
+/* Smartphone refinement: flexible CSS pixels, including large iOS/Android
+   screens and display zoom. Keep the existing phone navigation and safe area. */
+@media (max-width:767px){
+ body.has-team :is(.panel,.decision-panel,.stat){box-shadow:0 1px 3px rgb(15 35 55 / 4%)}
+ body.has-team :is(.approved-local-tabs,.adv-tabs){overflow-x:auto;scroll-padding-inline:12px;gap:6px}
+ body.has-team :is(.approved-local-tabs,.adv-tabs) button{min-height:44px;flex-shrink:0}
+ body.has-team .mobile-bottom-nav button{min-height:44px}
+ body.has-team[data-view=dashboard] .decision-horizon select{min-height:44px;font-size:16px}
+ body.has-team[data-view=dashboard] .decision-league .decision-league-arrows button{
+  width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important
+ }
+ body.has-team .table-wrap{overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+ body.has-team :is(input,select,textarea){scroll-margin-top:64px;font-size:16px}
+ body.has-team :is(.panel-head,.decision-panel-head){min-width:0;flex-wrap:wrap;row-gap:8px}
+ body.has-team :is(.panel-heading,.decision-horizon){min-width:0}
+ body.has-team :is(.subtle-note,.model-meta){overflow-wrap:anywhere}
+}
+@media (min-width:400px) and (max-width:767px){
+ body.has-team[data-view=dashboard] .decision-pitch .pitch-row:has(> .player:nth-child(4):last-child) .player-name{font-size:10px!important}
+ body.has-team[data-view=dashboard] .decision-bench .player-name{font-size:11px!important}
+}
