@@ -17,10 +17,13 @@ test('single current-team pitch, secondary Overview is analytics not a duplicate
 });
 test('mini league footer contains page text before arrows, without redundant Tim 1–10 bar',()=>{
  assert.doesNotMatch(ui,/decision-league-toolbar/);
- const footer=ui.indexOf('decision-league-foot-right');
+ const footer=ui.indexOf('decision-league-foot');
  assert.ok(footer>0);
- assert.ok(ui.indexOf('decision-league-status',footer)>footer);
+ assert.ok(ui.indexOf('decision-league-name',footer)>footer);
+ assert.ok(ui.indexOf('decision-league-status',footer)>ui.indexOf('decision-league-name',footer));
  assert.ok(ui.indexOf('decision-league-arrows',footer)>ui.indexOf('decision-league-status',footer));
+ assert.match(ui,/Rank '\+block\+'–'\+end\+' · P '\+page/);
+ assert.match(css,/grid-template-columns:minmax\(0,1fr\) max-content max-content!important/);
  assert.match(ui,/GW bruto/);
  assert.match(ui,/event_transfers_cost/);
  assert.match(css,/decision-league-foot-right/);

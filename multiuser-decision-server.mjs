@@ -143,7 +143,11 @@ export async function publicDecisionResponse(request,{service=sharedService}={})
  const noStore={'Cache-Control':'no-store','Vercel-CDN-Cache-Control':'no-store'};
  if(request.method!=='GET')return Response.json({status:'unavailable',error:'Read-only'},{status:405,headers:noStore});
  const keys=[...url.searchParams.keys()],ids=url.searchParams.getAll('entry_id'),hs=url.searchParams.getAll('horizon');
- if(keys.some(k=>!['entry_id','horizon'].includes(k))||ids.length!==1||hs.length>1||
+ // Vercel /api/:path* -> /api forwards the captured segment as ?path=decision.
+ // Accept ONLY that exact framework-generated value; reject arbitrary parameters.
+ const forwardedPath=url.searchParams.getAll('path');
+ const validRewrite=forwardedPath.length===0||(forwardedPath.length===1&&forwardedPath[0]==='decision');
+ if(!validRewrite||keys.some(k=>!['entry_id','horizon','path'].includes(k))||ids.length!==1||hs.length>1||
     (hs.length>0&&!['1','3','5'].includes(hs[0]))||!/^[1-9]\d{0,9}$/.test(ids[0]))
   return Response.json({status:'unavailable',error:'Invalid FPL entry ID'},{status:400,headers:noStore});
  try{
