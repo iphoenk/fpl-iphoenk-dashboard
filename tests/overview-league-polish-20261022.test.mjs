@@ -38,8 +38,8 @@ test('advisory reports errors, unavailable and actual 1-GW fallback honestly',()
  assert.match(ui,/publicPlan\.error=error\?\.message/);
  assert.match(ui,/report\?\.status==='unavailable'/);
  assert.match(ui,/actualHorizon=modelReady\?Number\(report.horizon\):1/);
- assert.match(ui,/Tidak ada nilai proyeksi yang dibuat-buat/);
- assert.match(ui,/FT\/hit belum terverifikasi/);
+ assert.match(ui,/No fabricated projection values/);
+ assert.match(ui,/FT\/hit not yet verified/);
 });
 test('transfers show skeleton before async data, official fitness uses its own flags',()=>{
  assert.match(adv,/advancedLoadingSkeleton\(view\);renderAdvanced\(view\)/);

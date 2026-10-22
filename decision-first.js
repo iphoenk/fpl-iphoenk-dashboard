@@ -39,7 +39,7 @@
     const key=id+':'+page+':'+state.gw,prev=standingsCache.get(key);
     if(prev&&Date.now()-prev.time<120000)return prev.promise;
     const promise=api('leagues-classic/'+id+'/standings/?page_standings='+page).then(data=>{
-      if(Number(data?.league?.id)!==Number(id)||!Array.isArray(data?.standings?.results))throw Error('Data klasemen tidak cocok.');
+      if(Number(data?.league?.id)!==Number(id)||!Array.isArray(data?.standings?.results))throw Error('Standings data mismatch.');
       return data;
     }).catch(e=>{standingsCache.delete(key);throw e;});
     standingsCache.set(key,{time:Date.now(),promise});return promise;
@@ -63,7 +63,7 @@
       Object.assign(snapshot,{leader:Number(head?.rank)===1?head:null,own:own||null,local,loading:false,error:null});
     }catch(error){
       if(token!==snapshot.request)return;
-      Object.assign(snapshot,{local:null,loading:false,error:error?.message||'Failed to load klasemen'});
+      Object.assign(snapshot,{local:null,loading:false,error:error?.message||'Failed to load standings'});
     }
     renderDecision();
   }
@@ -86,7 +86,7 @@
     const bench=actualBench?.innerHTML||'<div class="decision-empty">Bench is loading.</div>';
     return '<article class="decision-panel decision-team"><header class="decision-panel-head"><div><h2>Current Team</h2><p>Starting XI and bench from published GW '+safeName(state.gw||'—')+'</p></div><button class="decision-link" data-goto="tim">Squad details ↗</button></header>'+
       '<div class="decision-pitch"><div class="pitch">'+pitch+'</div></div>'+
-      '<div class="decision-bench"><strong>Bench · '+picks.filter(p=>p.position>11).length+' pemain</strong><div class="bench-row">'+bench+'</div></div>'+
+      '<div class="decision-bench"><strong>Bench · '+picks.filter(p=>p.position>11).length+' players</strong><div class="bench-row">'+bench+'</div></div>'+
       '<footer class="decision-foot"><span>Captain: <strong>'+safeName(state.players[cap?.element]?.web_name||'—')+'</strong></span><span>Vice: <strong>'+safeName(state.players[vice?.element]?.web_name||'—')+'</strong></span><span>'+flags.length+' fitness flag</span></footer></article>';
   }
   function leagueCard(){
@@ -129,7 +129,7 @@
         !['PUBLIC_FPL_DETERMINISTIC_ADVISORY_V1','PUBLIC_FPL_MULTIGW_ADVISORY_V2'].includes(report?.contract)||report?.canonical_v12!==false||report?.monte_carlo!==false||
         (report.contract==='PUBLIC_FPL_MULTIGW_ADVISORY_V2'&&report.horizon!==selectedHorizon))throw Error('Invalid public decision context');
       publicPlan.report=report;
-    }catch(error){if(token===publicPlan.request){publicPlan.report=null;publicPlan.error=error?.message||'Sumber tidak dapat diakses';}}
+    }catch(error){if(token===publicPlan.request){publicPlan.report=null;publicPlan.error=error?.message||'Source not accessible';}}
     if(token===publicPlan.request){
       publicPlan.loading=false;renderDecision();
       // Single source of truth for transfer recommendations across the app:
@@ -146,35 +146,35 @@
     const weekLabel='GW '+gw+(actualHorizon>1?'–'+Math.min(38,gw+actualHorizon-1):'');
     const modelStamp=report?.evidence?.model_built_at?deviceDateTime(report.evidence.model_built_at):null;
     const generated=report?.generated_at?deviceDateTime(report.generated_at):null;
-    const scope=publicPlan.loading?'Mengambil data Official FPL…':modelReady?
-      'Proyeksi model publik '+actualHorizon+' GW · bukan V12 kanonis':report?.status==='unavailable'?
-      'Prediksi tervalidasi belum tersedia':'Fallback Official FPL, cakupan 1 GW';
+    const scope=publicPlan.loading?'Fetching Official FPL data…':modelReady?
+      'Public model projection '+actualHorizon+' GW · not canonical V12':report?.status==='unavailable'?
+      'Validated prediction not yet available':'Official FPL fallback, 1 GW coverage';
     const name=id=>safeName(state.players[id]?.web_name||'—');
     const missingReason=key=>{
-      if(publicPlan.loading)return 'Memuat sumber resmi dan memvalidasi skenario…';
-      if(publicPlan.error)return 'Gagal mengambil data: '+safeName(publicPlan.error);
-      if(report?.status==='unavailable')return 'Tidak tersedia: '+safeName(report.reason||report.error||'prediksi Official FPL tidak lengkap');
-      if(!report)return 'Belum ada data yang tervalidasi untuk gameweek ini';
-      if(report?.economics_status==='UNAVAILABLE'&&key!=='A')return 'Saldo historis atau harga publik tidak tersedia; kemampuan membeli belum dapat dinilai';
-      return key==='A'?'Perhitungan Hold belum tersedia':'Belum ditemukan paket transfer legal dengan peningkatan xP positif';
+      if(publicPlan.loading)return 'Loading official sources and validating scenarios…';
+      if(publicPlan.error)return 'Failed to fetch data: '+safeName(publicPlan.error);
+      if(report?.status==='unavailable')return 'Not available: '+safeName(report.reason||report.error||'Official FPL prediction incomplete');
+      if(!report)return 'No validated data yet for this gameweek';
+      if(report?.economics_status==='UNAVAILABLE'&&key!=='A')return 'Historical balance or public price not available; affordability cannot yet be assessed';
+      return key==='A'?'Hold calculation not yet available':'No legal transfer package with a positive xP gain found yet';
     };
     const scenario=(key,label)=>{
       const s=report?.scenarios?.[key];
-      if(!s)return '<div class="decision-scenario"><div class="decision-scenario-title"><strong>'+label+'</strong><span>—</span></div><p class="decision-scenario-move">'+missingReason(key)+'</p><small class="decision-scenario-note">Tidak ada nilai proyeksi yang dibuat-buat</small></div>';
-      const changes=s.changes?.length?s.changes.map(c=>safeName(c.out.web_name)+' → '+safeName(c.in.web_name)).join(' · '):'Pertahankan 15 pemain · optimasi XI';
-      const delta=s.transfers?' · Selisih bruto vs Hold '+(s.gross_gain_vs_hold>0?'+':'')+fmt(s.gross_gain_vs_hold,1)+' xP':'';
+      if(!s)return '<div class="decision-scenario"><div class="decision-scenario-title"><strong>'+label+'</strong><span>—</span></div><p class="decision-scenario-move">'+missingReason(key)+'</p><small class="decision-scenario-note">No fabricated projection values</small></div>';
+      const changes=s.changes?.length?s.changes.map(c=>safeName(c.out.web_name)+' → '+safeName(c.in.web_name)).join(' · '):'Keep all 15 players · optimize XI';
+      const delta=s.transfers?' · Gross difference vs Hold '+(s.gross_gain_vs_hold>0?'+':'')+fmt(s.gross_gain_vs_hold,1)+' xP':'';
       return '<div class="decision-scenario"><div class="decision-scenario-title"><strong>'+label+'</strong><span>'+fmt(s.expected_points,1)+' xP</span></div>'+
         '<p class="decision-scenario-move">'+changes+'</p><div class="decision-scenario-bottom">'+
         '<div class="decision-captains"><span><b>C</b> '+name(s.captain)+'</span><span><b>VC</b> '+name(s.vice_captain)+'</span></div>'+
         '<button class="decision-action" data-goto="'+(s.transfers?'transfers':'planning')+'">Analysis ↗</button></div>'+
-        '<small class="decision-scenario-note">'+weekLabel+' · Formasi '+safeName(s.formation)+delta+' · FT/hit belum terverifikasi</small></div>';
+        '<small class="decision-scenario-note">'+weekLabel+' · Formation '+safeName(s.formation)+delta+' · FT/hit not yet verified</small></div>';
     };
     return '<article class="decision-panel decision-plan"><header class="decision-panel-head"><div><h2>Next GW Plan'+(gw?' · GW '+gw:'')+'</h2><p>'+safeName(scope)+' · no Monte Carlo</p></div><button class="decision-link" data-goto="planning">Planner ↗</button></header>'+
-      '<div class="decision-horizon"><label for="decisionHorizonSelect">Horizon</label><select id="decisionHorizonSelect" aria-label="Horizon optimasi">'+[1,3,5].map(h=>'<option value="'+h+'"'+(publicPlan.horizon===h?' selected':'')+'>'+h+' GW</option>').join('')+'</select><span>'+(modelStamp?'Model '+safeName(modelStamp):generated?'Official '+safeName(generated):'Sumber sedang diverifikasi')+'</span></div>'+
-      (report&&!modelReady&&publicPlan.horizon>1?'<p class="decision-fallback-notice">Proyeksi '+publicPlan.horizon+' GW belum tervalidasi. Hasil yang tersedia hanya menggunakan 1 GW Official FPL.</p>':'')+
-      (report?.economics_status==='PUBLIC_CURRENT_PRICE_PROXY_INDICATIVE'?'<p class="decision-fallback-notice">B/C menggunakan harga pasar Official FPL sebagai proksi harga jual, serta bank dari GW terakhir yang dipublikasikan. <strong>Belum tentu terjangkau di akunmu.</strong> Verifikasi harga jual, saldo bank, FT dan hit sebelum transfer.</p>':'')+
+      '<div class="decision-horizon"><label for="decisionHorizonSelect">Horizon</label><select id="decisionHorizonSelect" aria-label="Optimization horizon">'+[1,3,5].map(h=>'<option value="'+h+'"'+(publicPlan.horizon===h?' selected':'')+'>'+h+' GW</option>').join('')+'</select><span>'+(modelStamp?'Model '+safeName(modelStamp):generated?'Official '+safeName(generated):'Source being verified')+'</span></div>'+
+      (report&&!modelReady&&publicPlan.horizon>1?'<p class="decision-fallback-notice">The '+publicPlan.horizon+' GW projection is not yet validated. The available result only uses 1 GW of Official FPL.</p>':'')+
+      (report?.economics_status==='PUBLIC_CURRENT_PRICE_PROXY_INDICATIVE'?'<p class="decision-fallback-notice">B/C use the Official FPL market price as a proxy for the sale price, and the bank from the last published GW. <strong>This may not be affordable in your account.</strong> Verify the sale price, bank balance, FT and hit before transferring.</p>':'')+
       '<div class="decision-scenarios">'+scenario('A','A · Hold')+scenario('B','B · 1 Transfer')+scenario('C','C · 2 Transfers')+'</div>'+
-      '<footer class="decision-foot"><span>'+(report?.economics_status?safeName(report.economics_status):report?.status==='unavailable'?'PROYEKSI TIDAK TERSEDIA':publicPlan.error?'API ERROR':'MENUNGGU DATA')+'</span><span>Data publik · Nonkanonis · Kenaikan bruto, bukan net setelah hit</span></footer></article>';
+      '<footer class="decision-foot"><span>'+(report?.economics_status?safeName(report.economics_status):report?.status==='unavailable'?'PROJECTION NOT AVAILABLE':publicPlan.error?'API ERROR':'AWAITING DATA')+'</span><span>Public data · Non-canonical · Gross gain, not net after hit</span></footer></article>';
   }
   function renderDecision(){
     if(!stage.isConnected)return;

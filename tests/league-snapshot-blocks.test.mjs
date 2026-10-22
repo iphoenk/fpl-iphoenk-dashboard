@@ -34,7 +34,7 @@ test('scenario A/B/C are compact with C and VC and source-qualified estimates',(
  assert.match(js,/C · 2 Transfers/);
  assert.match(js,/decision-scenario-bottom/);
  assert.match(js,/<b>VC<\/b>/);
- assert.match(js,/FT\/hit belum terverifikasi/);
+ assert.match(js,/FT\/hit not yet verified/);
  assert.match(css,/decision-scenario-move/);
  assert.match(css,/decision-plan \.decision-scenario\{\s*padding:11px 12px/);
 });
