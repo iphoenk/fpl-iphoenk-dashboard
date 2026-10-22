@@ -40,6 +40,7 @@ test('fast search winner equals exhaustive XI optimizer for changing scores and 
   const exact=engine.optimizePublicLineup(rows),fast=engine.selectPublicXI(rows);
   assert.equal(exact.expected_points,fast.expected_points);assert.equal(exact.formation,fast.formation);
   assert.deepEqual(exact.starting_xi,fast.starting_xi);
+  assert.deepEqual(engine.selectPublicXI(rows,{scoreOnly:true}),{formation:exact.formation,expected_points:exact.expected_points});
  }
  assert.equal(engine.optimizePublicLineup(squad.slice(0,14)),null);
  assert.equal(engine.optimizePublicLineup(squad.map((p,i)=>i? p:{...p,ep_next:null})),null);

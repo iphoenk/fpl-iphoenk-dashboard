@@ -31,7 +31,7 @@ function plan(squad,horizon,explain=false){
  for(let i=0;i<horizon;i++){
   const valued=squad.map(p=>({...p,ep_next:n(p.xpm?.[i])}));
   if(valued.some(p=>p.ep_next===null))return null;
-  const xi=explain?optimizePublicLineup(valued):selectPublicXI(valued);
+  const xi=explain?optimizePublicLineup(valued):selectPublicXI(valued,{scoreOnly:true});
   if(!xi)return null;
   total+=xi.expected_points;
   weeks.push({offset:i,...xi});

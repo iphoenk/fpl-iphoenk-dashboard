@@ -71,24 +71,30 @@ export function optimizePublicLineup(squad){
   captain_multiplier:2,bench_objective:'GK_THEN_DESCENDING_MEAN_XP',autosub_modelled:false,vice_takeover_modelled:false,canonical_distributional_utility:false,monte_carlo:false},
   formation_comparison:ordered.map(({sum:raw,...row})=>({...row,delta_vs_best:round(raw-sum),selected:row.formation===winner.formation}))};
 }
-export function selectPublicXI(squad){
+export function selectPublicXI(squad,{scoreOnly=false}={}){
  if(!validSquad(squad)||squad.some(p=>score(p)===null))return null;
  const groups=[1,2,3,4].map(pos=>squad.filter(p=>p.element_type===pos).sort(better));
+ const prefix=groups.map(rows=>{const sums=[0];for(const row of rows)sums.push(sums.at(-1)+score(row));return sums;});
+ // Every legal formation includes the leading player from every position.
+ // Its captain bonus is therefore constant; no XI/bench allocation is needed
+ // until the winning formation is known. Exact for this additive objective.
+ const captainBonus=Math.max(...groups.map(rows=>score(rows[0])));
  let best=null;
  for(const legalFormation of canonicalRules.lineup.legal_formations){
   const [d,m,f]=legalFormation.split('-').map(Number);
-  const xi=[groups[0][0],...groups[1].slice(0,d),...groups[2].slice(0,m),...groups[3].slice(0,f)];
-  if(xi.length!==11)continue;
-  const ordered=[...xi].sort(better),captain=ordered[0],vice=ordered[1],sum=xi.reduce((a,p)=>a+score(p),0)+score(captain);
+  const sum=prefix[0][1]+prefix[1][d]+prefix[2][m]+prefix[3][f]+captainBonus;
   const formation=d+'-'+m+'-'+f;
   if(!best||sum>best.sum+1e-8||(Math.abs(sum-best.sum)<1e-8&&formation<best.formation)){
-   const ids=new Set(xi.map(p=>p.id));
-   const bench=[...groups[0].slice(1),...squad.filter(p=>!ids.has(p.id)&&p.element_type!==1).sort(better)];
-   best={formation,starting_xi:xi.map(p=>p.id),bench:bench.map(p=>p.id),captain:captain.id,vice_captain:vice.id,expected_points:round(sum),sum};
+   best={formation,d,m,f,sum};
   }
  }
  if(!best)return null;
- const {sum,...out}=best;return out;
+ const {d,m,f,sum,formation}=best;
+ if(scoreOnly)return {formation,expected_points:round(sum)};
+ const xi=[groups[0][0],...groups[1].slice(0,d),...groups[2].slice(0,m),...groups[3].slice(0,f)];
+ const ranked=[...xi].sort(better),ids=new Set(xi.map(p=>p.id));
+ const bench=[...groups[0].slice(1),...squad.filter(p=>!ids.has(p.id)&&p.element_type!==1).sort(better)];
+ return {formation,starting_xi:xi.map(p=>p.id),bench:bench.map(p=>p.id),captain:ranked[0].id,vice_captain:ranked[1].id,expected_points:round(sum)};
 }
 export function publicDecision({entry,picks,bootstrap,planningGw}){
  const map=new Map((bootstrap?.elements||[]).map(p=>[Number(p.id),p]));
@@ -135,7 +141,7 @@ export function publicDecision({entry,picks,bootstrap,planningGw}){
    if(!candidateIds.has(incoming.id)||incoming.element_type!==out.element_type||cost(incoming)>bank+sale)continue;
    const squad=owned.map(p=>p.id===out.id?incoming:p);
    if(!validSquad(squad))continue;
-   const xi=selectPublicXI(squad);if(!xi)continue;
+   const xi=selectPublicXI(squad,{scoreOnly:true});if(!xi)continue;
    singles.push({out:out.id,in:incoming.id,cash:bank+sale-cost(incoming),xi,gain:round(xi.expected_points-hold.expected_points)});
   }
  }
@@ -158,7 +164,7 @@ export function publicDecision({entry,picks,bootstrap,planningGw}){
   if(!Number.isInteger(cash)||cash<0)continue;
   const squad=owned.map(p=>p.id===a.out?inA:p.id===b.out?inB:p);
   if(!validSquad(squad))continue;
-  const xi=selectPublicXI(squad);if(!xi)continue;
+  const xi=selectPublicXI(squad,{scoreOnly:true});if(!xi)continue;
   const gain=round(xi.expected_points-hold.expected_points);
   if(!best||gain>best.gain){best={a,b,cash,xi,gain};}
  }
