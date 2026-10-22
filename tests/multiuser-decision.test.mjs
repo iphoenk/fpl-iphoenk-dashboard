@@ -69,3 +69,15 @@ test('identical cold users coalesce, real errors are not cached',async()=>{
  const both=await Promise.all([s.get(55),s.get(55)]);
  assert.equal(both[0].entry_id,55);assert.equal(n,7);
 });
+
+
+test('Official FPL public picks may lack selling prices; budget proxy is explicit',()=>{
+ const noSales={...picks,picks:picks.picks.map(({element,position})=>({element,position}))};
+ const r=publicDecision({entry:{id:900},picks:noSales,bootstrap,planningGw:8});
+ assert.equal(r.status,'ready');
+ assert.equal(r.economics_status,'PUBLIC_CURRENT_PRICE_PROXY_INDICATIVE');
+ assert.equal(r.economics_evidence.proxy_player_count,15);
+ assert.equal(r.economics_evidence.actual_affordability_verified,false);
+ assert.ok(r.scenarios.B);
+ assert.equal(r.scenarios.B.executable,false);
+});

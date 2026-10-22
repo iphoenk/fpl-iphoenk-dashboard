@@ -37,7 +37,9 @@ export function publicDecision({entry,picks,bootstrap,planningGw}){
  if(!hold)return {status:'unavailable',reason:'All 15 owned players require valid Official FPL ep_next'};
  const bank=finite(picks.entry_history?.bank),bankKnown=bank!==null&&Number.isInteger(bank)&&bank>=0;
  const sales=new Map(picks.picks.map(p=>[Number(p.element),finite(p.selling_price)]));
- const selling=p=>sales.get(p.id)??cost(p);
+ const validSale=p=>Number.isInteger(sales.get(p.id))&&sales.get(p.id)>0;
+ const proxyCount=owned.filter(p=>!validSale(p)).length;
+ const selling=p=>validSale(p)?sales.get(p.id):cost(p);
  const describe=(moves)=>moves.map(m=>({out:{id:m.out,web_name:map.get(m.out)?.web_name||'—'},in:{id:m.in,web_name:map.get(m.in)?.web_name||'—'}}));
  const scenario=(kind,xi,moves=[],cash=null)=>({kind,transfers:moves.length,changes:describe(moves),
    ...xi,gross_gain_vs_hold:round(xi.expected_points-hold.expected_points),
@@ -46,11 +48,15 @@ export function publicDecision({entry,picks,bootstrap,planningGw}){
  const base={status:'ready',contract:'PUBLIC_FPL_DETERMINISTIC_ADVISORY_V1',model:PUBLIC_DECISION_VERSION,
   authority:'OFFICIAL_FPL_EP_NEXT',canonical_v12:false,monte_carlo:false,planning_gw:planningGw,
   entry_id:Number(entry.id),source_squad_gw:Number(picks.entry_history?.event)||null,
-  economics_status:bankKnown?'PUBLIC_HISTORICAL_INDICATIVE':'UNAVAILABLE',
+  economics_status:bankKnown?(proxyCount?'PUBLIC_CURRENT_PRICE_PROXY_INDICATIVE':'PUBLIC_HISTORICAL_INDICATIVE'):'UNAVAILABLE',
+  economics_evidence:{bank_basis:'LAST_PUBLISHED_GW_BANK',sale_basis:proxyCount?'CURRENT_OFFICIAL_MARKET_PRICE_PROXY':'PUBLISHED_PICK_SELLING_PRICE',proxy_player_count:proxyCount,actual_affordability_verified:false},
   assumptions:['One-GW Official ep_next, not actual points','Published squad, not pending transfers',
-    'Indicative public bank/sale prices; free transfers and hits unknown','No Monte Carlo or canonical V12 execution'],
+    'Indicative last-published bank and public price proxies are not actual sell prices; FT/hits unknown','No Monte Carlo or canonical V12 execution'],
   search_scope:'BOUNDED_NONCANONICAL',scenarios:{A:scenario('HOLD',hold),B:null,C:null}};
- if(!bankKnown){base.status='partial';base.reason='Public bank unavailable; transfer economics unresolved';return base;}
+ if(!bankKnown||owned.some(p=>selling(p)===null)){
+  base.status='partial';base.economics_status='UNAVAILABLE';
+  base.reason='Public historical bank or usable player price unavailable; transfer economics unresolved';return base;
+ }
  const currentIds=new Set(owned.map(p=>p.id));
  const universe=(bootstrap.elements||[]).filter(p=>!currentIds.has(p.id)&&[1,2,3,4].includes(p.element_type)&&
    ['a','d'].includes(p.status)&&score(p)!==null&&cost(p)!==null);
@@ -72,11 +78,17 @@ export function publicDecision({entry,picks,bootstrap,planningGw}){
   }
  }
  singles.sort((a,b)=>b.gain-a.gain||a.out-b.out||a.in-b.in);
- const one=singles.find(s=>s.gain>0);
+ const one=singles[0];
  if(one)base.scenarios.B=scenario('ONE_TRANSFER',one.xi,[{out:one.out,in:one.in}],one.cash);
  // Bounded shortlist pairing: exact legal XI is recomputed for each shortlisted pair.
  let best=null;
- const shortlist=singles.slice(0,24);
+ const shortlist=[];const perOutgoing=new Map();
+ for(const candidate of singles){
+  const count=perOutgoing.get(candidate.out)||0;
+  if(count>=3)continue;
+  shortlist.push(candidate);perOutgoing.set(candidate.out,count+1);
+  if(shortlist.length>=45)break;
+ }
  for(let i=0;i<shortlist.length;i++)for(let j=i+1;j<shortlist.length;j++){
   const a=shortlist[i],b=shortlist[j];if(a.out===b.out||a.in===b.in)continue;
   const outA=map.get(a.out),outB=map.get(b.out),inA=map.get(a.in),inB=map.get(b.in);
@@ -86,7 +98,7 @@ export function publicDecision({entry,picks,bootstrap,planningGw}){
   if(!validSquad(squad))continue;
   const xi=selectPublicXI(squad);if(!xi)continue;
   const gain=round(xi.expected_points-hold.expected_points);
-  if(gain>0&&(!best||gain>best.gain)){best={a,b,cash,xi,gain};}
+  if(!best||gain>best.gain){best={a,b,cash,xi,gain};}
  }
  if(best)base.scenarios.C=scenario('TWO_TRANSFERS',best.xi,[{out:best.a.out,in:best.a.in},{out:best.b.out,in:best.b.in}],best.cash);
  base.candidates_considered=singles.length;

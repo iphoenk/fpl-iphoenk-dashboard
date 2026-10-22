@@ -65,3 +65,12 @@ test('Worker and Vercel build pipelines both include decision-first JS and CSS',
  assert.ok(worker.includes("'decision-first.js'"));
  assert.ok(worker.includes("readFileSync('decision-first.css'"));
 });
+
+
+test('Overview defaults to one GW and marks price-proxy transfer economics',()=>{
+ assert.match(js,/horizon:1,loading:false,report:null/);
+ assert.match(js,/\[1,3,5\]/);
+ assert.match(js,/PUBLIC_CURRENT_PRICE_PROXY_INDICATIVE/);
+ assert.match(js,/Belum tentu terjangkau di akunmu/);
+ assert.match(js,/Selisih bruto vs Hold/);
+});
