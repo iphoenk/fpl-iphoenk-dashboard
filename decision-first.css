@@ -729,3 +729,24 @@ body.has-team[data-view=dashboard] .decision-plan .decision-scenario-note{
     padding-left:8px!important;
   }
 }
+
+
+/* Issue #65: less vertical chrome, better-balanced team market values. */
+@media (max-width:767px) {
+  body.has-team .approved-header-inner {
+    min-height:56px!important;
+    height:auto!important;
+    padding:3px 12px!important;
+  }
+  body.has-team .approved-brand img {
+    width:clamp(130px,35vw,146px)!important;
+    max-width:100%!important;
+    height:auto!important;
+  }
+  body.has-team[data-view=dashboard] #dashboardLayout > .team-hero .team-hero-top {
+    grid-template-columns:minmax(0,1fr) minmax(128px,40%)!important;
+  }
+  body.has-team[data-view=dashboard] #dashboardLayout > .team-hero .hero-team-value {
+    padding-left:12px!important;
+  }
+}
