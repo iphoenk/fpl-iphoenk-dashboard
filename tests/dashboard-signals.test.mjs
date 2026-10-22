@@ -34,7 +34,7 @@ test('active squad fitness alerts remain visible with an ongoing label; old reso
 test('same player ID with mismatched name or club is not attributed; deadline is based on official timestamp',()=>{
  const players=[make(1,'Own')],context=buildNewsContext(players,[1],[]);
  assert.equal(selectPersonalNews({players,teams,context,now,articles:[article('Own','2026-10-18',{players:[{element:1,web_name:'Own',team_name:'MUN'}]})]}).length,0);
- assert.equal(deadlineBrief({deadline_time:'2026-10-20T12:00:00Z'},now).short,'1 hari 0 jam');assert.equal(deadlineBrief({},now),null);
+ assert.equal(deadlineBrief({deadline_time:'2026-10-20T12:00:00Z'},now).short,'1 hari 0 jam 0 menit');assert.equal(deadlineBrief({},now),null);
 });
 test('fresh recovery news ranks above older active injuries and ambiguous names must be adjacent',()=>{
  const players=[make(1,'Own',{status:'d',news:'Old injury',news_added:'2026-10-13'})],context=buildNewsContext(players,[1],[]);
@@ -46,4 +46,22 @@ test('within the same publication date, a recent standout gets visibility withou
  const players=[make(1,'Own'),make(156,'Neto',{event_points:15})],context=buildNewsContext(players,[1],[]);
  const items=selectPersonalNews({players,teams,context,now,articles:[article('Own','2026-10-17'),article('Neto','2026-10-17',{players:[{element:156,web_name:'Neto',team_name:'CHE'}]}),article('Own','2026-10-18',{headline:'Own latest update'})]});
  assert.equal(items[0].article.headline,'Own latest update');assert.equal(items[1].players[0].id,156);
+});
+
+test('deadline clock uses days / hours / minutes and adds seconds strictly under 24 hours',()=>{
+ const deadline={deadline_time:'2026-10-24T00:00:00Z'};
+ const t=Date.parse(deadline.deadline_time);
+ assert.deepEqual(
+  {short:deadlineBrief(deadline,t-86400000).short,urgent:deadlineBrief(deadline,t-86400000).urgent},
+  {short:'1 hari 0 jam 0 menit',urgent:false}
+ );
+ assert.equal(deadlineBrief(deadline,t-86400001).short,'1 hari 0 jam 0 menit');
+ const near=deadlineBrief(deadline,t-86399000);
+ assert.equal(near.short,'23 jam 59 menit 59 detik');assert.equal(near.urgent,true);
+ assert.equal(deadlineBrief(deadline,t-3661000).short,'1 jam 1 menit 1 detik');
+ assert.equal(deadlineBrief(deadline,t-61000).short,'0 jam 1 menit 1 detik');
+ assert.equal(deadlineBrief(deadline,t-1000).short,'0 jam 0 menit 1 detik');
+ assert.equal(deadlineBrief(deadline,t).short,'Deadline lewat');
+ assert.equal(deadlineBrief(deadline,t+1000).passed,true);
+ assert.equal(deadlineBrief({deadline_time:'not a timestamp'},t),null);
 });

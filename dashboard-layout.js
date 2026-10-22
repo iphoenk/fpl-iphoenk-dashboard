@@ -32,9 +32,44 @@ function updateDashboardHero(){
  const projected=starting.length?teamPrediction(starting,1):null,flagged=squad.filter(p=>p.status!=='a').length;
  $('dashboardHeroStats').innerHTML=heroMetric('GAMEWEEK',fmt(h?.points),'GW'+(state.gw||'—')+' · '+fmt(event?.average_entry_score)+' average',true)+heroMetric('TOTAL',fmt(entry?.summary_overall_points),'Rank '+fmt(entry?.summary_overall_rank))+heroMetric('LEAGUE',rank?fmt(rank)+(size?'<em>/'+size+'</em>':''):'—',league?.name||'Pilih liga di Mini-league')+heroMetric('PROJECTED',fmt(projected,1),'Your XI · GW'+(state.next?.id||'—'))+heroMetric('NEEDS A LOOK',entry?fmt(flagged):'—',entry?(flagged?'Periksa status kebugaran':'Nobody flagged'):'Menunggu tim',true)+heroMetric('IN THE BANK',h?money(h.bank):'—','Saldo publik GW'+(state.gw||'—'));
 }
-function dashboardPositionCards(){const pos=ext.dashboardPosition||'DEF',source=snapshotIsCurrent(ext.snapshot,state.bootstrap?.events,state.next)?ext.snapshot.scouts?.[pos]:null,rows=(source?.rows||[]).filter(r=>labPlayer(state.players[r.id])&&r.minutes>=180),defs=pos==='DEF',sort=(key,asc=false)=>[...rows].sort((a,b)=>asc?a[key]-b[key]:b[key]-a[key]).slice(0,6);
- const card=(title,description,metric,key,cls='',pct=false)=>'<article class="adv-card '+cls+'"><h3>'+title+'</h3><p>'+description+'</p>'+sort(key,metric==='low').map((r,i)=>'<div class="adv-row"><div><span class="dashboard-rank '+(ownIds().has(r.id)?'mine':'')+'">'+(i+1)+'</span><button data-player="'+r.id+'">'+esc(r.webName)+'</button><small>'+esc(r.teamShort)+'</small></div><strong>'+fmt(r[key]*(pct?100:1),pct?0:2)+(pct?'%':'')+'</strong></div>').join('')+(rows.length?'':'<p style="padding:15px 0">Statistik sedang disiapkan…</p>')+'</article>';
- return '<div class="dashboard-pos-tabs">'+[['DEF','Defenders'],['MID','Midfielders'],['FWD','Forwards']].map(([p,label])=>'<button data-dashboard-position="'+p+'" class="'+(pos===p?'active':'')+'"><span>'+p+'</span><strong>'+label+'</strong><small>'+fmt(ext.snapshot?.scouts?.[p]?.rows?.length)+'</small></button>').join('')+'</div><h2 class="adv-section-title" id="dashboardWorth">Worth a look <small>Contributions, threat, solidity, and minutes. Each ranked on its own.</small></h2>'+panel(pos+' worth a look','<div class="notice">Minimum 180 minutes. Shortlist untuk ditelusuri, bukan jaminan performa.</div><div class="adv-grid two">'+card(defs?'Defensive contribution':'Goal threat',defs?'DefCon hit rate pada pertandingan yang dimainkan.':'Expected goals per 90.','high',defs?'defconHitRate':'xg90','',defs)+card(defs?'Threat going forward':'Chance creation',defs?'Expected goal involvement per 90.':'Expected assists per 90.','high',defs?'xgi90':'xa90','pink')+card('Concede the least','Expected goals conceded per 90, lowest first.','low','xgc90','green')+card('Nailed on · historical','Starts as a share of team matches.','high','startRate','blue',true)+'</div>');
+function dashboardPositionCards(){
+ const pos=['GK','DEF','MID','FWD'].includes(ext.dashboardPosition)?ext.dashboardPosition:'DEF';
+ const gk=pos==='GK',defs=pos==='DEF';
+ const snapshot=snapshotIsCurrent(ext.snapshot,state.bootstrap?.events,state.next)?ext.snapshot:null;
+ // Goalkeepers use public Official FPL bootstrap + fixtures. Other positions
+ // retain the gated scouting snapshot; never silently mix model and FPL rows.
+ const keeperRows=keeperScoutRows(allPlayers(),state.fixtures,state.teams)
+   .filter(r=>labPlayer(state.players[r.id])&&r.minutes>=180);
+ const rows=gk?keeperRows:(snapshot?.scouts?.[pos]?.rows||[])
+   .filter(r=>labPlayer(state.players[r.id])&&r.minutes>=180);
+ const sort=(key,asc=false)=>[...rows]
+   .filter(r=>r[key]!==null&&r[key]!==undefined&&Number.isFinite(Number(r[key])))
+   .sort((a,b)=>asc?Number(a[key])-Number(b[key]):Number(b[key])-Number(a[key]))
+   .slice(0,6);
+ const card=(title,description,key,asc=false,pct=false,cls='')=>{
+   const ranked=sort(key,asc);
+   return '<article class="adv-card '+cls+'"><h3>'+title+'</h3><p>'+description+'</p>'+
+     (ranked.length?ranked.map((r,i)=>'<div class="adv-row"><div><span class="dashboard-rank '+(ownIds().has(r.id)?'mine':'')+'">'+(i+1)+'</span><button data-player="'+r.id+'">'+esc(r.webName)+'</button><small>'+esc(r.teamShort)+'</small></div><strong>'+fmt(Number(r[key])*(pct?100:1),pct?0:2)+(pct?'%':'')+'</strong></div>').join(''):'<p class="muted" style="padding:12px 0">Data tervalidasi belum tersedia.</p>')+'</article>';
+ };
+ const tabs=[['GK','Goalkeepers'],['DEF','Defenders'],['MID','Midfielders'],['FWD','Forwards']];
+ const keeperCount=keeperRows.length;
+ const options=tabs.map(([p,label])=>{
+  const count=p==='GK'?keeperCount:((snapshot?.scouts?.[p]?.rows||[]).filter(r=>r.minutes>=180&&labPlayer(state.players[r.id])).length);
+  return '<button type="button" data-dashboard-position="'+p+'" aria-pressed="'+(pos===p)+'" class="'+(pos===p?'active':'')+'"><span>'+p+'</span><strong>'+label+'</strong><small>'+fmt(count)+'</small></button>';
+ }).join('');
+ const metrics=gk
+   ?card('Save volume','Penyelamatan per 90 menit · minimal 180 menit.','saves90')
+     +card('Clean sheets','Total clean sheets musim berjalan.','cleanSheets')
+     +card('Concede the least','Expected goals conceded per 90 · lebih rendah lebih baik.','xgc90',true,false,'green')
+     +card('Nailed on · historical','Persentase starter terhadap pertandingan klub yang dimulai.','startRate',false,true,'blue')
+   :card(defs?'Defensive contribution':'Goal threat',defs?'DefCon hit rate pada pertandingan yang dimainkan.':'Expected goals per 90.',defs?'defconHitRate':'xg90',false,defs)
+     +card(defs?'Threat going forward':'Chance creation',defs?'Expected goal involvement per 90.':'Expected assists per 90.',defs?'xgi90':'xa90',false,false,'pink')
+     +card('Concede the least','Expected goals conceded per 90, lowest first.','xgc90',true,false,'green')
+     +card('Nailed on · historical','Starts as a share of team matches.','startRate',false,true,'blue');
+ return '<div class="dashboard-pos-tabs" role="group" aria-label="Filter posisi Worth a look">'+options+'</div>'+
+   '<h2 class="adv-section-title" id="dashboardWorth">Worth a look <small>Contributions, threat, solidity, and minutes. Each ranked on its own.</small></h2>'+
+   (gk?sourceNote('GK: saves, clean sheets, dan menit berasal dari Official FPL; minimal 180 menit.'):snapshotNotice())+
+   panel(pos+' worth a look','<div class="notice">Minimum 180 minutes. Shortlist untuk ditelusuri, bukan jaminan performa.</div><div class="adv-grid two">'+metrics+'</div>');
 }
 function dashboardFixtureRuns(){if(!snapshotIsCurrent(ext.snapshot,state.bootstrap?.events,state.next))return '<h2 class="adv-section-title" id="dashboardRuns">Fixture runs</h2>'+panel('Fixture runs','<p class="muted">Snapshot jadwal sedang dimuat atau belum sesuai musim dan gameweek aktif.</p>');const rows=(ext.snapshot?.fixtures||[]).map(team=>{const cells=team.cells.filter(c=>c.gw>=state.next?.id&&c.gw<(state.next?.id||0)+6&&state.teams[team.teamId]?.short_name===team.club&&state.fixtures.some(f=>f.event===c.gw&&(c.home?f.team_h===team.teamId&&state.teams[f.team_a]?.short_name===c.opp:f.team_a===team.teamId&&state.teams[f.team_h]?.short_name===c.opp))); return {team,cells,cs:cells.length?cells.reduce((sum,c)=>sum+c.cleanSheetDifficulty,0)/cells.length:null,dc:cells.length?cells.reduce((sum,c)=>sum+c.defconDifficulty,0)/cells.length:null};}).filter(r=>r.cs!==null);
  const column=(title,key)=>'<div><h3>'+title+'</h3>'+[...rows].sort((a,b)=>a[key]-b[key]).slice(0,6).map((r,i)=>'<div class="dashboard-run-row"><span class="dashboard-rank">'+(i+1)+'</span><strong>'+esc(r.team.club)+'</strong><small>'+fmt(r[key],1)+'</small><div>'+r.cells.map(c=>{const d=key==='cs'?c.cleanSheetDifficulty:c.defconDifficulty;return '<span class="fixture fdr'+d+'" title="GW '+c.gw+' · '+(key==='cs'?'Clean sheet':'DefCon')+' difficulty '+d+'">'+esc(c.home?c.opp:c.opp.toLowerCase())+' '+d+'</span>';}).join('')+'</div></div>').join('')+'</div>';
