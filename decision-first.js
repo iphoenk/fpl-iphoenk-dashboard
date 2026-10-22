@@ -124,7 +124,7 @@
     try{
       const report=await api('decision?entry_id='+id+'&horizon='+publicPlan.horizon);
       if(token!==publicPlan.request||Number(state.entry?.id)!==id||Number(state.next?.id)!==gw||selectedHorizon!==publicPlan.horizon)return;
-      if(report?.status==='unavailable'){publicPlan.report=report;return;}
+      if(report?.status==='unavailable'){publicPlan.report=report;publicPlan.loading=false;renderDecision();return;}
       if(Number(report?.entry_id)!==id||Number(report?.planning_gw)!==gw||
         !['PUBLIC_FPL_DETERMINISTIC_ADVISORY_V1','PUBLIC_FPL_MULTIGW_ADVISORY_V2'].includes(report?.contract)||report?.canonical_v12!==false||report?.monte_carlo!==false||
         (report.contract==='PUBLIC_FPL_MULTIGW_ADVISORY_V2'&&report.horizon!==selectedHorizon))throw Error('Invalid public decision context');
