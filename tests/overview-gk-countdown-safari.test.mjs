@@ -41,7 +41,7 @@ test('DEF remains available and is not misrepresented as official GK stats',()=>
  const {html}=fixture('DEF');
  assert.match(html,/data-dashboard-position="DEF" aria-pressed="true"/);
  assert.match(html,/DEF worth a look/);
- assert.match(html,/Data tervalidasi belum tersedia/);
+ assert.match(html,/Validated data not yet available/);
 });
 test('scouting click delegation continues to support new GK tab',()=>{
  assert.match(dashboard,/if\(b\.dataset\.dashboardPosition\)\{ext\.dashboardPosition=b\.dataset\.dashboardPosition;renderDashboardOverview\(\);\}/);
