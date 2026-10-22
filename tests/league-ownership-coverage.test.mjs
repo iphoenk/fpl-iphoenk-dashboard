@@ -38,7 +38,7 @@ test('failed last page rejects full-coverage ownership (fail closed)',async()=>{
  const result=await x.collect(first,1);
  assert.equal(result.complete,false);
  assert.equal(result.rows.length,50);
- assert.match(result.reason,/gagal dimuat/);
+ assert.match(result.reason,/failed to load/);
  assert.match(source,/if\(!coverage\?\.complete\)return panel\('Who owns whom'/);
  assert.match(source,/ext\.leagueOwnRecords=coverage\.complete\?ownRecords:\[\]/);
 });
@@ -46,10 +46,10 @@ test('duplicates or wrong-league standings are not silently counted',async()=>{
  const dup={league:{id:9477},standings:{results:mkrows(49,58),has_next:false}};
  const result=await ctx(async()=>dup).collect(first,1);
  assert.equal(result.complete,false);
- assert.match(result.reason,/duplikat/);
+ assert.match(result.reason,/duplicate/);
  const mismatch=await ctx(async()=>({league:{id:444},standings:{results:mkrows(51,58),has_next:false}})).collect(first,1);
  assert.equal(mismatch.complete,false);
- assert.match(mismatch.reason,/tidak cocok/);
+ assert.match(mismatch.reason,/does not match/);
 });
 test('ownership picks require all fifteen distinct players for the correct GW',()=>{
  const x=ctx(async()=>last);
@@ -63,7 +63,7 @@ test('UI always identifies complete league coverage and does not label a single 
  assert.match(source,/const fullKey='league-full-'/);
  assert.match(source,/const ownKey='leagueown-full-'/);
  assert.match(source,/n=coverage\.total/);
- assert.match(source,/Ownership: seluruh '\+coverage\.total\+' tim liga/);
- assert.match(source,/Coba refresh/);
- assert.match(source,/Bukan ownership global FPL/);
+ assert.match(source,/Ownership: all '\+coverage\.total\+' league teams/);
+ assert.match(source,/Try refreshing/);
+ assert.match(source,/Not global FPL ownership/);
 });
