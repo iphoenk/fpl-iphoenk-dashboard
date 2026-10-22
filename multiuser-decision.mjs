@@ -48,13 +48,18 @@ const compareIds=(a,b)=>{for(let i=0;i<a.length;i++){if(a[i]!==b[i])return a[i]-
 export function optimizePublicLineup(squad){
  if(!validSquad(squad)||squad.some(p=>score(p)===null))return null;
  const masks=enumeratePublicXI(squad),byFormation=new Map();
- for(const mask of masks){
-  const rows=mask.map(i=>squad[i]).sort((a,b)=>a.element_type-b.element_type||better(a,b));
+ // For the additive mean-xP objective, the best XI for each formation is
+ // exactly its highest-xP players in each position. Swapping any selected
+ // player for a lower-xP player cannot increase either the starter sum or
+ // the captain maximum. Preserve the 550-mask canonical legality audit,
+ // but score only the eight provably optimal formation representatives.
+ const groups=[1,2,3,4].map(pos=>squad.filter(p=>p.element_type===pos).sort(better));
+ for(const formation of canonicalRules.lineup.legal_formations){
+  const [d,m,f]=formation.split('-').map(Number);
+  const rows=[groups[0][0],...groups[1].slice(0,d),...groups[2].slice(0,m),...groups[3].slice(0,f)];
+  if(rows.length!==canonicalRules.lineup.starting_xi_size)continue;
   const ranked=[...rows].sort(better),ids=rows.map(p=>p.id),chosen=new Set(ids);
-  const formation=[2,3,4].map(pos=>rows.filter(p=>p.element_type===pos).length).join('-');
   const sum=rows.reduce((a,p)=>a+score(p),0)+score(ranked[0]);
-  const previous=byFormation.get(formation);
-  if(previous&&(sum<previous.sum-1e-8||(Math.abs(sum-previous.sum)<1e-8&&compareIds(ids,previous.starting_xi)>=0)))continue;
   const reserves=squad.filter(p=>!chosen.has(p.id));
   const bench=[...reserves.filter(p=>p.element_type===1).sort(better),...reserves.filter(p=>p.element_type!==1).sort(better)];
   byFormation.set(formation,{formation,starting_xi:ids,bench:bench.map(p=>p.id),captain:ranked[0].id,vice_captain:ranked[1].id,expected_points:round(sum),sum});
