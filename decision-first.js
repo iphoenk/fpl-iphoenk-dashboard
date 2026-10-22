@@ -1,4 +1,15 @@
 /* Decision-first dashboard: uses canonical FPL data; never synthesizes results. */
+function publicFormationEvidence(s,planningGw,name){
+ const weeks=s.weeks||[{offset:0,...s}];
+ if(!weeks.some(w=>w.formation_comparison?.length))return '';
+ return '<details class="decision-optimizer"><summary>Bandingkan 8 formasi · XI &amp; bench</summary>'+
+  '<p>Optimizer xP publik: 550 XI legal per skuad/GW. Total = xP sebelas starter + tambahan kapten ×1. Bench diurutkan menurut xP; peluang autosub dan pengambilalihan VC belum dimodelkan.</p>'+
+  weeks.map(w=>'<details class="decision-optimizer-week"'+(weeks.length===1?' open':'')+'><summary>GW '+(planningGw+w.offset)+' · '+w.formation+' · '+fmt(w.expected_points,2)+' xP</summary>'+
+   '<div class="decision-formation-scroll" role="region" aria-label="Perbandingan formasi GW '+(planningGw+w.offset)+'" tabindex="0"><table><caption>Delapan formasi · GW '+(planningGw+w.offset)+' · skenario yang sama</caption><thead><tr><th scope="col">Formasi</th><th scope="col">xP</th><th scope="col">Selisih vs terbaik</th><th scope="col">Susunan</th></tr></thead><tbody>'+
+   w.formation_comparison.map(row=>'<tr data-formation-row="'+row.formation+'"'+(row.selected?' class="formation-selected"':'')+'><th scope="row">'+row.formation+(row.selected?'<small>Terpilih</small>':'')+'</th><td>'+fmt(row.expected_points,2)+'</td><td>'+fmt(row.delta_vs_best,2)+'</td><td><details><summary>Lihat XI &amp; bench</summary><p><strong>XI:</strong> '+row.starting_xi.map(name).join(' · ')+'</p><p><strong>Bench:</strong> '+row.bench.map(name).join(' · ')+'</p><p><strong>C:</strong> '+name(row.captain)+' · <strong>VC:</strong> '+name(row.vice_captain)+'</p></details></td></tr>').join('')+
+   '</tbody></table></div></details>').join('')+'</details>';
+}
+/* END_FORMATION_EVIDENCE */
 (function(){
   'use strict';
   const root=document.getElementById('dashboardLayout');
@@ -160,7 +171,7 @@
         '<p class="decision-scenario-move">'+changes+'</p><div class="decision-scenario-bottom">'+
         '<div class="decision-captains"><span><b>C</b> '+name(s.captain)+'</span><span><b>VC</b> '+name(s.vice_captain)+'</span></div>'+
         '<button class="decision-action" data-goto="'+(s.transfers?'transfers':'planning')+'">Analisis ↗</button></div>'+
-        '<small class="decision-scenario-note">'+weekLabel+' · Formasi '+safeName(s.formation)+delta+' · FT/hit belum terverifikasi</small></div>';
+        '<small class="decision-scenario-note">'+weekLabel+' · Formasi '+safeName(s.formation)+delta+' · FT/hit belum terverifikasi</small>'+publicFormationEvidence(s,gw,name)+'</div>';
     };
     return '<article class="decision-panel decision-plan"><header class="decision-panel-head"><div><h2>Rencana GW Berikutnya'+(gw?' · GW '+gw:'')+'</h2><p>'+safeName(scope)+' · tanpa Monte Carlo</p></div><button class="decision-link" data-goto="planning">Planner ↗</button></header>'+
       '<div class="decision-horizon"><label for="decisionHorizonSelect">Horizon</label><select id="decisionHorizonSelect" aria-label="Horizon optimasi">'+[1,3,5].map(h=>'<option value="'+h+'"'+(publicPlan.horizon===h?' selected':'')+'>'+h+' GW</option>').join('')+'</select><span>'+(modelStamp?'Model '+safeName(modelStamp):generated?'Official '+safeName(generated):'Sumber sedang diverifikasi')+'</span></div>'+

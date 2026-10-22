@@ -846,6 +846,25 @@ body.has-team[data-view=dashboard] .decision-league .decision-table-wrap :is(th,
  body.has-team[data-view=dashboard] .decision-league .decision-table-wrap :is(th,td){padding-left:4px;padding-right:3px}
 }
 
+.decision-optimizer{min-width:0;margin-top:12px;border-top:1px solid var(--line);padding-top:8px;font-size:12px}
+.decision-optimizer summary{cursor:pointer;min-height:44px;align-content:center;color:var(--text);line-height:1.5}
+.decision-optimizer p{font-size:11px;line-height:1.6;color:var(--muted);white-space:normal;overflow-wrap:anywhere;margin:8px 0}
+.decision-optimizer-week{min-width:0}
+.decision-formation-scroll{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;border:1px solid var(--line);border-radius:7px}
+.decision-formation-scroll table{width:100%;min-width:400px;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:11px}
+.decision-formation-scroll :is(th,td){padding:8px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line);white-space:normal}
+.decision-formation-scroll th:first-child{white-space:nowrap}
+.decision-formation-scroll td:last-child{min-width:150px}
+.decision-formation-scroll caption{padding:8px;text-align:left;color:var(--muted)}
+.decision-formation-scroll th small{display:block;color:var(--lime);font-size:10px}
+.decision-formation-scroll .formation-selected{background:color-mix(in srgb,var(--lime) 8%,transparent)}
+.decision-formation-scroll summary{min-width:120px}
+@media(max-width:767px){
+ .decision-optimizer{font-size:13px}
+ .decision-formation-scroll{scroll-padding-inline:8px;-webkit-overflow-scrolling:touch}
+ body.has-team[data-view=dashboard] .decision-horizon select{min-height:44px;font-size:16px}
+}
+
 /* Issue #67: one genuinely slim, consistent mobile masthead.
    Explicit parent height defeats the legacy --bar-h and inner min-height. */
 @media (max-width:767px) {
