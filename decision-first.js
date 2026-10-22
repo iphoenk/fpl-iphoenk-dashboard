@@ -10,7 +10,7 @@
   root.querySelector('.team-hero')?.after(stage);
   const deep=document.createElement('details');
   deep.className='decision-deep';
-  deep.innerHTML='<summary>Analisis tambahan Beranda <span>Berita pemain, formasi, fixture runs dan scouting</span></summary><div class="decision-deep-content"></div>';
+  deep.innerHTML='<summary>Additional Overview analysis <span>Player news, formations, fixture runs and scouting</span></summary><div class="decision-deep-content"></div>';
   root.append(deep);
   const deepContent=deep.querySelector('.decision-deep-content');
   for(const selector of ['.overview-controls','.dashboard-brief','.overview-gw-switch','.approved-local-tabs','.next-gw-overview','.dashboard-columns','#dashboardPool']){
@@ -63,7 +63,7 @@
       Object.assign(snapshot,{leader:Number(head?.rank)===1?head:null,own:own||null,local,loading:false,error:null});
     }catch(error){
       if(token!==snapshot.request)return;
-      Object.assign(snapshot,{local:null,loading:false,error:error?.message||'Gagal memuat klasemen'});
+      Object.assign(snapshot,{local:null,loading:false,error:error?.message||'Failed to load klasemen'});
     }
     renderDecision();
   }
@@ -84,7 +84,7 @@
     const flags=picks.map(p=>state.players[p.element]).filter(p=>p&&p.status!=='a');
     const pitch=actualPitch?.innerHTML||'<div class="decision-empty">Starting XI is loading.</div>';
     const bench=actualBench?.innerHTML||'<div class="decision-empty">Bench is loading.</div>';
-    return '<article class="decision-panel decision-team"><header class="decision-panel-head"><div><h2>Potret Tim Sekarang</h2><p>Starting XI dan bench dari pilihan publik GW '+safeName(state.gw||'—')+'</p></div><button class="decision-link" data-goto="tim">Detail skuad ↗</button></header>'+
+    return '<article class="decision-panel decision-team"><header class="decision-panel-head"><div><h2>Current Team</h2><p>Starting XI and bench from published GW '+safeName(state.gw||'—')+'</p></div><button class="decision-link" data-goto="tim">Squad details ↗</button></header>'+
       '<div class="decision-pitch"><div class="pitch">'+pitch+'</div></div>'+
       '<div class="decision-bench"><strong>Bench · '+picks.filter(p=>p.position>11).length+' pemain</strong><div class="bench-row">'+bench+'</div></div>'+
       '<footer class="decision-foot"><span>Captain: <strong>'+safeName(state.players[cap?.element]?.web_name||'—')+'</strong></span><span>Vice: <strong>'+safeName(state.players[vice?.element]?.web_name||'—')+'</strong></span><span>'+flags.length+' fitness flag</span></footer></article>';
@@ -106,13 +106,13 @@
     }).join('');
     const end=block+Math.max(0,rows.length?rows.length-1:9);
     const atEnd=local&&!local.standings.has_next&&!leagueBlockRows(local.standings.results,block+10).length&&leagueStandingsPage(block+10)>=page;
-    const status=active?.loading?'Memuat…':active?.error?'Gagal memuat':local?'Rank '+block+'–'+end+' · P '+page:'Klasemen belum dimuat';
-    return '<article class="decision-panel decision-league"><header class="decision-panel-head"><div><h2>Mini-league Snapshot</h2><p>10 tim sesuai posisi di liga terpilih</p></div><button class="decision-link" data-goto="liga">Klasemen ↗</button></header>'+
-      '<label class="decision-league-label" for="decisionLeagueSelect">Liga dipilih</label><select id="decisionLeagueSelect"'+(!leagues.length?' disabled':'')+'>'+(!leagues.length?'<option>Hubungkan tim FPL</option>':options)+'</select>'+
-      '<div class="decision-league-kpis"><div><span>Posisi saya</span><strong>'+number(rank)+'</strong></div><div><span>Gap leader</span><strong>'+(gap!==null?number(gap)+' pts':'—')+'</strong></div><div><span>GW bruto</span><strong>'+number(state.picks?.entry_history?.points)+'</strong>'+(Number(state.picks?.entry_history?.event_transfers_cost)>0?'<small>Hit −'+number(state.picks.entry_history.event_transfers_cost)+' · net '+number(Number(state.picks.entry_history.points)-Number(state.picks.entry_history.event_transfers_cost))+'</small>':'')+'</div></div>'+
+    const status=active?.loading?'Loading…':active?.error?'Failed to load':local?'Rank '+block+'–'+end+' · P '+page:'Standings not loaded';
+    return '<article class="decision-panel decision-league"><header class="decision-panel-head"><div><h2>Mini-league Snapshot</h2><p>Ten teams around your rank in the selected league</p></div><button class="decision-link" data-goto="liga">Standings ↗</button></header>'+
+      '<label class="decision-league-label" for="decisionLeagueSelect">Selected league</label><select id="decisionLeagueSelect"'+(!leagues.length?' disabled':'')+'>'+(!leagues.length?'<option>Connect an FPL team</option>':options)+'</select>'+
+      '<div class="decision-league-kpis"><div><span>My rank</span><strong>'+number(rank)+'</strong></div><div><span>Gap to leader</span><strong>'+(gap!==null?number(gap)+' pts':'—')+'</strong></div><div><span>GW gross</span><strong>'+number(state.picks?.entry_history?.points)+'</strong>'+(Number(state.picks?.entry_history?.event_transfers_cost)>0?'<small>Hit −'+number(state.picks.entry_history.event_transfers_cost)+' · net '+number(Number(state.picks.entry_history.points)-Number(state.picks.entry_history.event_transfers_cost))+'</small>':'')+'</div></div>'+
       
-      '<div id="decisionLeagueSwipe" class="decision-table-wrap" role="region" tabindex="0" aria-label="Klasemen 10 tim, swipe horizontal untuk berpindah blok"><table><thead><tr><th>Rank</th><th>Tim</th><th title="GW: poin bruto sebelum transfer hit">GW</th><th>Total</th><th>Trend</th></tr></thead><tbody>'+(lines||'<tr><td colspan="5" class="decision-empty">'+(active?.loading?'Memuat 10 tim…':active?.error?'Klasemen gagal dimuat, gunakan panah untuk mencoba lagi.':'Pilih liga untuk memuat peserta')+'</td></tr>')+'</tbody></table></div>'+
-      '<footer class="decision-foot decision-league-foot"><span class="decision-league-name" title="'+safeName(member?.name||'Classic League')+'">'+safeName(member?.name||'Classic League')+'</span><span class="decision-league-status" aria-live="polite" title="'+safeName(active?.error||'')+'">'+status+'</span><div class="decision-league-arrows" aria-label="Navigasi blok peringkat"><button type="button" data-league-block="-1" aria-label="10 tim sebelumnya"'+(block===1||active?.loading?' disabled':'')+'>←</button><button type="button" data-league-block="1" aria-label="10 tim berikutnya"'+(atEnd||active?.loading?' disabled':'')+'>→</button></div></footer></article>';
+      '<div id="decisionLeagueSwipe" class="decision-table-wrap" role="region" tabindex="0" aria-label="Ten-team standings; swipe horizontally to navigate rank ranges"><table><thead><tr><th>Rank</th><th>Team</th><th title="GW: gross points before transfer hits">GW</th><th>Total</th><th>Trend</th></tr></thead><tbody>'+(lines||'<tr><td colspan="5" class="decision-empty">'+(active?.loading?'Loading ten teams…':active?.error?'Could not load standings. Use the arrows to retry.':'Select a league to load teams')+'</td></tr>')+'</tbody></table></div>'+
+      '<footer class="decision-foot decision-league-foot"><span class="decision-league-name" title="'+safeName(member?.name||'Classic League')+'">'+safeName(member?.name||'Classic League')+'</span><span class="decision-league-status" aria-live="polite" title="'+safeName(active?.error||'')+'">'+status+'</span><div class="decision-league-arrows" aria-label="Rank range navigation"><button type="button" data-league-block="-1" aria-label="Previous ten teams"'+(block===1||active?.loading?' disabled':'')+'>←</button><button type="button" data-league-block="1" aria-label="Next ten teams"'+(atEnd||active?.loading?' disabled':'')+'>→</button></div></footer></article>';
   }
   const publicPlan={entryId:null,gw:null,horizon:1,loading:false,report:null,error:null,request:0};
   async function refreshPublicPlan(){
@@ -166,10 +166,10 @@
       return '<div class="decision-scenario"><div class="decision-scenario-title"><strong>'+label+'</strong><span>'+fmt(s.expected_points,1)+' xP</span></div>'+
         '<p class="decision-scenario-move">'+changes+'</p><div class="decision-scenario-bottom">'+
         '<div class="decision-captains"><span><b>C</b> '+name(s.captain)+'</span><span><b>VC</b> '+name(s.vice_captain)+'</span></div>'+
-        '<button class="decision-action" data-goto="'+(s.transfers?'transfers':'planning')+'">Analisis ↗</button></div>'+
+        '<button class="decision-action" data-goto="'+(s.transfers?'transfers':'planning')+'">Analysis ↗</button></div>'+
         '<small class="decision-scenario-note">'+weekLabel+' · Formasi '+safeName(s.formation)+delta+' · FT/hit belum terverifikasi</small></div>';
     };
-    return '<article class="decision-panel decision-plan"><header class="decision-panel-head"><div><h2>Rencana GW Berikutnya'+(gw?' · GW '+gw:'')+'</h2><p>'+safeName(scope)+' · tanpa Monte Carlo</p></div><button class="decision-link" data-goto="planning">Planner ↗</button></header>'+
+    return '<article class="decision-panel decision-plan"><header class="decision-panel-head"><div><h2>Next GW Plan'+(gw?' · GW '+gw:'')+'</h2><p>'+safeName(scope)+' · no Monte Carlo</p></div><button class="decision-link" data-goto="planning">Planner ↗</button></header>'+
       '<div class="decision-horizon"><label for="decisionHorizonSelect">Horizon</label><select id="decisionHorizonSelect" aria-label="Horizon optimasi">'+[1,3,5].map(h=>'<option value="'+h+'"'+(publicPlan.horizon===h?' selected':'')+'>'+h+' GW</option>').join('')+'</select><span>'+(modelStamp?'Model '+safeName(modelStamp):generated?'Official '+safeName(generated):'Sumber sedang diverifikasi')+'</span></div>'+
       (report&&!modelReady&&publicPlan.horizon>1?'<p class="decision-fallback-notice">Proyeksi '+publicPlan.horizon+' GW belum tervalidasi. Hasil yang tersedia hanya menggunakan 1 GW Official FPL.</p>':'')+
       (report?.economics_status==='PUBLIC_CURRENT_PRICE_PROXY_INDICATIVE'?'<p class="decision-fallback-notice">B/C menggunakan harga pasar Official FPL sebagai proksi harga jual, serta bank dari GW terakhir yang dipublikasikan. <strong>Belum tentu terjangkau di akunmu.</strong> Verifikasi harga jual, saldo bank, FT dan hit sebelum transfer.</p>':'')+

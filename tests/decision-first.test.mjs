@@ -29,7 +29,7 @@ test('classic mini-league selector persists by FPL entry, validates membership a
  assert.match(js,/leagueList\(\)\.some\(l=>Number\(l\.id\)===id\)/);
  assert.match(js,/refreshLeagueSnapshot\(id\)/);
  assert.match(js,/local\.standings\.results/);
- assert.match(js,/Klasemen belum dimuat/);
+ assert.match(js,/Standings not loaded/);
 });
 test('next GW displays hold, one transfer and alternatives without invented points',()=>{
  assert.match(js,/A · Hold/);
