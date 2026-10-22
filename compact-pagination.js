@@ -1,11 +1,14 @@
 // Presentation only: all loaded records remain available to calculations.
 function compactPageEnd(total,end){return Math.max(10,Math.min(Math.ceil(Math.max(0,total)/10)*10,Math.ceil((Number(end)||10)/10)*10));}
+// The public squad is always fifteen picks; never hide its last five behind Next.
+function shouldCompactPaginate(list){return !list.closest('#squadTable');}
 (()=>{
  const registered=new WeakMap();
  let backTarget=null;
  // Ownership shows all fifteen cards in a horizontally swipeable rail, never compact-paginated.
  const selector='table > tbody, .adv-grid, .captain-evidence-grid, .captain-history, .compact-feature-list, #savedPlans';
  function paginate(list){
+  if(!shouldCompactPaginate(list))return;
   const items=Array.from(list.children);
   const league=!!list.closest('#leaguePanel');
   if((items.length<=10&&!league)||registered.has(list))return;
