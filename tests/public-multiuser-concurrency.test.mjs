@@ -109,3 +109,26 @@ test('live cold twenty-user intake retains a finite default IO cap',()=>{
  assert.equal(state.computeLimit,4);
  assert.equal(state.scope,'PER_INSTANCE_BEST_EFFORT');
 });
+
+test('source failures are classified without leaking raw errors or becoming cached success',async()=>{
+ for(const [kind,fail,expected] of [
+  ['http',()=>Response.json({error:'private upstream body'},{status:429}),{code:'UPSTREAM_HTTP',upstream_status:429}],
+  ['json',()=>new Response('<html>private upstream body</html>'),{code:'UPSTREAM_INVALID_JSON'}],
+  ['timeout',()=>{throw new DOMException('private URL and token','TimeoutError');},{code:'UPSTREAM_TIMEOUT'}],
+  ['network',()=>{throw new TypeError('private URL and token');},{code:'UPSTREAM_NETWORK'}]
+ ]){
+  const m=mock(0),service=createPublicDecisionService({clock:()=>NOW,fetcher:url=>url.endsWith('bootstrap-static/')?fail():m.fetcher(url)});
+  for(let attempt=0;attempt<2;attempt++){
+   const response=await publicDecisionResponse(new Request('https://app.test/api/decision?entry_id=3462711'),{service});
+   assert.equal(response.status,503,kind);
+   const body=await response.json();
+   assert.equal(body.error_code,expected.code,kind);
+   assert.equal(body.error_source,'OFFICIAL_FPL',kind);
+   if(expected.upstream_status)assert.equal(body.upstream_status,expected.upstream_status);
+   assert.doesNotMatch(JSON.stringify(body),/private|token|<html>/i);
+   assert.equal(response.headers.get('cache-control'),'no-store');
+  }
+  assert.equal(service.stats().cache,0);
+  assert.equal(service.stats().failedDecisions,2);
+ }
+});
