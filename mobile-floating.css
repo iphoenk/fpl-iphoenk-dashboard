@@ -1,0 +1,227 @@
+/*
+ * FPL iphoenk mobile layout polish, 22 October 2026.
+ * Reference: floating rounded bottom navigation and calm app-like card rhythm.
+ * Preserve the approved 48px header, original logo, FPL green/navy palette,
+ * desktop/iPad layout, FPL data semantics and existing navigation handlers.
+ * This stylesheet intentionally loads LAST and only applies to phones.
+ */
+@media (max-width:767px) {
+  :root {
+    --mobile-dock-height:74px;
+    --mobile-dock-offset:calc(12px + env(safe-area-inset-bottom,0px));
+  }
+
+  /* Floating dock: not a full-bleed bar. Fixed to the viewport, not content. */
+  body:not(.connecting-team) .mobile-bottom-nav {
+    box-sizing:border-box;
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    align-items:stretch;
+    justify-content:stretch;
+    gap:4px;
+    position:fixed!important;
+    left:max(12px,env(safe-area-inset-left,0px))!important;
+    right:max(12px,env(safe-area-inset-right,0px))!important;
+    bottom:var(--mobile-dock-offset)!important;
+    top:auto!important;
+    width:auto!important;
+    max-width:540px;
+    min-height:var(--mobile-dock-height);
+    margin:0 auto;
+    padding:7px!important;
+    border:1px solid color-mix(in srgb,#142137 88%,white)!important;
+    border-radius:24px!important;
+    background:rgba(20,33,55,.97)!important;
+    color:#d7e1e9!important;
+    box-shadow:0 10px 35px rgba(15,29,45,.25),0 2px 7px rgba(15,29,45,.14)!important;
+    -webkit-backdrop-filter:blur(18px);
+    backdrop-filter:blur(18px);
+    z-index:55!important;
+  }
+  body:not(.connecting-team) .mobile-bottom-nav button {
+    display:flex!important;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:4px!important;
+    box-sizing:border-box;
+    width:100%!important;
+    min-width:0!important;
+    min-height:58px!important;
+    margin:0;
+    padding:7px 2px!important;
+    border:1px solid transparent!important;
+    border-radius:18px!important;
+    background:transparent!important;
+    color:#d7e1e9!important;
+    font-size:clamp(9px,2.65vw,11px)!important;
+    font-weight:500!important;
+    line-height:1.15!important;
+    letter-spacing:-.02em;
+    text-align:center;
+    transition:background-color .18s ease,color .18s ease,transform .18s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  body:not(.connecting-team) .mobile-bottom-nav button .icon {
+    display:block!important;
+    flex:none;
+    width:21px!important;
+    height:21px!important;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:1.8;
+  }
+  body:not(.connecting-team) .mobile-bottom-nav button span {
+    max-width:100%;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:clip;
+  }
+  body:not(.connecting-team) .mobile-bottom-nav button.active,
+  body:not(.connecting-team) .mobile-bottom-nav button[aria-current="page"] {
+    background:#f7fbfa!important;
+    color:#087b57!important;
+    font-weight:700!important;
+    border-color:#f7fbfa!important;
+    box-shadow:0 2px 8px rgba(0,0,0,.09);
+  }
+  body:not(.connecting-team) .mobile-bottom-nav button:focus-visible {
+    outline:2px solid #74e1bd!important;
+    outline-offset:2px;
+  }
+  body:not(.connecting-team) .mobile-bottom-nav button:not(.active):active {
+    background:rgba(255,255,255,.14)!important;
+    transform:scale(.98);
+  }
+  html[data-theme="dark"] body:not(.connecting-team) .mobile-bottom-nav {
+    background:rgba(12,22,35,.97)!important;
+    border-color:#32465d!important;
+    box-shadow:0 13px 35px rgba(0,0,0,.45)!important;
+  }
+  html[data-theme="dark"] body:not(.connecting-team) .mobile-bottom-nav button:not(.active) {
+    color:#b7c7d6!important;
+  }
+  html[data-theme="dark"] body:not(.connecting-team) .mobile-bottom-nav button.active,
+  html[data-theme="dark"] body:not(.connecting-team) .mobile-bottom-nav button[aria-current="page"] {
+    background:#e8f8f1!important;
+    border-color:#e8f8f1!important;
+    color:#087b57!important;
+  }
+
+  /* Keep the last content and actions above the raised dock on every view. */
+  body.has-team .main {
+    padding-bottom:calc(132px + env(safe-area-inset-bottom,0px))!important;
+  }
+  body.has-team .footer {
+    margin-bottom:16px;
+  }
+  body:not(.connecting-team) .mobile-more:not(.hidden) {
+    box-sizing:border-box;
+    position:fixed;
+    left:max(12px,env(safe-area-inset-left,0px))!important;
+    right:max(12px,env(safe-area-inset-right,0px))!important;
+    bottom:calc(98px + env(safe-area-inset-bottom,0px))!important;
+    width:auto;
+    max-width:540px;
+    max-height:calc(100dvh - 146px - env(safe-area-inset-bottom,0px));
+    margin:0 auto;
+    border:1px solid var(--line)!important;
+    border-radius:22px!important;
+    padding:16px!important;
+    background:var(--panel)!important;
+    box-shadow:0 15px 48px rgba(18,33,52,.22)!important;
+    z-index:65!important;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+  }
+  body:not(.connecting-team) .mobile-more .btn {
+    min-width:0;
+    border-radius:11px;
+    overflow-wrap:anywhere;
+  }
+
+  /* App-like spacing and hierarchy without re-creating or hiding any data. */
+  body.has-team[data-view=dashboard] #dashboardLayout {
+    gap:12px!important;
+  }
+  body.has-team[data-view=dashboard] #dashboardLayout > .team-hero {
+    padding:15px!important;
+    gap:10px!important;
+    border-radius:18px!important;
+    box-shadow:0 3px 16px rgba(20,33,55,.045)!important;
+  }
+  body.has-team[data-view=dashboard] #dashboardLayout > .team-hero .hero-team-value {
+    border-radius:12px!important;
+    gap:9px!important;
+    padding:11px 12px!important;
+  }
+  body.has-team[data-view=dashboard] #dashboardLayout > .team-hero #dashboardHeroStats.hero-stats {
+    gap:9px!important;
+  }
+  body.has-team[data-view=dashboard] #dashboardLayout > .team-hero #dashboardHeroStats .hero-stat {
+    border-radius:13px!important;
+    min-height:82px!important;
+    padding:11px 12px!important;
+    justify-content:center!important;
+    gap:4px!important;
+  }
+  body.has-team[data-view=dashboard] #dashboardLayout > .team-hero #dashboardHeroStats .hero-stat > span {
+    font-size:10px!important;
+    line-height:14px!important;
+    letter-spacing:.015em!important;
+  }
+  body.has-team[data-view=dashboard] #dashboardLayout > .team-hero #dashboardHeroStats .hero-stat strong {
+    font-size:clamp(18px,5.4vw,23px)!important;
+    line-height:1.2!important;
+  }
+  body.has-team[data-view=dashboard] .decision-primary {
+    gap:12px!important;
+  }
+  body.has-team[data-view=dashboard] .decision-panel {
+    box-sizing:border-box;
+    padding:14px!important;
+    border-radius:18px!important;
+    box-shadow:0 3px 16px rgba(20,33,55,.045);
+  }
+  body.has-team[data-view=dashboard] .decision-pitch .pitch {
+    border-radius:13px!important;
+    overflow:hidden;
+  }
+  body.has-team[data-view=dashboard] .decision-league-kpis > div,
+  body.has-team[data-view=dashboard] .decision-scenario {
+    border-radius:13px!important;
+  }
+  body.has-team[data-view=dashboard] .decision-plan .decision-scenarios {
+    gap:9px!important;
+  }
+  body.has-team[data-view=dashboard] .decision-deep {
+    border-radius:18px!important;
+    overflow:clip;
+  }
+  body.has-team[data-view=dashboard] .decision-deep > summary {
+    min-height:48px;
+    padding:14px!important;
+  }
+  body.has-team[data-view=dashboard] #dashboardPool {
+    border-radius:16px!important;
+  }
+}
+@media (max-width:350px) {
+  body:not(.connecting-team) .mobile-bottom-nav {
+    left:8px!important;
+    right:8px!important;
+    gap:2px;
+    padding:5px!important;
+    border-radius:21px!important;
+  }
+  body:not(.connecting-team) .mobile-bottom-nav button {
+    font-size:9px!important;
+    padding:7px 1px!important;
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  .mobile-bottom-nav button {
+    transition:none!important;
+    transform:none!important;
+  }
+}
