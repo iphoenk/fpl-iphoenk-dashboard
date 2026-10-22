@@ -48,6 +48,13 @@ test('20 concurrent FPL IDs, Official bootstrap and V6 evidence shared, IO cappe
  const before=service.stats().upstreamCalls;
  await Promise.all(Array.from({length:20},(_,i)=>service.get(1000+i)));
  assert.equal(service.stats().upstreamCalls,before);
+ assert.equal(service.stats().officialCalls,41);
+ assert.equal(service.stats().decisionRequests,40);
+ assert.equal(service.stats().decisionCacheHits,20);
+ assert.ok(service.stats().resourceCacheHits>0);
+ assert.ok(service.stats().processCpuMsSinceServiceStart>=0);
+ assert.equal(results[0].requested_horizon,3);
+ assert.equal(results[0].effective_horizon,1);
 });
 test('20 requests for same account deduplicate resource and advisory compute',async()=>{
  const m=mock(5),service=createPublicDecisionService({fetcher:m.fetcher,clock:()=>NOW,maxActive:3});

@@ -1,0 +1,10 @@
+{
+  "repository": "iphoenk/FPL-iphoenk-engine",
+  "sha": "22655d57f17660006059612af23bd94cf79dde41",
+  "contract": "V12_EXACT_PACKAGE_SEARCH_V1",
+  "component": "legal_squad + Official squad/lineup rules only",
+  "files": {
+    "src/engines/v12_package_search.py": "746df9bfb26d6e0784ff46c88f7b906ec2682c3ffc4d6c655cd7498a5e1cf31e",
+    "config/rules/fpl_2026_27.json": "34123d2c17eb2da6f29bdfde6f683264c4894f1a88f32862a261c0de61683aeb"
+  }
+}
