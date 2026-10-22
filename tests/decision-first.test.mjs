@@ -36,7 +36,7 @@ test('next GW displays hold, one transfer and alternatives without invented poin
  assert.match(js,/B · 1 Transfer/);
  assert.match(js,/C · 2 Transfers/);
  assert.match(js,/PUBLIC_FPL_DETERMINISTIC_ADVISORY_V1/);
- assert.match(js,/Belum ditemukan paket transfer legal/);
+ assert.match(js,/No legal transfer package/);
  assert.match(js,/publicPlan/);
  assert.match(js,/vice_captain/);
 });
@@ -71,6 +71,6 @@ test('Overview defaults to one GW and marks price-proxy transfer economics',()=>
  assert.match(js,/horizon:1,loading:false,report:null/);
  assert.match(js,/\[1,3,5\]/);
  assert.match(js,/PUBLIC_CURRENT_PRICE_PROXY_INDICATIVE/);
- assert.match(js,/Belum tentu terjangkau di akunmu/);
- assert.match(js,/Selisih bruto vs Hold/);
+ assert.match(js,/This may not be affordable in your account/);
+ assert.match(js,/Gross difference vs Hold/);
 });
