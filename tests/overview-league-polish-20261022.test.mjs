@@ -24,7 +24,7 @@ test('mini league footer contains page text before arrows, without redundant Tim
  assert.ok(ui.indexOf('decision-league-arrows',footer)>ui.indexOf('decision-league-status',footer));
  assert.match(ui,/Rank '\+block\+'–'\+end\+' · P '\+page/);
  assert.match(css,/grid-template-columns:minmax\(0,1fr\) max-content max-content!important/);
- assert.match(ui,/GW bruto/);
+ assert.match(ui,/GW gross/);
  assert.match(ui,/event_transfers_cost/);
  assert.match(css,/decision-league-foot-right/);
 });
