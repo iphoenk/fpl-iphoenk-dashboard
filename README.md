@@ -53,3 +53,16 @@ node --env-file=.env.own-model.local scripts/publish-own-model.mjs .model-data/p
 ```
 
 The trusted publication command needs the existing private Vercel Blob credential in its ignored environment file. Do not commit generated input, predictions or credentials. Artifacts expire six hours after the oldest input acquisition or at deadline. Updating requires another explicit batch; there is no scheduler or background browser refresh. Missing observations stay unavailable, never zero. The model is experimental and has no demonstrated accuracy advantage yet. It excludes unsupported tactical/coach/formation-fit scores and does not feed transfer or rival decisions automatically.
+
+
+### Staged analytical upgrade: 1/3/5-GW public adviser
+
+Draft PR #69 adds an **optional, validated 8-GW global projection challenger** from
+the separate \`iphoenk/fpl-dashboard\` batch producer. The main dashboard remains
+Official-FPL factual authority, with V6 factual provenance and no login.
+The public no-Monte-Carlo planner may now compare HOLD, one transfer and bounded
+two-transfer packages at horizon 1, 3 or 5 GW, optimizing XI and C/VC per GW.
+The published global model is NOT Canonical V12; only its deterministic package
+and lineup search approach is V12-inspired. If the global batch data cannot
+pass GW, freshness, identity and coverage checks, use the previous Official
+one-GW public advisory. Never invent free transfers, hit costs or net gains.

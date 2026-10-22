@@ -1,8 +1,10 @@
 /* Public FPL multi-user decision service. Official data is authoritative.
    V6 is read-only factual provenance; no Monte Carlo or private V12 payload. */
 import {publicDecision} from './multiuser-decision.mjs';
+import {multiGwDecision} from './multiuser-horizon.mjs';
 const ROOT='https://fantasy.premierleague.com/api/';
 const V6='https://raw.githubusercontent.com/iphoenk/FPL-iphoenk-engine/runtime-data-v6/data/v6/';
+const GLOBAL='https://raw.githubusercontent.com/iphoenk/fpl-dashboard/main/public/data/';
 const number=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))?Number(v):null;
 function boundedPool(limit,waitingLimit){
  let active=0,peak=0;const waiting=[];
@@ -73,7 +75,22 @@ export function createPublicDecisionService({
    .finally(()=>{v6Pending=null;});
   return v6Pending;
  }
- async function compute(id){
+
+ let globalModelUnavailableUntil=0;
+ async function globalModel(){
+  // Short negative cache prevents every CPU-wave retrying one unavailable
+  // shared source. Never substitute stale/invalid model values.
+  if(clock()<globalModelUnavailableUntil)return null;
+  const [m,p]=await Promise.allSettled([
+   read('challenger-meta',GLOBAL+'meta.json',300000,100000),
+   read('challenger-players',GLOBAL+'players.json',300000,1500000)
+  ]);
+  if(m.status!=='fulfilled'||p.status!=='fulfilled'){
+   globalModelUnavailableUntil=clock()+30000;return null;
+  }
+  return {meta:m.value,players:p.value};
+ }
+ async function compute(id,horizon=3){
   const [data,v6]=await Promise.all([bootstrap(),provenance()]);
   const upcoming=data.events.find(x=>x.is_next)||data.events.find(x=>!x.finished);
   // Public squad is readable only after the preceding FPL deadline.
@@ -84,24 +101,28 @@ export function createPublicDecisionService({
    official('entry/'+id+'/event/'+pub.id+'/picks/',120000,1000000)
   ]);
   if(Number(entry?.id)!==id||!Array.isArray(picks?.picks)||picks.picks.length!==15)throw Error('BAD_OFFICIAL_ENTRY');
-  const decision=publicDecision({entry,picks,bootstrap:data,planningGw:upcoming.id});
+  const [snapshot]=await Promise.all([globalModel()]);
+  const enhanced=multiGwDecision({entry,picks,bootstrap:data,planningGw:upcoming.id,snapshot,horizon,now:clock()});
+  const decision=enhanced||publicDecision({entry,picks,bootstrap:data,planningGw:upcoming.id});
+  const sourceMode=enhanced?'SHARED_MULTIGW_SNAPSHOT':'OFFICIAL_ONE_GW_FALLBACK';
   return {...decision,generated_at:new Date(clock()).toISOString(),
-   source:{provider:'Official FPL',entry_id:id,published_gw:pub.id,planning_gw:upcoming.id,v6},
+   source:{provider:'Official FPL',entry_id:id,published_gw:pub.id,planning_gw:upcoming.id,v6,model_mode:sourceMode},
    concurrency:{mode:'SHARED_INSTANCE_BOUNDED',monte_carlo:'DISABLED'}};
  }
- async function get(id){
+ async function get(id,horizon=3){
   if(!Number.isSafeInteger(id)||id<1||id>9999999999)throw Error('BAD_ENTRY_ID');
-  const saved=cache.get(id);
+  const key=id+':'+horizon;
+  const saved=cache.get(key);
   if(saved&&clock()-saved.time<45000)return saved.data;
-  if(pending.has(id))return pending.get(id);
-  const task=cpu.submit(()=>compute(id)).then(data=>{
+  if(pending.has(key))return pending.get(key);
+  const task=cpu.submit(()=>compute(id,horizon)).then(data=>{
    if(['ready','partial'].includes(data.status)){
-    cache.delete(id);cache.set(id,{time:clock(),data});
+    cache.delete(key);cache.set(key,{time:clock(),data});
     while(cache.size>120)cache.delete(cache.keys().next().value);
    }
    return data;
-  }).finally(()=>pending.delete(id));
-  pending.set(id,task);
+  }).finally(()=>pending.delete(key));
+  pending.set(key,task);
   return task;
  }
  function stats(){const i=io.stats(),c=cpu.stats();return {
@@ -121,11 +142,12 @@ export async function publicDecisionResponse(request,{service=sharedService}={})
  if(path!=='/api/decision')return null;
  const noStore={'Cache-Control':'no-store','Vercel-CDN-Cache-Control':'no-store'};
  if(request.method!=='GET')return Response.json({status:'unavailable',error:'Read-only'},{status:405,headers:noStore});
- const keys=[...url.searchParams.keys()],ids=url.searchParams.getAll('entry_id');
- if(keys.some(k=>k!=='entry_id')||ids.length!==1||!/^[1-9]\d{0,9}$/.test(ids[0]))
+ const keys=[...url.searchParams.keys()],ids=url.searchParams.getAll('entry_id'),hs=url.searchParams.getAll('horizon');
+ if(keys.some(k=>!['entry_id','horizon'].includes(k))||ids.length!==1||hs.length>1||
+    (hs.length>0&&!['1','3','5'].includes(hs[0]))||!/^[1-9]\d{0,9}$/.test(ids[0]))
   return Response.json({status:'unavailable',error:'Invalid FPL entry ID'},{status:400,headers:noStore});
  try{
-  const data=await service.get(Number(ids[0]));
+  const data=await service.get(Number(ids[0]),hs.length?Number(hs[0]):3);
   const headers=['ready','partial'].includes(data.status)?
    {'Cache-Control':'public, max-age=15, s-maxage=45','Vercel-CDN-Cache-Control':'public, s-maxage=45'}:noStore;
   return Response.json(data,{headers:{...headers,'X-Content-Type-Options':'nosniff'}});
