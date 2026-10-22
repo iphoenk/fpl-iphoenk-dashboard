@@ -58,16 +58,16 @@ async function loadBase(){
 async function fetchTeam(id,gw){const [entry,picks]=await Promise.all([api('entry/'+id+'/'),api('entry/'+id+'/event/'+gw+'/picks/')]);return {entry,picks};}
 async function loadTeam(raw,gw=state.gw,options={}){
  const visiting=options.visit??state.visitingTeam??false;
- const id=entryId(raw);if(!id){alertMessage('Masukkan Entry ID berupa angka atau link tim FPL yang valid.');return;}
- if(!state.bootstrap){alertMessage('Data FPL belum siap. Coba muat ulang data.');return;}
- if(!gw){alertMessage('Belum ada gameweek publik untuk tim ini. Coba lagi setelah deadline pertama.');return;}
- const request=++state.teamRequest;$('entrySubmit').disabled=true;$('entrySubmit').textContent='Menghubungkan…';clearAlert();
+ const id=entryId(raw);if(!id){alertMessage('Enter a valid numeric FPL Entry ID or team link.');return;}
+ if(!state.bootstrap){alertMessage('FPL data is not ready. Please refresh and try again.');return;}
+ if(!gw){alertMessage('No public gameweek is available for this team yet. Try again after the first deadline.');return;}
+ const request=++state.teamRequest;$('entrySubmit').disabled=true;$('entrySubmit').textContent='Connecting…';clearAlert();
  try{const [team,live]=await Promise.all([fetchTeam(id,gw),api('event/'+gw+'/live/').catch(()=>null)]);if(request!==state.teamRequest)return;
   if(!visiting&&!state.visitingTeam&&state.league&&!(team.entry.leagues?.classic||[]).some(l=>l.id===state.league.league.id)){state.league=null;state.leagueRequest++;ext.leagueToken++;$('leaguePanel').innerHTML='<div class="empty">Pilih mini league untuk tim ini.</div>';$('leaguePagination').innerHTML='';$('leagueInput').value='';document.getElementById('leagueExtras')?.remove();}
   state.entry=team.entry;state.picks=team.picks;state.gw=gw;state.live=Object.fromEntries((live?.elements||[]).map(p=>[p.id,p]));$('gwSelect').value=gw;$('entryInput').value=id;$('compareA').value=id;state.visitingTeam=visiting;if(!visiting){state.homeEntryId=id;safeWrite('dugout-entry',id);}
-  renderStats();renderPitch();renderInsights();renderPlanner();renderLeagueOptions();if(!live)alertMessage('Tim berhasil dimuat, tetapi poin per pemain belum tersedia. Total gameweek mengikuti data picks FPL.');
- }catch(error){if(request===state.teamRequest)alertMessage(error.message+' Tim yang sebelumnya tampil tetap dipertahankan.');}
- finally{if(request===state.teamRequest){$('entrySubmit').disabled=false;$('entrySubmit').innerHTML='Hubungkan tim ↗';}}
+  renderStats();renderPitch();renderInsights();renderPlanner();renderLeagueOptions();if(!live)alertMessage('Team loaded, but individual player points are not available yet. Gameweek totals follow official FPL picks data.');
+ }catch(error){if(request===state.teamRequest)alertMessage(error.message+' Your previously displayed team has been kept.');}
+ finally{if(request===state.teamRequest){$('entrySubmit').disabled=false;$('entrySubmit').innerHTML='Connect team ↗';}}
 }
 function renderLeagueOptions(){const leagues=state.entry?.leagues?.classic||[];$('leagueSelect').innerHTML='<option value="">Pilih mini league ('+leagues.length+')</option>'+leagues.map(l=>'<option value="'+l.id+'">'+esc(l.name)+'</option>').join('');if(state.league&&leagues.some(l=>l.id===state.league.league.id))$('leagueSelect').value=state.league.league.id;}
 async function loadLeague(id,page=1){if(!/^[1-9]\d{0,9}$/.test(String(id))){alertMessage('ID mini league harus berupa angka.');return;}const request=++state.leagueRequest;clearAlert();$('leaguePanel').innerHTML='<div class="empty"><span class="loader"></span> Memuat klasemen…</div>';$('leaguePagination').innerHTML='';try{const data=await api('leagues-classic/'+id+'/standings/?page_standings='+page);if(request!==state.leagueRequest)return;state.league=data;state.leaguePage=page;const rows=data.standings.results;const same=String(state.entry?.id);$('leagueInput').value=id;
