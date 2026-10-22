@@ -106,7 +106,7 @@
     }).join('');
     const end=block+Math.max(0,rows.length?rows.length-1:9);
     const atEnd=local&&!local.standings.has_next&&!leagueBlockRows(local.standings.results,block+10).length&&leagueStandingsPage(block+10)>=page;
-    const status=active?.loading?'Memuat…':active?.error?'Gagal memuat':local?'Rank '+block+'–'+end+' · P '+page:'Belum dimuat';
+    const status=active?.loading?'Memuat…':active?.error?'Gagal memuat':local?'Rank '+block+'–'+end+' · P '+page:'Klasemen belum dimuat';
     return '<article class="decision-panel decision-league"><header class="decision-panel-head"><div><h2>Mini-league Snapshot</h2><p>10 tim sesuai posisi di liga terpilih</p></div><button class="decision-link" data-goto="liga">Klasemen ↗</button></header>'+
       '<label class="decision-league-label" for="decisionLeagueSelect">Liga dipilih</label><select id="decisionLeagueSelect"'+(!leagues.length?' disabled':'')+'>'+(!leagues.length?'<option>Hubungkan tim FPL</option>':options)+'</select>'+
       '<div class="decision-league-kpis"><div><span>Posisi saya</span><strong>'+number(rank)+'</strong></div><div><span>Gap leader</span><strong>'+(gap!==null?number(gap)+' pts':'—')+'</strong></div><div><span>GW bruto</span><strong>'+number(state.picks?.entry_history?.points)+'</strong>'+(Number(state.picks?.entry_history?.event_transfers_cost)>0?'<small>Hit −'+number(state.picks.entry_history.event_transfers_cost)+' · net '+number(Number(state.picks.entry_history.points)-Number(state.picks.entry_history.event_transfers_cost))+'</small>':'')+'</div></div>'+
