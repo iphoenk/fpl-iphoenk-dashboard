@@ -31,8 +31,8 @@ test('mini league footer contains page text before arrows, without redundant Tim
 test('explore pool maintains rank and name while swiping, with localized labels',()=>{
  assert.match(css,/#dashboardPredictions \.table-wrap table :is\(th,td\):nth-child\(2\)/);
  assert.match(css,/position:sticky;left:35px/);
- assert.match(adv,/sortHead\('player','Pemain'\)/);
- assert.match(adv,/Status FPL/);
+ assert.match(adv,/sortHead\('player','Player'\)/);
+ assert.match(adv,/FPL status/);
 });
 test('advisory reports errors, unavailable and actual 1-GW fallback honestly',()=>{
  assert.match(ui,/publicPlan\.error=error\?\.message/);
