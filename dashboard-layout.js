@@ -39,7 +39,7 @@ function dashboardPositionCards(){
  // Goalkeepers use public Official FPL bootstrap + fixtures. Other positions
  // retain the gated scouting snapshot; never silently mix model and FPL rows.
  const keeperRows=keeperScoutRows(allPlayers(),state.fixtures,state.teams)
-   .filter(r=>labPlayer(state.players[r.id])&&r.minutes>=180);
+   .filter(r=>state.players[r.id]?.element_type===1&&r.minutes>=180);
  const rows=gk?keeperRows:(snapshot?.scouts?.[pos]?.rows||[])
    .filter(r=>labPlayer(state.players[r.id])&&r.minutes>=180);
  const sort=(key,asc=false)=>[...rows]
@@ -68,7 +68,7 @@ function dashboardPositionCards(){
      +card('Nailed on · historical','Starts as a share of team matches.','startRate',false,true,'blue');
  return '<div class="dashboard-pos-tabs" role="group" aria-label="Filter posisi Worth a look">'+options+'</div>'+
    '<h2 class="adv-section-title" id="dashboardWorth">Worth a look <small>Contributions, threat, solidity, and minutes. Each ranked on its own.</small></h2>'+
-   (gk?sourceNote('GK: saves, clean sheets, dan menit berasal dari Official FPL; minimal 180 menit.'):snapshotNotice())+
+   '<details class="overview-methodology"><summary>Sumber & metodologi</summary><div class="overview-methodology-body">'+(gk?sourceNote('GK: saves, clean sheets, dan menit berasal dari Official FPL; minimal 180 menit.'):snapshotNotice())+'</div></details>'+
    panel(pos+' worth a look','<div class="notice">Minimum 180 minutes. Shortlist untuk ditelusuri, bukan jaminan performa.</div><div class="adv-grid two">'+metrics+'</div>');
 }
 function dashboardFixtureRuns(){if(!snapshotIsCurrent(ext.snapshot,state.bootstrap?.events,state.next))return '<h2 class="adv-section-title" id="dashboardRuns">Fixture runs</h2>'+panel('Fixture runs','<p class="muted">Snapshot jadwal sedang dimuat atau belum sesuai musim dan gameweek aktif.</p>');const rows=(ext.snapshot?.fixtures||[]).map(team=>{const cells=team.cells.filter(c=>c.gw>=state.next?.id&&c.gw<(state.next?.id||0)+6&&state.teams[team.teamId]?.short_name===team.club&&state.fixtures.some(f=>f.event===c.gw&&(c.home?f.team_h===team.teamId&&state.teams[f.team_a]?.short_name===c.opp:f.team_a===team.teamId&&state.teams[f.team_h]?.short_name===c.opp))); return {team,cells,cs:cells.length?cells.reduce((sum,c)=>sum+c.cleanSheetDifficulty,0)/cells.length:null,dc:cells.length?cells.reduce((sum,c)=>sum+c.defconDifficulty,0)/cells.length:null};}).filter(r=>r.cs!==null);
