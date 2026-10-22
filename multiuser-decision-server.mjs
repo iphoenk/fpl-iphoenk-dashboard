@@ -26,13 +26,14 @@ export function createPublicDecisionService({
     !Number.isInteger(maxCompute)||maxCompute<1)throw Error('Invalid concurrency settings');
  const io=boundedPool(maxActive,maxWaiting),cpu=boundedPool(maxCompute,maxWaiting);
  const resources=new Map(),inflight=new Map(),cache=new Map(),pending=new Map();
- let calls=0;
+ let calls=0,officialCalls=0,decisionRequests=0,decisionCacheHits=0,resourceCacheHits=0;
+ const cpuStart=globalThis.process?.cpuUsage?.(),instance=crypto.randomUUID();
  async function read(key,url,ttl,byteLimit){
   const now=clock(),record=resources.get(key);
-  if(record&&record.expires>now){resources.delete(key);resources.set(key,record);return record.value;}
+  if(record&&record.expires>now){resourceCacheHits++;resources.delete(key);resources.set(key,record);return record.value;}
   if(inflight.has(key))return inflight.get(key);
   const p=io.submit(async()=>{
-   calls++;
+   calls++;if(url.startsWith(ROOT))officialCalls++;
    const result=await fetcher(url,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(timeoutMs)});
    if(!result.ok)throw Error('UPSTREAM_'+result.status);
    if(Number(result.headers.get('content-length'))>byteLimit)throw Error('UPSTREAM_TOO_LARGE');
@@ -105,15 +106,17 @@ export function createPublicDecisionService({
   const enhanced=multiGwDecision({entry,picks,bootstrap:data,planningGw:upcoming.id,snapshot,horizon,now:clock()});
   const decision=enhanced||publicDecision({entry,picks,bootstrap:data,planningGw:upcoming.id});
   const sourceMode=enhanced?'SHARED_MULTIGW_SNAPSHOT':'OFFICIAL_ONE_GW_FALLBACK';
-  return {...decision,generated_at:new Date(clock()).toISOString(),
+  return {...decision,requested_horizon:horizon,effective_horizon:enhanced?horizon:1,
+   fallback_reason:enhanced?null:'MULTIGW_SNAPSHOT_UNAVAILABLE_OR_INVALID',generated_at:new Date(clock()).toISOString(),
    source:{provider:'Official FPL',entry_id:id,published_gw:pub.id,planning_gw:upcoming.id,v6,model_mode:sourceMode},
    concurrency:{mode:'SHARED_INSTANCE_BOUNDED',monte_carlo:'DISABLED'}};
  }
  async function get(id,horizon=3){
   if(!Number.isSafeInteger(id)||id<1||id>9999999999)throw Error('BAD_ENTRY_ID');
+  decisionRequests++;
   const key=id+':'+horizon;
   const saved=cache.get(key);
-  if(saved&&clock()-saved.time<45000)return saved.data;
+  if(saved&&clock()-saved.time<45000){decisionCacheHits++;return saved.data;}
   if(pending.has(key))return pending.get(key);
   const task=cpu.submit(()=>compute(id,horizon)).then(data=>{
    if(['ready','partial'].includes(data.status)){
@@ -126,7 +129,8 @@ export function createPublicDecisionService({
   return task;
  }
  function stats(){const i=io.stats(),c=cpu.stats();return {
-  active:c.active,waiting:c.waiting,peak:c.peak,upstreamCalls:calls,cache:cache.size,
+  instance,scope:'PER_INSTANCE_BEST_EFFORT',active:c.active,waiting:c.waiting,peak:c.peak,upstreamCalls:calls,officialCalls,decisionRequests,decisionCacheHits,resourceCacheHits,cache:cache.size,
+  processCpuMsSinceServiceStart:cpuStart?Object.values(globalThis.process.cpuUsage(cpuStart)).reduce((a,b)=>a+b,0)/1000:null,
   upstreamActive:i.active,upstreamWaiting:i.waiting,upstreamPeak:i.peak,
   upstreamLimit:i.limit,computeLimit:c.limit
  };}

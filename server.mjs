@@ -42,13 +42,13 @@ export async function handle(request,env,ctx,html){
  }
  let source=sourceFor(url.pathname);
  if(!source)return Response.json({error:'Endpoint tidak tersedia.'},{status:404});
- if(url.pathname.includes('/standings/')){
+ if(url.pathname.replace(/[/]$/,'').endsWith('/standings')){
   const page=url.searchParams.get('page_standings')||'1';
   if(!/^[1-9]\d{0,3}$/.test(page))return Response.json({error:'Halaman tidak valid.'},{status:400});
   source+='?page_standings='+page;
  }
  const cache=globalThis.caches?.default;
- const key=new Request(url.origin+url.pathname+(url.pathname.includes('/standings/')?'?page_standings='+(url.searchParams.get('page_standings')||'1'):''));
+ const key=new Request(url.origin+url.pathname+(url.pathname.replace(/[/]$/,'').endsWith('/standings')?'?page_standings='+(url.searchParams.get('page_standings')||'1'):''));
  const cached=cache&&await cache.match(key);if(cached)return cached;
  try{
   const response=await fetch(source,{headers:{Accept:'application/json','User-Agent':'FPL-Dugout/1.0'},signal:AbortSignal.timeout(url.pathname==='/api/model/news'?150000:22000)});

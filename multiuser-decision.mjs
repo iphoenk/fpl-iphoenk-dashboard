@@ -1,3 +1,5 @@
+import canonicalRules from './vendor/v12/fpl_2026_27.json' with {type:'json'};
+import canonicalProvenance from './vendor/v12/provenance.json' with {type:'json'};
 /* No-login public advisory. V12-informed route structure, NOT canonical V12.
    Official FPL ep_next only; no MC, private state, inferred hits or fake 3GW. */
 export const PUBLIC_DECISION_VERSION='official-deterministic-v1';
@@ -6,15 +8,26 @@ const score=p=>{const n=finite(p?.ep_next);return n!==null&&n>=0&&n<=40?n:null};
 const cost=p=>{const n=finite(p?.now_cost);return n!==null&&Number.isInteger(n)&&n>0?n:null};
 const round=n=>Math.round(n*100)/100;
 const better=(a,b)=>score(b)-score(a)||a.id-b.id;
-const validSquad=s=>s.length===15&&new Set(s.map(p=>p.id)).size===15&&
- [[1,2],[2,5],[3,5],[4,3]].every(([pos,n])=>s.filter(p=>p.element_type===pos).length===n)&&
- Object.values(s.reduce((a,p)=>(a[p.team]=(a[p.team]||0)+1,a),{})).every(n=>n<=3);
+export const CANONICAL_RULES_PROVENANCE={...canonicalProvenance,scope:'SQUAD_LEGALITY_ONLY',canonical_optimizer:false};
+// Adapter of pinned V12 legal_squad. Inputs are public Official player rows.
+export function canonicalSquadCheck(rows){
+ const rules=canonicalRules.squad;
+ if(!Array.isArray(rows)||rows.length!==rules.squad_size)return [false,'SQUAD_SIZE'];
+ if(rows.some(p=>!Number.isSafeInteger(p?.id)||p.id<1||!Number.isSafeInteger(p?.team)||p.team<1||![1,2,3,4].includes(p?.element_type)))return [false,'INVALID_PUBLIC_PLAYER'];
+ if(new Set(rows.map(p=>p.id)).size!==rows.length)return [false,'DUPLICATE_PLAYER'];
+ const positions={GK:1,DEF:2,MID:3,FWD:4};
+ if(!Object.entries(rules.position_counts).every(([pos,count])=>rows.filter(p=>p.element_type===positions[pos]).length===count))return [false,'POSITION_COMPOSITION'];
+ const clubs=rows.reduce((a,p)=>(a[p.team]=(a[p.team]||0)+1,a),{});
+ if(Object.values(clubs).some(count=>count>rules.max_players_per_club))return [false,'MAX_THREE_PER_CLUB'];
+ return [true,'PASS'];
+}
+const validSquad=s=>canonicalSquadCheck(s)[0];
 export function selectPublicXI(squad){
  if(!validSquad(squad)||squad.some(p=>score(p)===null))return null;
  const groups=[1,2,3,4].map(pos=>squad.filter(p=>p.element_type===pos).sort(better));
  let best=null;
- for(let d=3;d<=5;d++)for(let m=2;m<=5;m++){
-  const f=10-d-m;if(f<1||f>3)continue;
+ for(const legalFormation of canonicalRules.lineup.legal_formations){
+  const [d,m,f]=legalFormation.split('-').map(Number);
   const xi=[groups[0][0],...groups[1].slice(0,d),...groups[2].slice(0,m),...groups[3].slice(0,f)];
   if(xi.length!==11)continue;
   const ordered=[...xi].sort(better),captain=ordered[0],vice=ordered[1],sum=xi.reduce((a,p)=>a+score(p),0)+score(captain);
@@ -44,7 +57,7 @@ export function publicDecision({entry,picks,bootstrap,planningGw}){
    bank_after_indicative:cash===null?null:round(cash/10),
    hit_points:null,net_gain:null,executable:false,decision_status:'PUBLIC_ADVISORY'});
  const base={status:'ready',contract:'PUBLIC_FPL_DETERMINISTIC_ADVISORY_V1',model:PUBLIC_DECISION_VERSION,
-  authority:'OFFICIAL_FPL_EP_NEXT',canonical_v12:false,monte_carlo:false,planning_gw:planningGw,
+  authority:'OFFICIAL_FPL_EP_NEXT',canonical_v12:false,canonical_components:CANONICAL_RULES_PROVENANCE,monte_carlo:false,planning_gw:planningGw,
   entry_id:Number(entry.id),source_squad_gw:Number(picks.entry_history?.event)||null,
   economics_status:bankKnown?'PUBLIC_HISTORICAL_INDICATIVE':'UNAVAILABLE',
   assumptions:['One-GW Official ep_next, not actual points','Published squad, not pending transfers',

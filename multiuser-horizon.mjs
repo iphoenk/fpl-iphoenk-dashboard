@@ -1,11 +1,9 @@
 /* V12-inspired deterministic package/lineup evaluation using an independent
    public global model. This is NOT Canonical V12 and NEVER runs Monte Carlo. */
-import {selectPublicXI} from './multiuser-decision.mjs';
+import {selectPublicXI,canonicalSquadCheck,CANONICAL_RULES_PROVENANCE} from './multiuser-decision.mjs';
 const n=x=>x!==null&&x!==undefined&&x!==''&&Number.isFinite(Number(x))?Number(x):null;
 const rnd=x=>Math.round(x*100)/100;
-const legal=s=>s.length===15&&new Set(s.map(p=>p.id)).size===15&&
- [[1,2],[2,5],[3,5],[4,3]].every(([pos,num])=>s.filter(p=>p.element_type===pos).length===num)&&
- Object.values(s.reduce((a,p)=>(a[p.team]=(a[p.team]||0)+1,a),{})).every(x=>x<=3);
+const legal=s=>canonicalSquadCheck(s)[0];
 export function validateGlobalModel(snapshot,bootstrap,gw,now=Date.now()){
  const meta=snapshot?.meta,rows=snapshot?.players;
  const ts=Date.parse(meta?.built_at||'');
@@ -66,7 +64,7 @@ export function multiGwDecision({entry,picks,bootstrap,planningGw,snapshot,horiz
  });
  const res={status:known?'ready':'partial',contract:'PUBLIC_FPL_MULTIGW_ADVISORY_V2',
   model:'independent-eight-gw-challenger',authority:'OFFICIAL_FACTS_PUBLIC_PROJECTION',
-  canonical_v12:false,v12_methodology:'DETERMINISTIC_PACKAGE_SEARCH_AND_LINEUP_NONCANONICAL',
+  canonical_v12:false,canonical_components:CANONICAL_RULES_PROVENANCE,v12_methodology:'DETERMINISTIC_PACKAGE_SEARCH_AND_LINEUP_NONCANONICAL',
   monte_carlo:false,planning_gw:planningGw,entry_id:Number(entry.id),horizon,
   source_squad_gw:Number(picks.entry_history?.event)||null,
   economics_status:known?'PUBLIC_HISTORICAL_INDICATIVE':'UNAVAILABLE',
