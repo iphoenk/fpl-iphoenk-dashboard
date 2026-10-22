@@ -44,3 +44,41 @@ test('fast search winner equals exhaustive XI optimizer for changing scores and 
  assert.equal(engine.optimizePublicLineup(squad.slice(0,14)),null);
  assert.equal(engine.optimizePublicLineup(squad.map((p,i)=>i? p:{...p,ep_next:null})),null);
 });
+
+test('formation representative agrees with independent exhaustive mask oracle under score ties and reseeding',()=>{
+ // Independent brute-force oracle: evaluate each of the 550 legal masks.
+ const lex=(a,b)=>{for(let i=0;i<a.length;i++){if(a[i]!==b[i])return a[i]-b[i];}return 0;};
+ for(let seed=0;seed<50;seed++){
+  const players=squad.map((p,i)=>({...p,
+   ep_next:seed===0?0:seed===1?5:((i*37+seed*23)%61)/7}));
+  const byFormation=new Map();
+  for(const mask of engine.enumeratePublicXI(players)){
+   const xi=mask.map(i=>players[i]).sort((a,b)=>a.element_type-b.element_type||b.ep_next-a.ep_next||a.id-b.id);
+   const formation=[2,3,4].map(pos=>xi.filter(p=>p.element_type===pos).length).join('-');
+   const ranked=[...xi].sort((a,b)=>b.ep_next-a.ep_next||a.id-b.id);
+   const raw=xi.reduce((sum,p)=>sum+p.ep_next,0)+ranked[0].ep_next;
+   const starting_xi=xi.map(p=>p.id),previous=byFormation.get(formation);
+   if(previous&&(raw<previous.raw-1e-8||(Math.abs(raw-previous.raw)<1e-8&&lex(starting_xi,previous.starting_xi)>=0)))continue;
+   const selected=new Set(starting_xi);
+   const reserves=players.filter(p=>!selected.has(p.id));
+   const byXp=(a,b)=>b.ep_next-a.ep_next||a.id-b.id;
+   const bench=[...reserves.filter(p=>p.element_type===1).sort(byXp),...reserves.filter(p=>p.element_type!==1).sort(byXp)].map(p=>p.id);
+   byFormation.set(formation,{raw,starting_xi,bench,captain:ranked[0].id,vice_captain:ranked[1].id});
+  }
+  assert.equal(byFormation.size,8);
+  const actual=engine.optimizePublicLineup(players);
+  assert.equal(actual.optimizer.legal_xi_count,550);
+  assert.equal(actual.formation_comparison.length,8);
+  const bestRaw=Math.max(...[...byFormation.values()].map(x=>x.raw));
+  for(const row of actual.formation_comparison){
+   const reference=byFormation.get(row.formation);
+   assert.ok(reference,'missing brute-force formation '+row.formation);
+   assert.deepEqual(row.starting_xi,reference.starting_xi,'XI mismatch seed '+seed+' '+row.formation);
+   assert.deepEqual(row.bench,reference.bench,'bench mismatch seed '+seed+' '+row.formation);
+   assert.equal(row.captain,reference.captain);
+   assert.equal(row.vice_captain,reference.vice_captain);
+   assert.equal(row.expected_points,Math.round(reference.raw*100)/100);
+   assert.equal(row.delta_vs_best,Math.round((reference.raw-bestRaw)*100)/100);
+  }
+ }
+});
