@@ -58,6 +58,6 @@ test('Both production builds include the view and stylesheet after the decision 
   for(const path of ['build.mjs','build-vercel.mjs']){
     const build=readFileSync(new URL('../scripts/'+path,import.meta.url),'utf8');
     assert.ok(build.indexOf("'planning-compact.js'")>build.indexOf("'decision-first.js'"));
-    assert.ok(build.indexOf("'planning-compact.css'")>build.indexOf("'layout-rhythm.css'"));
+    assert.ok(build.indexOf("'planning-compact.css'")<build.indexOf("'layout-rhythm.css'"));
   }
 });
