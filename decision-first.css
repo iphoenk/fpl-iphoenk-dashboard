@@ -811,3 +811,18 @@ body.has-team #dashboardPredictions .table-wrap table tr:hover td:nth-child(-n+2
  body.has-team #dashboardPredictions .table-wrap table td:nth-child(2) button{
   max-width:81px;white-space:normal;overflow-wrap:anywhere;text-align:left}
 }
+
+/* Empty-state explanations and no-flicker transfer/planning load. */
+body.has-team[data-view=dashboard] .decision-fallback-notice{
+ margin:0;padding:9px 11px;border:1px solid var(--line);border-radius:8px;
+ background:var(--bg);font-size:11px;line-height:1.45;color:var(--muted)
+}
+body.has-team .advanced-skeleton{display:flex;flex-direction:column;gap:13px;border:1px solid var(--line);
+ border-radius:12px;background:var(--panel);padding:18px;min-height:210px}
+body.has-team .advanced-skeleton-title{color:var(--muted);font-size:13px;font-weight:600;margin-bottom:4px}
+body.has-team .advanced-skeleton-row{height:35px;width:100%;border-radius:6px;
+ background:linear-gradient(90deg,var(--bg),var(--line),var(--bg));background-size:200% 100%;
+ animation:loading-row 1.65s ease-in-out infinite}
+body.has-team .advanced-skeleton-row.short{width:63%}
+@keyframes loading-row{from{background-position:100% 0}to{background-position:-100% 0}}
+@media(prefers-reduced-motion:reduce){body.has-team .advanced-skeleton-row{animation:none}}
