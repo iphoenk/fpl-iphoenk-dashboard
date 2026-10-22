@@ -40,7 +40,19 @@ export function selectPersonalNews({players,teams,articles,context,filter='For Y
  const seen=new Set();return items.sort((a,b)=>b.time-a.time||relevance(b)-relevance(a)||Number(b.urgent)-Number(a.urgent)).filter(item=>{if(seen.has(item.key))return false;seen.add(item.key);return true;});
 }
 export function deadlineBrief(next,now=Date.now()){
- const time=Date.parse(next?.deadline_time||'');if(!Number.isFinite(time))return null;
- const minutes=Math.max(0,Math.ceil((time-now)/60000)),days=Math.floor(minutes/1440),hours=Math.floor(minutes%1440/60);
- return {time,passed:time<=now,short:time<=now?'Deadline lewat':days?days+' hari '+hours+' jam':hours?hours+' jam '+minutes%60+' menit':minutes+' menit'};
+ const time=Date.parse(next?.deadline_time||'');
+ if(!Number.isFinite(time))return null;
+ if(time<=now)return {time,passed:true,remainingSeconds:0,short:'Deadline lewat',urgent:false};
+ // Ceil seconds so the clock never claims the deadline has passed early.
+ const remainingSeconds=Math.ceil((time-now)/1000),days=Math.floor(remainingSeconds/86400);
+ const hours=Math.floor((remainingSeconds%86400)/3600);
+ const minutes=Math.floor((remainingSeconds%3600)/60);
+ const seconds=remainingSeconds%60;
+ const urgent=remainingSeconds<86400;
+ return {
+  time,passed:false,remainingSeconds,urgent,
+  short:urgent
+   ?hours+' jam '+minutes+' menit '+seconds+' detik'
+   :days+' hari '+hours+' jam '+minutes+' menit'
+ };
 }
