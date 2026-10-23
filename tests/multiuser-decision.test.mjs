@@ -81,3 +81,20 @@ test('Official FPL public picks may lack selling prices; budget proxy is explici
  assert.ok(r.scenarios.B);
  assert.equal(r.scenarios.B.executable,false);
 });
+test('decision response exposes one Official FPL canonical team state',async()=>{
+ const m=await (async()=>{
+  const fetcher=async url=>{
+   const path=new URL(url).pathname;
+   if(path.endsWith('/bootstrap-static/'))return Response.json(bootstrap);
+   if(path.endsWith('/picks/'))return Response.json(picks);
+   return Response.json({id:3462711,name:'Kutu Kupret',player_first_name:'Test',player_last_name:'Manager',summary_overall_points:477,summary_overall_rank:1100000});
+  };
+  return createPublicDecisionService({fetcher,maxActive:4});
+ })();
+ const r=await m.get(3462711,1);
+ assert.equal(r.team_state.requested_entry_id,3462711);
+ assert.equal(r.team_state.entry_id,3462711);
+ assert.equal(r.team_state.team_name,'Kutu Kupret');
+ assert.equal(r.team_state.authority,'OFFICIAL_FPL');
+ assert.equal(r.team_state.squad.length,15);
+});
