@@ -115,6 +115,17 @@
       '<footer class="decision-foot decision-league-foot"><span class="decision-league-name" title="'+safeName(member?.name||'Classic League')+'">'+safeName(member?.name||'Classic League')+'</span><span class="decision-league-status" aria-live="polite" title="'+safeName(active?.error||'')+'">'+status+'</span><div class="decision-league-arrows" aria-label="Rank range navigation"><button type="button" data-league-block="-1" aria-label="Previous ten teams"'+(block===1||active?.loading?' disabled':'')+'>←</button><button type="button" data-league-block="1" aria-label="Next ten teams"'+(atEnd||active?.loading?' disabled':'')+'>→</button></div></footer></article>';
   }
   const publicPlan={entryId:null,gw:null,horizon:1,loading:false,report:null,error:null,request:0};
+  function sameSquad(a,b){
+    const left=(a||[]).map(p=>Number(p.element??p)).filter(Number.isInteger).sort((x,y)=>x-y);
+    const right=(b||[]).map(p=>Number(p.element??p)).filter(Number.isInteger).sort((x,y)=>x-y);
+    return left.length===15&&right.length===15&&left.every((id,i)=>id===right[i]);
+  }
+  function decisionMatchesActiveTeam(report,id,gw){
+    const team=report?.team_state;
+    if(!team)return true;
+    return Number(team.requested_entry_id)===id&&Number(team.entry_id)===id&&
+      Number(team.planning_gameweek)===gw&&sameSquad(team.squad,state.picks?.picks);
+  }
   async function refreshPublicPlan(){
     const id=Number(state.entry?.id),gw=Number(state.next?.id);
     if(!id||!gw)return;
@@ -125,7 +136,7 @@
       const report=await api('decision?entry_id='+id+'&horizon='+publicPlan.horizon);
       if(token!==publicPlan.request||Number(state.entry?.id)!==id||Number(state.next?.id)!==gw||selectedHorizon!==publicPlan.horizon)return;
       if(report?.status==='unavailable'){publicPlan.report=report;publicPlan.loading=false;renderDecision();return;}
-      if(Number(report?.entry_id)!==id||Number(report?.planning_gw)!==gw||
+      if(Number(report?.entry_id)!==id||Number(report?.planning_gw)!==gw||!decisionMatchesActiveTeam(report,id,gw)||
         !['PUBLIC_FPL_DETERMINISTIC_ADVISORY_V1','PUBLIC_FPL_MULTIGW_ADVISORY_V2'].includes(report?.contract)||report?.canonical_v12!==false||report?.monte_carlo!==false||
         (report.contract==='PUBLIC_FPL_MULTIGW_ADVISORY_V2'&&report.horizon!==selectedHorizon))throw Error('Invalid public decision context');
       publicPlan.report=report;
