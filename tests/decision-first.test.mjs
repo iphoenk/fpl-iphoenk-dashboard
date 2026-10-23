@@ -74,3 +74,9 @@ test('Overview defaults to one GW and marks price-proxy transfer economics',()=>
  assert.match(js,/This may not be affordable in your account/);
  assert.match(js,/Gross difference vs Hold/);
 });
+test('decision response must match the active canonical squad before rendering',()=>{
+ assert.match(js,/function sameSquad\(a,b\)/);
+ assert.match(js,/function decisionMatchesActiveTeam\(report,id,gw\)/);
+ assert.match(js,/!decisionMatchesActiveTeam\(report,id,gw\)/);
+ assert.match(js,/sameSquad\(team\.squad,state\.picks\?\.picks\)/);
+});
