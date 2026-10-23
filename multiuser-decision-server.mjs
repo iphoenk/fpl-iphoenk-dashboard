@@ -90,7 +90,34 @@ export function createPublicDecisionService({
   }
   return {meta:m.value,players:p.value};
  }
- async function compute(id,horizon=3){
+ function canonicalTeamState({entry,picks,bootstrap,planningGw,publishedGw,requestedId}){
+  const captain=(picks?.picks||[]).find(p=>p.is_captain||Number(p.multiplier)>1);
+  const vice=(picks?.picks||[]).find(p=>p.is_vice_captain);
+  return {
+   requested_entry_id:requestedId,
+   entry_id:Number(entry.id),
+   team_name:entry.name||null,
+   manager_name:[entry.player_first_name,entry.player_last_name].filter(Boolean).join(' ')||null,
+   planning_gameweek:Number(planningGw),
+   published_squad_gameweek:Number(publishedGw),
+   total_points:number(entry.summary_overall_points),
+   overall_rank:number(entry.summary_overall_rank),
+   bank:number(picks.entry_history?.bank),
+   team_value:number(picks.entry_history?.value),
+   gameweek_points:number(picks.entry_history?.points),
+   gameweek_rank:number(picks.entry_history?.rank),
+   rank_change:null,
+   free_transfers:null,
+   transfer_cost:number(picks.entry_history?.event_transfers_cost),
+   captain_id:captain?Number(captain.element):null,
+   vice_captain_id:vice?Number(vice.element):null,
+   squad:(picks.picks||[]).map(p=>({element:Number(p.element),position:Number(p.position),multiplier:Number(p.multiplier||1),is_captain:Boolean(p.is_captain),is_vice_captain:Boolean(p.is_vice_captain)})),
+   source:'Official FPL',
+   authority:'OFFICIAL_FPL',
+   fetched_at:new Date().toISOString()
+  };
+ }
+ async function compute(id,horizon=1){
   const [data,v6]=await Promise.all([bootstrap(),provenance()]);
   const upcoming=data.events.find(x=>x.is_next)||data.events.find(x=>!x.finished);
   // Public squad is readable only after the preceding FPL deadline.
@@ -106,10 +133,11 @@ export function createPublicDecisionService({
   const decision=enhanced||publicDecision({entry,picks,bootstrap:data,planningGw:upcoming.id});
   const sourceMode=enhanced?'SHARED_MULTIGW_SNAPSHOT':'OFFICIAL_ONE_GW_FALLBACK';
   return {...decision,generated_at:new Date(clock()).toISOString(),
+   team_state:canonicalTeamState({entry,picks,bootstrap:data,planningGw:upcoming.id,publishedGw:pub.id,requestedId:id}),
    source:{provider:'Official FPL',entry_id:id,published_gw:pub.id,planning_gw:upcoming.id,v6,model_mode:sourceMode},
    concurrency:{mode:'SHARED_INSTANCE_BOUNDED',monte_carlo:'DISABLED'}};
  }
- async function get(id,horizon=3){
+ async function get(id,horizon=1){
   if(!Number.isSafeInteger(id)||id<1||id>9999999999)throw Error('BAD_ENTRY_ID');
   const key=id+':'+horizon;
   const saved=cache.get(key);
@@ -151,7 +179,7 @@ export async function publicDecisionResponse(request,{service=sharedService}={})
     (hs.length>0&&!['1','3','5'].includes(hs[0]))||!/^[1-9]\d{0,9}$/.test(ids[0]))
   return Response.json({status:'unavailable',error:'Invalid FPL entry ID'},{status:400,headers:noStore});
  try{
-  const data=await service.get(Number(ids[0]),hs.length?Number(hs[0]):3);
+  const data=await service.get(Number(ids[0]),hs.length?Number(hs[0]):1);
   const headers=['ready','partial'].includes(data.status)?
    {'Cache-Control':'public, max-age=15, s-maxage=45','Vercel-CDN-Cache-Control':'public, s-maxage=45'}:noStore;
   return Response.json(data,{headers:{...headers,'X-Content-Type-Options':'nosniff'}});
