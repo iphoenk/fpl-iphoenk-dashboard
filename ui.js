@@ -128,6 +128,8 @@ function renderFixturesEnhanced(){if(!state.bootstrap)return;const teams=Object.
 renderFixtures=renderFixturesEnhanced;
 /*__EXTENSIONS__*/
 renderStats();renderInsights();showView(requestedView||'dashboard');
-try{await loadBase();const saved=safeRead('dugout-entry');if(saved&&!state.manualEntryAttempt){$('entryInput').value=saved;await loadTeam(saved);}}catch(error){$('dataStatus').innerHTML='<span style="color:var(--orange)">●</span> Connection delayed';$('deadline').textContent='Not yet available';alertMessage(error.message+' Use the Reload button to try again.');$('radar').innerHTML='<div class="empty">Data source could not be reached.</div>';}
+const savedEntry=safeRead('dugout-entry');
+if(savedEntry&&!state.manualEntryAttempt)$('entryInput').value=savedEntry;
+try{await loadBase();if(savedEntry&&!state.manualEntryAttempt){$('entryInput').value=savedEntry;await loadTeam(savedEntry);}}catch(error){$('dataStatus').innerHTML='<span style="color:var(--orange)">●</span> Connection delayed';$('deadline').textContent='Not yet available';if(savedEntry&&!state.manualEntryAttempt)$('entryInput').value=savedEntry;alertMessage('Official FPL data is temporarily unavailable. Your saved Entry ID is still here. Use Reload to try again.');$('radar').innerHTML='<div class="empty">Official FPL data could not be reached. No stale team data is shown as current.</div>';}
 
 
