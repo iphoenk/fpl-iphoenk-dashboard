@@ -950,33 +950,6 @@ body.has-team[data-view=dashboard] .decision-league .decision-table-wrap :is(th,
  body.has-team[data-view=dashboard] .decision-league .decision-table-wrap :is(th,td){padding-left:4px;padding-right:3px}
 }
 
-/* Issue #67: one genuinely slim, consistent mobile masthead.
-   Explicit parent height defeats the legacy --bar-h and inner min-height. */
-@media (max-width:767px) {
-  body.has-team:not(.connecting-team) .approved-header {
-    box-sizing:border-box!important;
-    height:48px!important;
-    min-height:48px!important;
-    max-height:48px!important;
-  }
-  body.has-team:not(.connecting-team) .approved-header-inner {
-    box-sizing:border-box!important;
-    min-height:0!important;
-    height:47px!important;
-    max-height:47px!important;
-    padding:0 12px!important;
-    gap:8px!important;
-  }
-  body.has-team:not(.connecting-team) .approved-brand img {
-    width:clamp(114px,31vw,122px)!important;
-    height:auto!important;
-    max-height:43px!important;
-  }
-}
-
-
-
-
 /* Issue #143: readable, portrait-first Current Team XI.
    Only the decision Overview copy is affected; the authoritative FPL picks,
    all other pitch consumers, engine, branding and fixture semantics remain intact. */
@@ -1150,5 +1123,29 @@ body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row 
   }
   body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-position{
     font-size:9px
+  }
+}
+
+/* Issue #67: one genuinely slim, consistent mobile masthead.
+   Explicit parent height defeats the legacy --bar-h and inner min-height. */
+@media (max-width:767px) {
+  body.has-team:not(.connecting-team) .approved-header {
+    box-sizing:border-box!important;
+    height:48px!important;
+    min-height:48px!important;
+    max-height:48px!important;
+  }
+  body.has-team:not(.connecting-team) .approved-header-inner {
+    box-sizing:border-box!important;
+    min-height:0!important;
+    height:47px!important;
+    max-height:47px!important;
+    padding:0 12px!important;
+    gap:8px!important;
+  }
+  body.has-team:not(.connecting-team) .approved-brand img {
+    width:clamp(114px,31vw,122px)!important;
+    height:auto!important;
+    max-height:43px!important;
   }
 }
