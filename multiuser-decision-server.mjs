@@ -3,6 +3,7 @@
 import {publicDecision} from './multiuser-decision.mjs';
 import {multiGwDecision} from './multiuser-horizon.mjs';
 import {freeTransferEvidence} from './free-transfers.mjs';
+import {fetchCanonicalDecision,toDashboardDecision} from './v12-canonical-adapter.mjs';
 const ROOT='https://fantasy.premierleague.com/api/';
 const V6='https://raw.githubusercontent.com/iphoenk/FPL-iphoenk-engine/runtime-data-v6/data/v6/';
 const GLOBAL='https://raw.githubusercontent.com/iphoenk/fpl-dashboard/main/public/data/';
@@ -21,7 +22,8 @@ function boundedPool(limit,waitingLimit){
  return {submit,stats:()=>({active,waiting:waiting.length,peak,limit})};
 }
 export function createPublicDecisionService({
- fetcher=fetch,clock=Date.now,maxActive=6,maxWaiting=120,maxCompute=4,timeoutMs=9000
+ fetcher=fetch,clock=Date.now,maxActive=6,maxWaiting=120,maxCompute=4,timeoutMs=9000,
+  canonicalBaseUrl=process.env.FPL_V12_CANONICAL_URL||null
 }={}){
  if(!Number.isInteger(maxActive)||maxActive<1||!Number.isInteger(maxWaiting)||maxWaiting<0||
     !Number.isInteger(maxCompute)||maxCompute<1)throw Error('Invalid concurrency settings');
@@ -132,12 +134,21 @@ function canonicalTeamState({entry,picks,history,bootstrap,planningGw,publishedG
    official('entry/'+id+'/history/',90000,1000000)
   ]);
   if(Number(entry?.id)!==id||!Array.isArray(picks?.picks)||picks.picks.length!==15)throw Error('BAD_OFFICIAL_ENTRY');
+  const teamState=canonicalTeamState({entry,picks,history,bootstrap:data,planningGw:upcoming.id,publishedGw:pub.id,requestedId:id});
+  const canonical=await fetchCanonicalDecision({fetcher,baseUrl:canonicalBaseUrl,entryId:id,horizon,timeoutMs});
+  if(canonical.status==='READY'){
+   const canonicalDecision=toDashboardDecision(canonical.data);
+   return {...canonicalDecision,generated_at:new Date(clock()).toISOString(),
+    team_state:teamState,
+    source:{...canonicalDecision.source,entry_id:id,published_gw:pub.id,planning_gw:upcoming.id,v6,model_mode:'CANONICAL_V12_SERVICE'},
+    concurrency:{mode:'SHARED_INSTANCE_BOUNDED',monte_carlo:Boolean(canonicalDecision.monte_carlo)}};
+  }
   const [snapshot]=await Promise.all([globalModel()]);
   const enhanced=multiGwDecision({entry,picks,bootstrap:data,planningGw:upcoming.id,snapshot,horizon,now:clock()});
   const decision=enhanced||publicDecision({entry,picks,bootstrap:data,planningGw:upcoming.id});
   const sourceMode=enhanced?'SHARED_MULTIGW_SNAPSHOT':'OFFICIAL_ONE_GW_FALLBACK';
   return {...decision,generated_at:new Date(clock()).toISOString(),
-   team_state:canonicalTeamState({entry,picks,history,bootstrap:data,planningGw:upcoming.id,publishedGw:pub.id,requestedId:id}),
+   team_state:teamState,
    source:{provider:'Official FPL',entry_id:id,published_gw:pub.id,planning_gw:upcoming.id,v6,model_mode:sourceMode},
    concurrency:{mode:'SHARED_INSTANCE_BOUNDED',monte_carlo:'DISABLED'}};
  }
