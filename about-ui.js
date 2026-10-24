@@ -6,7 +6,6 @@ function renderAbout(){
  const sources=[
   ['Official Fantasy Premier League','https://fantasy.premierleague.com/','Published players, fixtures, prices, points, teams and leagues.'],
   ['FPLens','https://github.com/abdelmalek-maskri/fplens','Independent model snapshots and player projections.'],
-  ['FPL Insights','https://github.com/JonnoMillar/fpl-insights','Supplementary scouting and public snapshot context.'],
   ['FPL Core Insights','https://github.com/olbauday/FPL-Core-Insights','Additional public reference data, where explicitly sourced.'],
   ['The Guardian','https://www.theguardian.com/football','Football reporting, linked to its source when shown.'],
   ['FPL Jakarta','https://github.com/fpljakarta/fpl-jakarta-dashboard','Inspiration for awards; interface and calculations are independent.'],
