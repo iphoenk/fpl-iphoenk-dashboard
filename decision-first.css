@@ -1485,6 +1485,11 @@ body.has-team[data-view=dashboard] .decision-team-stat strong,body.has-team[data
 body.has-team .header-account-actions #refreshButton{display:inline-flex!important;align-items:center;justify-content:center;flex:0 0 auto;min-width:34px;min-height:34px;visibility:visible!important}
 @media(max-width:767px){body.has-team .header-account-actions{gap:6px!important}body.has-team .header-account-actions #refreshButton{width:34px;height:34px;padding:5px!important}}
 
+/* Icon-only reload button beside team context. */
+body.has-team .header-account-actions #refreshButton{font-size:0!important;line-height:0!important;aspect-ratio:1;max-width:38px;padding:7px!important;border-radius:10px;cursor:pointer}
+body.has-team .header-account-actions #refreshButton svg{display:block!important;width:19px;height:19px;flex:none}
+@media(max-width:767px){body.has-team .header-account-actions #refreshButton{min-width:34px!important;max-width:34px!important;width:34px!important;height:34px!important;padding:7px!important}}
+
 /* Issue #67: one genuinely slim, consistent mobile masthead.
    Explicit parent height defeats the legacy --bar-h and inner min-height. */
 @media (max-width:767px) {
