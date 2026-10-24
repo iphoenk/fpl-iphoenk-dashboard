@@ -1481,6 +1481,10 @@ body.has-team[data-view=dashboard] .decision-team-stat strong,body.has-team[data
 }
 @media(min-width:768px) and (max-width:1100px){body.has-team[data-view=dashboard] .decision-team-summary{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}}
 
+/* Restore refresh action next to the active team in all responsive headers. */
+body.has-team .header-account-actions #refreshButton{display:inline-flex!important;align-items:center;justify-content:center;flex:0 0 auto;min-width:34px;min-height:34px;visibility:visible!important}
+@media(max-width:767px){body.has-team .header-account-actions{gap:6px!important}body.has-team .header-account-actions #refreshButton{width:34px;height:34px;padding:5px!important}}
+
 /* Issue #67: one genuinely slim, consistent mobile masthead.
    Explicit parent height defeats the legacy --bar-h and inner min-height. */
 @media (max-width:767px) {
