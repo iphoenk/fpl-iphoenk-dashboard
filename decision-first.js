@@ -27,6 +27,7 @@
     return possible.find(id=>leagues.some(l=>Number(l.id)===id))||null;
   };
   const availability=(p)=>p?.status==='a'?'Available':p?.chance_of_playing_next_round!=null?String(p.chance_of_playing_next_round)+'%':'Check fitness';
+  const chipName=(value)=>({wildcard:'Wildcard',freehit:'Free Hit',bboost:'Bench Boost','3xc':'Triple Captain'}[value]||'No active chip');
   // Official classic standings contain up to 50 teams per page. Show ten at a time.
   function leagueBlockStart(rank){const n=Number(rank);return Number.isInteger(n)&&n>0?Math.floor((n-1)/10)*10+1:1;}
   function leagueStandingsPage(block){return Math.floor((block-1)/50)+1;}
@@ -83,11 +84,21 @@
     const starters=picks.filter(p=>p.position<=11);
     const outfield=[2,3,4].map(type=>starters.filter(p=>state.players[p.element]?.element_type===type).length);
     const formation=starters.length===11&&outfield.reduce((sum,count)=>sum+count,0)===10?outfield.join('-'):null;
+    const cap=picks.find(p=>p.is_captain),vice=picks.find(p=>p.is_vice_captain);
+    const flags=picks.map(p=>state.players[p.element]).filter(p=>p&&p.status!=='a');
+    const history=state.picks?.entry_history||{},entry=state.entry||{};
+    const gwPoints=history.points,average=state.bootstrap?.events?.find(e=>e.id===state.gw)?.average_entry_score;
+    const overallRank=entry.summary_overall_rank??history.overall_rank,gwRank=history.rank;
+    const previousOverall=history.previous_overall_rank;
+    const rankChange=Number.isFinite(Number(previousOverall))&&Number.isFinite(Number(overallRank))?Number(previousOverall)-Number(overallRank):null;
+    const stat=(label,value)=>'<div class="decision-team-stat"><span>'+label+'</span><strong>'+safeName(value===null||value===undefined||value===''?'—':String(value))+'</strong></div>';
+    const summary='<div class="decision-team-summary"><div class="decision-team-identity"><strong>'+safeName(entry.name||'Current Team')+'</strong><small>Team ID: '+safeName(entry.id||'—')+'</small></div><div class="decision-team-stats">'+stat('GW points',gwPoints)+stat('Avg points',average)+stat('Overall rank',overallRank)+stat('GW rank',gwRank)+stat('OR change',rankChange===null?'—':(rankChange>0?'↑ ':rankChange<0?'↓ ':'')+Math.abs(rankChange))+'<div class="decision-team-chip"><span>Chip</span><strong>'+safeName(chipName(state.picks?.active_chip))+'</strong></div></div></div>';
     const pitch=actualPitch?.innerHTML||'<div class="decision-empty">Starting XI is loading.</div>';
     const bench=actualBench?.innerHTML||'<div class="decision-empty">Bench is loading.</div>';
-    return '<article class="decision-panel decision-team"><header class="decision-panel-head"><div><h2>Current Team'+(formation?'<span class="decision-formation" aria-label="Formation '+formation+'">'+formation+'</span>':'')+'</h2><p>Starting XI and bench from published GW '+safeName(state.gw||'—')+'</p></div><button class="decision-link" data-goto="tim">Squad details ↗</button></header>'+
+    return '<article class="decision-panel decision-team"><header class="decision-panel-head"><div><h2>Current Team'+(formation?'<span class="decision-formation" aria-label="Formation '+formation+'">'+formation+'</span>':'')+'</h2><p>Starting XI and bench from published GW '+safeName(state.gw||'—')+'</p></div><button class="decision-link" data-goto="tim">Squad details ↗</button></header>'+summary+
       '<div class="decision-pitch"><div class="pitch">'+pitch+'</div></div>'+
-      '<div class="decision-bench"><strong>Bench · '+picks.filter(p=>p.position>11).length+' players</strong><div class="bench-row">'+bench+'</div></div></article>';
+      '<div class="decision-bench"><strong>Bench · '+picks.filter(p=>p.position>11).length+' players</strong><div class="bench-row">'+bench+'</div></div>'+
+      '<footer class="decision-foot"><span>Captain: <strong>'+safeName(state.players[cap?.element]?.web_name||'—')+'</strong></span><span>Vice: <strong>'+safeName(state.players[vice?.element]?.web_name||'—')+'</strong></span><span>'+flags.length+' fitness flag</span></footer></article>';
   }
   function leagueCard(){
     const leagues=leagueList(),selected=currentLeagueId(),member=leagueMember(selected),ownId=String(state.entry?.id||'');
