@@ -1165,6 +1165,12 @@ body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row 
 body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row .player-portrait-frame>.player-portrait{
   transform:scale(1.35)!important;transform-origin:50% 4%!important
 }
+
+body.has-team[data-view=dashboard] .decision-primary .decision-pitch .pitch-row .player-portrait-frame.failed,
+body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row .player-portrait-frame.failed{
+  display:none!important
+}
+
 @media(max-width:767px){
   body.has-team[data-view=dashboard] .decision-primary .decision-pitch .pitch-row .player-portrait-frame{
     width:min(100%,70px)!important;
