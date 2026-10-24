@@ -98,3 +98,29 @@ test('1–1 scored Official FPL provisional full-time appears FT on Overview and
  assert.match(c.overview(),/FT pending/);
  assert.match(c.cards(),/FT pending/);
 });
+
+test('compact Overview shows every fixture without All link and always formats kickoff 24-hour',()=>{
+ const c=setup(),html=c.overview();
+ assert.equal((html.match(/class="decision-fixture-row"/g)||[]).length,10,'all ten fixtures must appear inline');
+ assert.doesNotMatch(html,/data-goto="fixtures"|All ↗/);
+ assert.match(html,/local time \(24h\)/);
+ assert.doesNotMatch(html,/\b(?:AM|PM)\b/);
+ assert.match(decision,/toLocaleTimeString\('en-GB',\{hour:'2-digit',minute:'2-digit',hour12:false\}\)/);
+ assert.doesNotMatch(html,/Est\. xG [0-9.]+ – [0-9.]+/);
+});
+test('pre-match experimental xG is inline beside each team, not under kickoff',()=>{
+ const c=setup(),gw8=c.state.fixtures.find(f=>f.id===86);
+ gw8.started=false;gw8.finished=false;
+ c.projectedFixtureXg=f=>f.id===86?{home:1.23,away:0.87}:null;
+ const html=c.overview();
+ const target=html.split('<div class="decision-fixture-row">').find(fragment=>fragment.includes('GW8 Home 6'));
+ assert.ok(target,'the selected fixture must exist');
+ const home=target.indexOf('class="decision-fixture-team home"'),firstXg=target.indexOf('xG <b>1.23</b>');
+ const center=target.indexOf('class="decision-fixture-center"'),secondXg=target.indexOf('xG <b>0.87</b>');
+ const away=target.indexOf('class="decision-fixture-team away"');
+ assert.ok(home>=0&&firstXg>home&&center>firstXg&&away>center&&secondXg>away);
+ const centerOnly=target.slice(center,away);
+ assert.doesNotMatch(centerOnly,/xG|Est\./,'no combined xG line under the kickoff');
+ assert.equal((html.match(/decision-fixture-xg/g)||[]).length,2,'only sides with evidence show xG');
+ assert.match(html,/xG: experimental pre-match estimate/);
+});
