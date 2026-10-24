@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {defaultGameweek,entryId} from '../domain.mjs';
-test('default team gameweek uses latest published finished GW before current pre-deadline GW',()=>{
- assert.equal(defaultGameweek([{id:8,finished:true,is_current:false},{id:9,finished:false,is_current:true}]),8);
+test('default team gameweek prefers the active GW and falls back only when absent',()=>{
+ assert.equal(defaultGameweek([{id:8,finished:true,is_current:false},{id:9,finished:false,is_current:true}]),9);
 });
 test('visiting rival preserves saved home and league, including refresh and return',async()=>{
  const source=readFileSync(new URL('../ui.js',import.meta.url),'utf8');

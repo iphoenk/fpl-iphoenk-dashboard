@@ -64,6 +64,7 @@ body.has-team[data-view=dashboard] .decision-first[hidden]{display:none!importan
 .decision-panel-head{display:flex;align-items:start;justify-content:space-between;gap:10px}
 .decision-panel-head h2{margin:0;color:var(--text);font-size:18px;line-height:1.35;letter-spacing:-.025em}
 .decision-panel-head p{margin:3px 0 0;color:var(--muted);font-size:12px;line-height:1.45}
+.decision-plan-account{display:block;margin-top:6px;color:var(--text);font-size:11px;line-height:1.4}
 .decision-link{border:0;background:transparent;color:var(--lime);font-size:12px;font-weight:600;
   cursor:pointer;white-space:nowrap;min-height:34px;padding:4px;align-self:start}
 .decision-pitch{min-width:0;border-radius:9px;overflow:hidden}

@@ -12,8 +12,8 @@ function alertMessage(message){$('alertText').textContent=message;$('alert').cla
 function clearAlert(){$('alert').classList.add('hidden');}
 async function api(path){
  const requestPath='/api/'+path.replace(/\/(?=\?|$)/,'');
- const joiner=requestPath.includes('?')?'&':'?';
- const response=await fetch(requestPath+joiner+'_client_nonce='+Date.now(),{cache:'no-store',signal:AbortSignal.timeout(27000)});let data;
+ const cacheBust=/^\/api\/decision(?:\?|$)/.test(requestPath)?'':(requestPath.includes('?')?'&':'?')+'_client_nonce='+Date.now();
+ const response=await fetch(requestPath+cacheBust,{cache:'no-store',signal:AbortSignal.timeout(27000)});let data;
  try{data=await response.json();}catch{throw new Error('Invalid data source response. Try reloading.');}
  const providerMode=response.headers.get('X-Provider-Mode');if(providerMode){state.providers??={};state.providers[path]={mode:providerMode,captured:response.headers.get('X-Provider-Captured-At')};if(typeof renderProviderStatus==='function')renderProviderStatus();}
  if(!response.ok)throw new Error(data.error||'Data not yet available.');
@@ -70,10 +70,12 @@ async function loadTeam(raw,gw=state.gw,options={}){
  if(!state.bootstrap){alertMessage('FPL data is not ready yet. Try reloading the data.');return;}
  if(!gw){alertMessage('No public gameweek yet for this team. Try again after the first deadline.');return;}
  const request=++state.teamRequest;$('entrySubmit').disabled=true;$('entrySubmit').textContent='Connecting…';clearAlert();
- try{const [team,live]=await Promise.all([fetchTeam(id,gw),api('event/'+gw+'/live/').catch(()=>null)]);if(request!==state.teamRequest)return;
-  if(String(team.entry?.id)!==String(id))throw new Error('The loaded team does not match the entered FPL ID. Please try again.');
+ try{let team=null,live=null,selectedGw=null,lastError=null;const candidates=[gw,...(state.bootstrap.events||[]).filter(e=>e.finished).reverse().map(e=>e.id)].filter((value,index,array)=>value&&array.indexOf(value)===index);
+  for(const candidate of candidates){try{const [candidateTeam,candidateLive]=await Promise.all([fetchTeam(id,candidate),api('event/'+candidate+'/live/').catch(()=>null)]);if(String(candidateTeam.entry?.id)!==String(id))throw new Error('The loaded team does not match the entered FPL ID. Please try again.');team=candidateTeam;live=candidateLive;selectedGw=Number(candidate);break;}catch(error){lastError=error;}}
+  if(!team)throw lastError||new Error('Unable to load the Official FPL team.');
+  if(request!==state.teamRequest)return;
   if(!visiting&&!state.visitingTeam&&state.league&&!(team.entry.leagues?.classic||[]).some(l=>l.id===state.league.league.id)){state.league=null;state.leagueRequest++;ext.leagueToken++;$('leaguePanel').innerHTML='<div class="empty">Select a mini league for this team.</div>';$('leaguePagination').innerHTML='';$('leagueInput').value='';document.getElementById('leagueExtras')?.remove();}
-  state.entry=team.entry;state.picks=team.picks;state.teamState={requestedEntryId:id,entryId:Number(team.entry.id),teamName:team.entry.name||null,managerName:[team.entry.player_first_name,team.entry.player_last_name].filter(Boolean).join(' ')||null,gameweek:Number(gw),squad:(team.picks.picks||[]).map(p=>({element:Number(p.element),position:Number(p.position),multiplier:Number(p.multiplier||1),isCaptain:Boolean(p.is_captain),isViceCaptain:Boolean(p.is_vice_captain)})),source:'Official FPL',authority:'OFFICIAL_FPL',fetchedAt:new Date().toISOString()};state.gw=gw;state.live=Object.fromEntries((live?.elements||[]).map(p=>[p.id,p]));$('gwSelect').value=gw;$('entryInput').value=id;$('compareA').value=id;state.visitingTeam=visiting;if(!visiting){state.homeEntryId=id;safeWrite('dugout-entry',id);}
+  state.entry=team.entry;state.picks=team.picks;state.teamState={requestedEntryId:id,entryId:Number(team.entry.id),teamName:team.entry.name||null,managerName:[team.entry.player_first_name,team.entry.player_last_name].filter(Boolean).join(' ')||null,gameweek:selectedGw,squad:(team.picks.picks||[]).map(p=>({element:Number(p.element),position:Number(p.position),multiplier:Number(p.multiplier||1),isCaptain:Boolean(p.is_captain),isViceCaptain:Boolean(p.is_vice_captain)})),source:'Official FPL',authority:'OFFICIAL_FPL',fetchedAt:new Date().toISOString()};state.gw=selectedGw;state.live=Object.fromEntries((live?.elements||[]).map(p=>[p.id,p]));$('gwSelect').value=selectedGw;$('entryInput').value=id;$('compareA').value=id;state.visitingTeam=visiting;if(!visiting){state.homeEntryId=id;safeWrite('dugout-entry',id);}
   renderStats();renderPitch();renderInsights();renderPlanner();renderLeagueOptions();if(!live)alertMessage('Team loaded successfully, but per-player points are not yet available. The gameweek total follows the FPL picks data.');
  }catch(error){if(request===state.teamRequest)alertMessage(error?.message?.includes('does not match the entered FPL ID')?error.message:'Unable to connect to FPL. The FPL data service is temporarily unavailable. Please try again shortly. Your previously selected team remains unchanged.');}
  finally{if(request===state.teamRequest){$('entrySubmit').disabled=false;$('entrySubmit').innerHTML='Connect team ↗';}}
