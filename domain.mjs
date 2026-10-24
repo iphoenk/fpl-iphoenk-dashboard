@@ -64,8 +64,8 @@ export function officialPhotoSources(player){
   'https://resources.premierleague.com/premierleague25/photos/players/500x500/'+id+'.png'
  ]);
  // The 2026/27 FPL Konsa entry is id 31, official player code 199798.
- // A verified public Sky Sport headshot is used ONLY if the PL asset hosts fail.
- if(ids.includes('199798')&&Number(player?.id)===31)sources.push('https://static.sky.it/images/skysport/it/calcio/serie-a/probabili-formazioni/superscudetto/512/199798.png');
+ // A verified public Sky Sport headshot is first for Konsa because his PL portraits have failed in the live UI; official asset fallbacks remain.
+ if(ids.includes('199798')&&Number(player?.id)===31)sources.unshift('https://static.sky.it/images/skysport/it/calcio/serie-a/probabili-formazioni/superscudetto/512/199798.png');
  return [...sources,placeholder];
 }
 export function keeperScoutRows(players,fixtures,teams){
