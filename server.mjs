@@ -38,7 +38,7 @@ export async function handle(request,env,ctx,html){
  }
  if(!url.pathname.startsWith('/api/')){
   if(url.pathname!=='/'&&url.pathname!=='/index.html')return new Response('Not found',{status:404});
-  return new Response(request.method==='HEAD'?null:html,{headers:{'Content-Type':'text/html; charset=utf-8','X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin'}});
+  return new Response(request.method==='HEAD'?null:html,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store, no-cache, must-revalidate, max-age=0','Pragma':'no-cache','X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin'}});
  }
  let source=sourceFor(url.pathname);
  if(!source)return Response.json({error:'Endpoint tidak tersedia.'},{status:404});
