@@ -2,6 +2,7 @@
    V6 is read-only factual provenance; no Monte Carlo or private V12 payload. */
 import {publicDecision} from './multiuser-decision.mjs';
 import {multiGwDecision} from './multiuser-horizon.mjs';
+import {freeTransferEvidence} from './free-transfers.mjs';
 const ROOT='https://fantasy.premierleague.com/api/';
 const V6='https://raw.githubusercontent.com/iphoenk/FPL-iphoenk-engine/runtime-data-v6/data/v6/';
 const GLOBAL='https://raw.githubusercontent.com/iphoenk/fpl-dashboard/main/public/data/';
@@ -90,9 +91,10 @@ export function createPublicDecisionService({
   }
   return {meta:m.value,players:p.value};
  }
- function canonicalTeamState({entry,picks,bootstrap,planningGw,publishedGw,requestedId}){
+function canonicalTeamState({entry,picks,history,bootstrap,planningGw,publishedGw,requestedId}){
   const captain=(picks?.picks||[]).find(p=>p.is_captain||Number(p.multiplier)>1);
   const vice=(picks?.picks||[]).find(p=>p.is_vice_captain);
+ const ftEvidence=freeTransferEvidence(history,planningGw,entry);
   return {
    requested_entry_id:requestedId,
    entry_id:Number(entry.id),
@@ -107,7 +109,8 @@ export function createPublicDecisionService({
    gameweek_points:number(picks.entry_history?.points),
    gameweek_rank:number(picks.entry_history?.rank),
    rank_change:null,
-   free_transfers:null,
+   free_transfers:ftEvidence?.value??null,
+   free_transfer_evidence:ftEvidence,
    transfer_cost:number(picks.entry_history?.event_transfers_cost),
    captain_id:captain?Number(captain.element):null,
    vice_captain_id:vice?Number(vice.element):null,
@@ -123,9 +126,10 @@ export function createPublicDecisionService({
   // Public squad is readable only after the preceding FPL deadline.
   const pub=data.events.filter(x=>Date.parse(x.deadline_time)<=clock()).sort((a,b)=>b.id-a.id)[0];
   if(!upcoming?.id||!pub?.id)throw Error('GW_UNAVAILABLE');
-  const [entry,picks]=await Promise.all([
+  const [entry,picks,history]=await Promise.all([
    official('entry/'+id+'/',90000,1000000),
-   official('entry/'+id+'/event/'+pub.id+'/picks/',120000,1000000)
+   official('entry/'+id+'/event/'+pub.id+'/picks/',120000,1000000),
+   official('entry/'+id+'/history/',90000,1000000)
   ]);
   if(Number(entry?.id)!==id||!Array.isArray(picks?.picks)||picks.picks.length!==15)throw Error('BAD_OFFICIAL_ENTRY');
   const [snapshot]=await Promise.all([globalModel()]);
@@ -133,7 +137,7 @@ export function createPublicDecisionService({
   const decision=enhanced||publicDecision({entry,picks,bootstrap:data,planningGw:upcoming.id});
   const sourceMode=enhanced?'SHARED_MULTIGW_SNAPSHOT':'OFFICIAL_ONE_GW_FALLBACK';
   return {...decision,generated_at:new Date(clock()).toISOString(),
-   team_state:canonicalTeamState({entry,picks,bootstrap:data,planningGw:upcoming.id,publishedGw:pub.id,requestedId:id}),
+   team_state:canonicalTeamState({entry,picks,history,bootstrap:data,planningGw:upcoming.id,publishedGw:pub.id,requestedId:id}),
    source:{provider:'Official FPL',entry_id:id,published_gw:pub.id,planning_gw:upcoming.id,v6,model_mode:sourceMode},
    concurrency:{mode:'SHARED_INSTANCE_BOUNDED',monte_carlo:'DISABLED'}};
  }

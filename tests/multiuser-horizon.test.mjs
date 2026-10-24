@@ -63,6 +63,7 @@ test('20 distinct IDs use one validated shared global snapshot with bounded IO/c
    if(path.endsWith('/latest_index.json'))return Response.json({sources:[],generated_at:new Date(NOW-10000).toISOString()});
    if(path.endsWith('/publish_integrity.json'))return Response.json({status:'PASS',observed_at:new Date(NOW-10000).toISOString()});
    if(path.endsWith('/picks/'))return Response.json(picks);
+   if(path.endsWith('/history/'))return Response.json({current:[{event:1,event_transfers:0},{event:2,event_transfers:0},{event:3,event_transfers:0},{event:4,event_transfers:0},{event:5,event_transfers:0},{event:6,event_transfers:0},{event:7,event_transfers:0}]});
    const match=path.match(/\/entry\/(\d+)\/$/);
    if(match)return Response.json({id:Number(match[1]),name:'Mock'+match[1]});
    return Response.json({error:'not found'},{status:404});

@@ -25,6 +25,7 @@ function mock(delay=2){
    if(path.includes('latest_index.json'))return Response.json({generated_at:new Date(NOW-90000).toISOString(),sources:[{source_id:'official_fpl',health:'GREEN'}]});
    if(path.includes('publish_integrity.json'))return Response.json({status:'PASS',observed_at:new Date(NOW-90000).toISOString()});
    if(path.endsWith('picks/'))return Response.json(picks);
+   if(path.endsWith('history/'))return Response.json({current:[{event:1,event_transfers:0},{event:2,event_transfers:0},{event:3,event_transfers:0},{event:4,event_transfers:0},{event:5,event_transfers:0},{event:6,event_transfers:0},{event:7,event_transfers:0}]});
    const m=path.match(/\/entry\/(\d+)\/$/);
    if(m)return Response.json({id:Number(m[1]),name:'Team'+m[1]});
    return Response.json({error:'not found'},{status:404});

@@ -44,7 +44,7 @@
     const a=ready?report.scenarios?.A:null,b=ready?report.scenarios?.B:null,c=ready?report.scenarios?.C:null;
     const gw=state.next?.id;
     const error=valid?ext.publicDecision.error:null;
-    const status=!state.entry?'Connect your FPL Entry ID for personalized planning.':error?'Decision service unavailable: '+esc(error):report?.status==='unavailable'?'Validated projections are currently unavailable.':!ready?'Preparing the same A/B/C decision shown on Overview.':'Gross forecasts are indicative; selling price, bank, free transfers and hits must be verified.';
+    const status=!state.entry?'Connect your FPL Entry ID for personalized planning.':error?'Decision service unavailable: '+esc(error):report?.status==='unavailable'?'Validated projections are currently unavailable.':!ready?'Preparing the same A/B/C decision shown on Overview.':'Gross forecasts are indicative; bank and free transfers use official history when available; selling price and hit cost must be verified.';
     root.innerHTML='<div class="planning-compact-head"><div><h2>Planning Insights'+(gw?' · GW '+esc(gw):'')+'</h2><p>Decision summary and next moves</p></div><button class="btn small ghost" data-goto="dashboard">Overview ↗</button></div>'+
       '<div class="planning-kpis" aria-label="Scenario overview">'+stat('Hold · A',metric(a?.expected_points,' xP'))+
       stat('1 transfer · B',metric(b?.expected_points,' xP'))+stat('2 transfers · C',metric(c?.expected_points,' xP'))+

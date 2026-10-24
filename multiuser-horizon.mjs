@@ -84,7 +84,7 @@ export function multiGwDecision({entry,picks,bootstrap,planningGw,snapshot,horiz
   assumptions:['Official FPL identity, squad, prices and fixtures are authoritative',
    'Multi-GW projections come from the public independent model (not Official ep_next or Canonical V12)',
    'Published squad and historical bank are indicative; current market prices proxy missing personal selling prices',
-   'Free transfers and hits unknown; gross gain never means net gain',
+   'Free transfers are supplied from Official FPL history when available; hit cost and net gain remain unknown',
    'No Monte Carlo; pair search bounded and not globally optimal'],
   scenarios:{A:scenario('HOLD',hold),B:null,C:null}};
  if(!known){res.reason='HISTORICAL_BANK_OR_SELLING_PRICE_MISSING';return res;}

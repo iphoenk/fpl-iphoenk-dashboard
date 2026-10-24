@@ -39,7 +39,7 @@ test('advisory reports errors, unavailable and actual 1-GW fallback honestly',()
  assert.match(ui,/report\?\.status==='unavailable'/);
  assert.match(ui,/actualHorizon=modelReady\?Number\(report.horizon\):1/);
  assert.match(ui,/No fabricated projection values/);
- assert.match(ui,/FT\/hit not yet verified/);
+ assert.match(ui,/FT not verified|hit cost remains unverified/);
 });
 test('transfers show skeleton before async data, official fitness uses its own flags',()=>{
  assert.match(adv,/advancedLoadingSkeleton\(view\);renderAdvanced\(view\)/);

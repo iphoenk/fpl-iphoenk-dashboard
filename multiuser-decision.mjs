@@ -51,7 +51,7 @@ export function publicDecision({entry,picks,bootstrap,planningGw}){
   economics_status:bankKnown?(proxyCount?'PUBLIC_CURRENT_PRICE_PROXY_INDICATIVE':'PUBLIC_HISTORICAL_INDICATIVE'):'UNAVAILABLE',
   economics_evidence:{bank_basis:'LAST_PUBLISHED_GW_BANK',sale_basis:proxyCount?'CURRENT_OFFICIAL_MARKET_PRICE_PROXY':'PUBLISHED_PICK_SELLING_PRICE',proxy_player_count:proxyCount,actual_affordability_verified:false},
   assumptions:['One-GW Official ep_next, not actual points','Published squad, not pending transfers',
-    'Indicative last-published bank and public price proxies are not actual sell prices; FT/hits unknown','No Monte Carlo or canonical V12 execution'],
+    'Indicative last-published bank and public price proxies are not actual sell prices; hit cost and net gain remain unknown; FT is sourced from Official FPL history when available','No Monte Carlo or canonical V12 execution'],
   search_scope:'BOUNDED_NONCANONICAL',scenarios:{A:scenario('HOLD',hold),B:null,C:null}};
  if(!bankKnown||owned.some(p=>selling(p)===null)){
   base.status='partial';base.economics_status='UNAVAILABLE';

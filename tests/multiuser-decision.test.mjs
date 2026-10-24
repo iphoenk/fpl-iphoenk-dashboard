@@ -38,17 +38,17 @@ test('twenty concurrent users share bootstrap, deduplicate same ID and bound con
   active--;
   const path=new URL(url).pathname.slice('/api/'.length);
   if(path==='bootstrap-static/')return Response.json(bootstrap);
-  const x=path.match(/^entry\/(\d+)\/(?:event\/7\/picks\/)?$/);
+  const x=path.match(/^entry\/(\d+)\/(?:event\/7\/picks\/|history\/)?$/);
   if(!x)return Response.json({}, {status:404});
   const num=Number(x[1]);per.set(num,(per.get(num)||0)+1);
-  return Response.json(path.includes('picks')?picks:{id:num});
+  return Response.json(path.includes('picks')?picks:path.includes('history')?{current:[{event:1,event_transfers:0},{event:2,event_transfers:0},{event:3,event_transfers:0},{event:4,event_transfers:0},{event:5,event_transfers:0},{event:6,event_transfers:0},{event:7,event_transfers:0}]}:{id:num});
  };
  const service=createPublicDecisionService({fetcher,maxActive:4});
  const results=await Promise.all(Array.from({length:20},(_,i)=>service.get(70000+i)));
  assert.ok(results.every((r,i)=>r.status==='ready'&&r.entry_id===70000+i));
- assert.equal(per.size,20);assert.equal(calls,45);assert.ok(service.stats().peak<=4);
+ assert.equal(per.size,20);assert.equal(calls,65);assert.ok(service.stats().peak<=4);
  await Promise.all(Array.from({length:20},()=>service.get(70000)));
- assert.equal(calls,45);
+ assert.equal(calls,65);
  assert.ok(peak<=8); // per entry, two Official requests in parallel; shared bootstrap is separate
 });
 test('API rejects invalid IDs and non-GET without upstream access',async()=>{
@@ -67,7 +67,7 @@ test('identical cold users coalesce, real errors are not cached',async()=>{
  };
  const s=createPublicDecisionService({fetcher});
  const both=await Promise.all([s.get(55),s.get(55)]);
- assert.equal(both[0].entry_id,55);assert.equal(n,7);
+ assert.equal(both[0].entry_id,55);assert.equal(n,8);
 });
 
 

@@ -179,12 +179,12 @@
         '<p class="decision-scenario-move">'+changes+'</p><div class="decision-scenario-bottom">'+
         '<div class="decision-captains"><span><b>C</b> '+name(s.captain)+'</span><span><b>VC</b> '+name(s.vice_captain)+'</span></div>'+
         '<button class="decision-action" data-goto="'+(s.transfers?'transfers':'planning')+'">Analysis ↗</button></div>'+
-        '<small class="decision-scenario-note">'+weekLabel+' · Formation '+safeName(s.formation)+delta+' · FT/hit not yet verified</small></div>';
+        '<small class="decision-scenario-note">'+weekLabel+' · Formation '+safeName(s.formation)+delta+' · '+(report?.team_state?.free_transfers!==null&&report?.team_state?.free_transfers!==undefined?'FT '+number(report.team_state.free_transfers)+' · hit cost remains unverified':'FT not verified')+'</small></div>';
     };
     return '<article class="decision-panel decision-plan"><header class="decision-panel-head"><div><h2>Next GW Plan'+(gw?' · GW '+gw:'')+'</h2><p>'+safeName(scope)+' · no Monte Carlo</p></div><button class="decision-link" data-goto="planning">Planner ↗</button></header>'+
       '<div class="decision-horizon"><label for="decisionHorizonSelect">Horizon</label><select id="decisionHorizonSelect" aria-label="Optimization horizon">'+[1,3,5].map(h=>'<option value="'+h+'"'+(publicPlan.horizon===h?' selected':'')+'>'+h+' GW</option>').join('')+'</select><span>'+(modelStamp?'Model '+safeName(modelStamp):generated?'Official '+safeName(generated):'Source being verified')+'</span></div>'+
       (report&&!modelReady&&publicPlan.horizon>1?'<p class="decision-fallback-notice">The '+publicPlan.horizon+' GW projection is not yet validated. The available result only uses 1 GW of Official FPL.</p>':'')+
-      (report?.economics_status==='PUBLIC_CURRENT_PRICE_PROXY_INDICATIVE'?'<p class="decision-fallback-notice">B/C use the Official FPL market price as a proxy for the sale price, and the bank from the last published GW. <strong>This may not be affordable in your account.</strong> Verify the sale price, bank balance, FT and hit before transferring.</p>':'')+
+      (report?.economics_status==='PUBLIC_CURRENT_PRICE_PROXY_INDICATIVE'?'<p class="decision-fallback-notice">B/C use the Official FPL market price as a proxy for the sale price, and the bank from the last published GW. <strong>This may not be affordable in your account.</strong> Verify the sale price and hit before transferring.</p>':'')+
       '<div class="decision-scenarios">'+scenario('A','A · Hold')+scenario('B','B · 1 Transfer')+scenario('C','C · 2 Transfers')+'</div>'+
       '<footer class="decision-foot"><span>'+(report?.economics_status?safeName(report.economics_status):report?.status==='unavailable'?'PROJECTION NOT AVAILABLE':publicPlan.error?'API ERROR':'AWAITING DATA')+'</span><span>Public data · Non-canonical · Gross gain, not net after hit</span></footer></article>';
   }
