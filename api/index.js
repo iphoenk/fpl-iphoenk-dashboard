@@ -12,7 +12,7 @@ export default {
   const provider=await providerResponse(request,{upstream:req=>handle(req,{},null,'')});if(provider)return provider;
   if(url.pathname.startsWith('/api/')&&!url.pathname.startsWith('/api/model/')&&!url.pathname.startsWith('/api/insights/')&&!url.pathname.endsWith('/'))url.pathname+='/';
   const response=await handle(new Request(url,request),{},null,'');
-  if(response.ok){response.headers.set('Cache-Control','public, max-age=30');response.headers.set('Vercel-CDN-Cache-Control','public, s-maxage=180');}
+  if(response.ok){if(!url.pathname.startsWith('/api/')){response.headers.set('Cache-Control','no-store, no-cache, must-revalidate, max-age=0');response.headers.set('Vercel-CDN-Cache-Control','no-store');response.headers.set('Pragma','no-cache');}else{response.headers.set('Cache-Control','public, max-age=30');response.headers.set('Vercel-CDN-Cache-Control','public, s-maxage=180');}}
   return response;
  }
 };
