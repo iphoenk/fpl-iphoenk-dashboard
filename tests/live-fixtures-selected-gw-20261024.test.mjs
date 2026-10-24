@@ -124,3 +124,28 @@ test('pre-match experimental xG is inline beside each team, not under kickoff',(
  assert.equal((html.match(/decision-fixture-xg/g)||[]).length,2,'only sides with evidence show xG');
  assert.match(html,/xG: experimental pre-match estimate/);
 });
+
+test('the fixtures page also uses the device-local 24-hour HH:mm clock',()=>{
+ const fn=isolate(ui,'function localKickoff(', '\nfunction fixturePrediction(');
+ const c=vm.createContext({Date,Number});
+ vm.runInContext(fn+'\nglobalThis.format=localKickoff;',c);
+ const formatted=c.format('2026-10-24T17:25:00Z');
+ assert.match(formatted,/\b\d{2}:\d{2}\b/);
+ assert.doesNotMatch(formatted,/AM|PM/i);
+ assert.match(ui,/toLocaleString\('en-GB',\{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:false\}\)/);
+});
+test('compact all-fixture CSS fits team-side xG, status and GW navigation on mobile',()=>{
+ const css=readFileSync(new URL('../decision-first.css',import.meta.url),'utf8');
+ const start=css.indexOf('/* Issue #157: compact fully visible fixtures');
+ const end=css.indexOf('/* Issue #67: one genuinely slim',start);
+ assert.ok(start>0&&end>start);
+ const rules=css.slice(start,end);
+ assert.match(rules,/\.decision-fixture-list\{[^}]*max-height:none!important/s);
+ assert.match(rules,/\.decision-fixture-row\{[^}]*grid-template-columns:minmax\(0,1fr\) 70px minmax\(0,1fr\)!important/s);
+ assert.match(rules,/\.decision-fixture-team-name\{/);
+ assert.match(rules,/\.decision-fixture-xg\{/);
+ assert.match(rules,/@media\(max-width:1099px\)/);
+ assert.match(rules,/@media\(max-width:767px\)/);
+ assert.match(rules,/grid-template-columns:minmax\(0,1fr\) 60px minmax\(0,1fr\)!important/);
+ assert.match(rules,/padding:4px 5px!important/);
+});
