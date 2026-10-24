@@ -3,13 +3,13 @@ const CANONICAL_ENGINE='canonical-v12';
 const allowedHorizons=new Set([1,3,5]);
 
 function text(v){return typeof v==='string'&&v.trim()?v.trim():null;}
-function integer(v){return Number.isSafeInteger(v)?v:null;}
+function canonicalInteger(v){return Number.isSafeInteger(v)?v:null;}
 
 export function validateCanonicalDecision(payload,{entryId,horizon}={}){
   if(!payload||typeof payload!=='object')return {ok:false,reason:'EMPTY_CANONICAL_PAYLOAD'};
   if(payload.contract!==CANONICAL_CONTRACT)return {ok:false,reason:'CANONICAL_CONTRACT_MISMATCH'};
-  const payloadEntry=integer(Number(payload.entry_id));
-  const payloadHorizon=integer(Number(payload.horizon));
+  const payloadEntry=canonicalInteger(Number(payload.entry_id));
+  const payloadHorizon=canonicalInteger(Number(payload.horizon));
   if(payloadEntry===null||payloadEntry!==Number(entryId))return {ok:false,reason:'CANONICAL_ENTRY_MISMATCH'};
   if(!allowedHorizons.has(payloadHorizon)||payloadHorizon!==Number(horizon))return {ok:false,reason:'CANONICAL_HORIZON_MISMATCH'};
   if(!['ready','partial','degraded'].includes(String(payload.status)))return {ok:false,reason:'CANONICAL_STATUS_INVALID'};
