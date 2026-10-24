@@ -227,8 +227,8 @@
       const primary=score||time;
       // A colored, accessible score conveys a confirmed FT or LIVE without a redundant line.
       // Pending states still display an explicit qualifier (not silently treated as final).
-      const visibleStatus=status==='FT'||status==='LIVE'?'':status;
-      const scoreClass=status==='FT'?'finished':status==='LIVE'?'live':visibleStatus?'pending':'';
+      const visibleStatus=status==='LIVE'||(status==='FT'&&hasScore)?'':status;
+      const scoreClass=status==='FT'&&hasScore?'finished':status==='LIVE'?'live':visibleStatus?'pending':'';
       const scoreA11y=status==='FT'?'Full time score '+primary:status==='LIVE'?'Live match score '+primary:primary;
       const fixtureTeam=(team,side,estimate)=>{
         const full=safeName(team?.name||side),short=safeName(team?.short_name||team?.name||side);
