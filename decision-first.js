@@ -83,10 +83,9 @@
     const starters=picks.filter(p=>p.position<=11);
     const outfield=[2,3,4].map(type=>starters.filter(p=>state.players[p.element]?.element_type===type).length);
     const formation=starters.length===11&&outfield.reduce((sum,count)=>sum+count,0)===10?outfield.join('-'):null;
-    const flags=picks.map(p=>state.players[p.element]).filter(p=>p&&p.status!=='a');
     const pitch=actualPitch?.innerHTML||'<div class="decision-empty">Starting XI is loading.</div>';
     const bench=actualBench?.innerHTML||'<div class="decision-empty">Bench is loading.</div>';
-    return '<article class="decision-panel decision-team"><header class="decision-panel-head"><div><h2>Current Team'+(formation?'<span class="decision-formation" aria-label="Formation '+formation+'">'+formation+'</span>':'')+'</h2><p>Starting XI and bench from published GW '+safeName(state.gw||'—')+(flags.length?' · '+flags.length+' fitness flag'+(flags.length===1?'':'s'):'')+'</p></div><button class="decision-link" data-goto="tim">Squad details ↗</button></header>'+
+    return '<article class="decision-panel decision-team"><header class="decision-panel-head"><div><h2>Current Team'+(formation?'<span class="decision-formation" aria-label="Formation '+formation+'">'+formation+'</span>':'')+'</h2><p>Starting XI and bench from published GW '+safeName(state.gw||'—')+'</p></div><button class="decision-link" data-goto="tim">Squad details ↗</button></header>'+
       '<div class="decision-pitch"><div class="pitch">'+pitch+'</div></div>'+
       '<div class="decision-bench"><strong>Bench · '+picks.filter(p=>p.position>11).length+' players</strong><div class="bench-row">'+bench+'</div></div></article>';
   }
@@ -192,9 +191,21 @@
       '<div class="decision-scenarios">'+scenario('A','A · Hold')+scenario('B','B · 1 Transfer')+scenario('C','C · 2 Transfers')+'</div>'+
       '<footer class="decision-foot"><span>'+safeName(economicsLabel)+'</span><span>Public data · Non-canonical · Gross gain, not net after hit</span></footer></article>';
   }
+  let fixturePageGw=null,fixtureTeamGw=null;
+  function activeFixtureGw(){
+    const selected=Number(state.gw);
+    if(fixtureTeamGw!==selected){fixtureTeamGw=selected;fixturePageGw=selected;}
+    return fixturePageGw||selected;
+  }
+  function fixtureWeekChoices(){
+    const official=(state.bootstrap?.events||[]).map(e=>Number(e.id)).filter(n=>Number.isInteger(n)&&n>=1&&n<=38);
+    return [...new Set(official.length?official:(state.fixtures||[]).map(f=>Number(f.event)).filter(n=>n>=1&&n<=38))].sort((a,b)=>a-b);
+  }
   function decisionFixtureTicker(){
-    const gw=Number(state.gw),fixtures=selectedGwFixtures(gw);
-    const header='<header class="decision-panel-head"><div><h2>GW '+safeName(gw||'—')+' fixtures</h2><p>Live, completed and upcoming · selected gameweek only</p></div><button class="decision-link" data-goto="fixtures">All fixtures ↗</button></header>';
+    const gw=activeFixtureGw(),fixtures=selectedGwFixtures(gw),choices=fixtureWeekChoices(),index=choices.indexOf(gw);
+    const prev=index>0?choices[index-1]:null,after=index>=0&&index<choices.length-1?choices[index+1]:null;
+    const navigation='<nav class="decision-fixture-nav" aria-label="Browse fixture gameweeks"><button type="button" data-fixture-step="-1" aria-label="Previous gameweek"'+(prev===null?' disabled':'')+'>‹</button><span>GW '+safeName(gw||'—')+'</span><button type="button" data-fixture-step="1" aria-label="Next gameweek"'+(after===null?' disabled':'')+'>›</button></nav>';
+    const header='<header class="decision-panel-head decision-fixture-head"><div><h2>Fixtures & results</h2><p>Official FPL · past, live & upcoming</p></div><div class="decision-fixture-actions">'+navigation+'<button class="decision-link" data-goto="fixtures">All ↗</button></div></header>';
     if(!fixtures.length)return '<article class="decision-panel decision-fixtures">'+header+'<div class="decision-empty">No Official FPL fixtures published for GW '+safeName(gw||'—')+'.</div></article>';
     const groups=[];
     for(const fixture of fixtures){
@@ -205,13 +216,15 @@
       group.items.push(fixture);
     }
     const rows=groups.map(group=>'<div class="decision-fixture-date">'+safeName(group.date)+'</div>'+group.items.map(f=>{
-      const home=state.teams[f.team_h],away=state.teams[f.team_a],live=Boolean(f.started&&!f.finished),finished=Boolean(f.finished);
-      const hasScore=f.team_h_score!=null&&f.team_a_score!=null,score=hasScore?f.team_h_score+' – '+f.team_a_score:'';
+      const home=state.teams[f.team_h],away=state.teams[f.team_a],phase=fixturePhase(f);
+      const hasScore=f.team_h_score!=null&&f.team_a_score!=null,score=hasScore?f.team_h_score+' – '+f.team_a_score:null;
       const time=f.kickoff_time?new Date(f.kickoff_time).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'}):'TBC';
-      const status=live?'LIVE':finished?(hasScore?score:'FT'):time;
-      return '<div class="decision-fixture-row"><div class="decision-fixture-team home"><strong>'+safeName(home?.name||'Home')+'</strong><span>'+safeName(home?.short_name||'')+'</span></div><div class="decision-fixture-center"><b class="decision-fixture-status '+(live?'live':finished?'finished':'')+'">'+safeName(status)+'</b><small>GW '+safeName(gw)+'</small></div><div class="decision-fixture-team away"><span>'+safeName(away?.short_name||'')+'</span><strong>'+safeName(away?.name||'Away')+'</strong></div></div>';
+      const prediction=projectedFixtureXg(f);
+      const status=phase==='finished'?'FT':phase==='provisional'?'FT pending':phase==='awaiting'?'Final pending':phase==='live'?'LIVE':prediction?'Est. xG '+fmt(prediction.home,2)+' – '+fmt(prediction.away,2):'';
+      const primary=score||time;
+      return '<div class="decision-fixture-row"><div class="decision-fixture-team home"><strong>'+safeName(home?.name||'Home')+'</strong><span>'+safeName(home?.short_name||'')+'</span></div><div class="decision-fixture-center"><b class="decision-fixture-status '+(phase==='live'?'live':phase==='finished'?'finished':'')+'">'+safeName(primary)+'</b>'+(status?'<small title="'+(prediction?'Experimental pre-match xG based on Official FPL player xG and GK xGC. Not a live match statistic.':'Official FPL status')+'">'+safeName(status)+'</small>':'')+'</div><div class="decision-fixture-team away"><span>'+safeName(away?.short_name||'')+'</span><strong>'+safeName(away?.name||'Away')+'</strong></div></div>';
     }).join('')).join('');
-    return '<article class="decision-panel decision-fixtures">'+header+'<div class="decision-fixture-list">'+rows+'</div><footer class="decision-foot"><span>'+fixtures.length+' fixture'+(fixtures.length===1?'':'s')+' in selected GW</span><span>Official FPL · local kickoff time</span></footer></article>';
+    return '<article class="decision-panel decision-fixtures">'+header+'<div class="decision-fixture-list">'+rows+'</div><footer class="decision-foot"><span>'+fixtures.length+' matches · GW '+safeName(gw)+'</span><span>Estimated xG is experimental, not actual match xG</span></footer></article>';
   }
   function renderDecision(){
     if(!stage.isConnected)return;
@@ -254,6 +267,14 @@
     refreshLeagueSnapshot(id);
   });
   document.addEventListener('click',e=>{
+    const stepButton=e.target.closest?.('.decision-fixtures [data-fixture-step]');
+    if(stepButton){
+      if(stepButton.disabled)return;
+      const choices=fixtureWeekChoices(),current=activeFixtureGw(),index=choices.indexOf(current);
+      const target=choices[index+Number(stepButton.dataset.fixtureStep)];
+      if(Number.isInteger(target)){fixturePageGw=target;renderDecision();}
+      return;
+    }
     const b=e.target.closest?.('[data-league-block]');
     if(b){changeLeagueBlock(Number(b.dataset.leagueBlock));return;}
     if(e.target.closest?.('.decision-league [data-goto="liga"]')&&currentLeagueId())
