@@ -88,4 +88,3 @@ export function valueMetricNumber(player,metric,projected=null){
  if(metric.total){const minutes=Number(player.minutes),total=player[metric.total];return minutes>0&&total!=null&&Number.isFinite(Number(total))?Number(total)/minutes*90:null;}
  const value=player[metric.field];return value!=null&&value!==''&&Number.isFinite(Number(value))?Number(value):null;
 }
-
