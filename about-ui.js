@@ -1,17 +1,36 @@
-const aboutStyle=document.createElement('style');
-aboutStyle.textContent='#view-about .panel-body{font-size:14px;line-height:1.75}#view-about p+p{margin-top:12px}#view-about td{white-space:normal;vertical-align:top;overflow-wrap:anywhere}#view-about th:first-child,#view-about td:first-child{width:180px;min-width:110px}#view-about table{min-width:0;width:100%}';document.head.append(aboutStyle);
+/* About: factual, compact product information; styling belongs to about.css. */
 function renderAbout(){
  const sources=[
- ['Official Fantasy Premier League','https://fantasy.premierleague.com/','Authoritative published squads, teams, player prices, fixtures, match points, availability and classic-league standings.'],
- ['FPLens','https://github.com/abdelmalek-maskri/fplens','Third-party prediction/model snapshots where explicitly attributed; upstream trained models remain the work of their authors.'],
- ['FPL Insights','https://github.com/JonnoMillar/fpl-insights','Supplementary public scouting snapshots with identity and gameweek validation.'],
- ['FPL Core Insights','https://github.com/olbauday/FPL-Core-Insights','Supplementary public evidence including minutes, defensive contributions and chances created.'],
- ['FPL Jakarta','https://github.com/fpljakarta/fpl-jakarta-dashboard','Inspiration for awards concepts; our interface and public-data calculations are independently implemented.'],
- ['The Guardian','https://www.theguardian.com/football','Football journalism, with source links and publication dates where displayed.'],
- ['FPL iphoenk V6/V12 Engine','https://github.com/iphoenk/FPL-iphoenk-engine','Separate factual/data and private canonical decision workflows. This no-login dashboard does not expose or execute private canonical V12 reports.']
+  ['Official Fantasy Premier League','https://fantasy.premierleague.com/','Published players, fixtures, prices, points, teams and leagues.'],
+  ['FPLens','https://github.com/abdelmalek-maskri/fplens','Independent model snapshots and player projections.'],
+  ['FPL Insights','https://github.com/JonnoMillar/fpl-insights','Supplementary scouting and public snapshot context.'],
+  ['FPL Core Insights','https://github.com/olbauday/FPL-Core-Insights','Additional public reference data, where explicitly sourced.'],
+  ['The Guardian','https://www.theguardian.com/football','Football reporting, linked to its source when shown.'],
+  ['FPL Jakarta','https://github.com/fpljakarta/fpl-jakarta-dashboard','Inspiration for awards; interface and calculations are independent.'],
+  ['FPL iphoenk V6/V12 Engine','https://github.com/iphoenk/FPL-iphoenk-engine','Separate workflows, not a canonical input to this public dashboard.']
  ];
- const intro='<p><strong>FPL iphoenk · Your team. Your edge.</strong> An independent mobile-first companion to explore Official FPL teams, published picks, classic leagues and explainable public planning.</p><p>Enter a public FPL team ID to begin. No login is needed, but an ID does not verify account ownership or grant access to unpublished picks, private transfer plans or live account economics.</p>';
- const methods='<p><strong>Public deterministic planning, no Monte Carlo.</strong> A/B/C comparisons use Official FPL <code>ep_next</code> for one gameweek, legal squad and formation rules, indicative public prices and full XI/bench/C/VC reoptimization per scenario. The candidate search is bounded. These are <strong>not</strong> private Canonical V12 recommendations, settled probabilities or executable transfers. Free-transfer balances are reconstructed from Official FPL entry history when the published history is complete; account-specific selling prices and hit points remain unverified.</p><p><strong>Multi-user architecture.</strong> Shared Official FPL bootstrap requests are coalesced; public team decisions use short-lived caches and bounded per-instance concurrency. No login or persistent user database is required at this stage. Cross-instance guarantees and production load readiness require additional measurements.</p><p><strong>V6/V12 integration status.</strong> V6 and V12 remain separate research and production systems. Public V6 evidence may be integrated only after contract validation. Private V12 reports and credentials must never be published to a no-login site.</p>';
- const limits='<p>FPL iphoenk is independent and is not affiliated with or endorsed by the Premier League. Source data, model names, editorial work and trademarks remain the property of their respective owners. Predictions are uncertain and not guarantees.</p><p>The dashboard cannot execute transfers or chips, view unpublished selections, or access authenticated FPL private state. If an Official FPL field is missing, the dashboard displays an unavailable status rather than a fabricated value.</p>';
- $('view-about').innerHTML=panel('About FPL iphoenk',intro)+panel('Data sources & attribution','<div class="table-wrap"><table><thead><tr><th>Source</th><th>Contribution</th></tr></thead><tbody>'+sources.map(([name,url,use])=>'<tr><td><a href="'+url+'" target="_blank" rel="noopener noreferrer">'+esc(name)+' ↗</a></td><td>'+esc(use)+'</td></tr>').join('')+'</tbody></table></div>')+panel('Methodology & performance',methods)+panel('Privacy, limits & independence',limits);
+ const sourceCard=([name,url,summary])=>'<li class="about-source"><a href="'+url+'" target="_blank" rel="noopener noreferrer">'+esc(name)+' <span aria-hidden="true">↗</span></a><p>'+esc(summary)+'</p></li>';
+ const methodItem=(number,title,description)=>'<div class="about-method-step"><span class="about-method-number">'+number+'</span><div><h4>'+title+'</h4><p>'+description+'</p></div></div>';
+ $('view-about').innerHTML=
+ '<div class="about-page">'+
+  '<header class="about-hero"><p class="about-kicker">FPL iphoenk · About</p><h2>Your team. Your edge.</h2><p>An independent Fantasy Premier League companion for published squads, gameweek fixtures, classic leagues and public planning insights.</p></header>'+
+  '<div class="about-intro-grid">'+
+   '<section class="about-card"><h3>What you can explore</h3><ul class="about-list"><li>Your published Starting XI, bench, captain and vice-captain.</li><li>Fixtures, results, team form and mini-league rivals.</li><li>Public A/B/C transfer scenarios and scouting projections.</li></ul></section>'+
+   '<section class="about-card"><h3>Know the limits</h3><ul class="about-list"><li>Enter a public FPL ID; no account login is needed.</li><li>No access to unpublished picks, true selling prices or live account transfers.</li><li>Predictions are estimates, never guaranteed points.</li></ul></section>'+
+  '</div>'+
+  '<section class="about-card about-method"><div class="about-section-head"><div><h3>How the numbers work</h3><p>Public facts and model estimates have different roles.</p></div><button type="button" class="about-link-button" data-goto="accuracy">Model accuracy <span aria-hidden="true">↗</span></button></div>'+
+   '<div class="about-method-grid">'+
+    methodItem('01','Official data','Published picks, scores, player availability, fixtures and prices come from Official FPL.')+
+    methodItem('02','Public decisions','A/B/C uses legal formations and Official FPL ep_next for a one-GW fallback. Longer horizons require a validated public snapshot.')+
+    methodItem('03','Independent forecasts','FPLens and other attributed sources provide third-party model inputs. Forecast accuracy varies by GW.')+
+   '</div>'+
+   '<details class="about-details"><summary>Technical methodology & uncertainty</summary><div class="about-details-body">'+
+    '<p>Public transfer candidates are evaluated with bounded deterministic search and XI/bench/C/VC optimization, not Monte Carlo. Public prices and historical bank balances are indicative: real selling prices, free transfers and hit costs cannot always be verified.</p>'+
+    '<p>Projected xG shown beside upcoming fixtures is an experimental estimate derived from Official FPL season xG and goalkeeper xGC, not recorded match xG. Missing or stale evidence is displayed as unavailable rather than invented.</p>'+
+    '<p>FPL iphoenk V6 and Canonical V12 operate separately. This no-login dashboard does not run or publish private canonical V12 decisions, reports or credentials.</p>'+
+   '</div></details>'+
+  '</section>'+
+  '<section class="about-card about-sources"><div class="about-section-head"><div><h3>Sources & credits</h3><p>Each provider retains ownership of its data and models.</p></div></div><ul class="about-source-grid">'+sources.map(sourceCard).join('')+'</ul></section>'+
+  '<section class="about-card about-bottom"><h3>Privacy & independence</h3><p>FPL iphoenk is independently built and is not affiliated with or endorsed by the Premier League. Source data, editorial content, models and trademarks belong to their respective owners.</p><p>Public team IDs do not prove account ownership. This website cannot make transfers, activate chips or read authenticated private FPL account data.</p></section>'+
+ '</div>';
 }
