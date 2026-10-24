@@ -191,12 +191,20 @@
       '<div class="decision-scenarios">'+scenario('A','A · Hold')+scenario('B','B · 1 Transfer')+scenario('C','C · 2 Transfers')+'</div>'+
       '<footer class="decision-foot"><span>'+safeName(economicsLabel)+'</span><span>Public data · Non-canonical · Gross gain, not net after hit</span></footer></article>';
   }
+  function decisionFixtureTicker(){
+    const fixtures=(state.fixtures||[]).filter(f=>f.kickoff_time).sort((a,b)=>new Date(a.kickoff_time)-new Date(b.kickoff_time));
+    if(!fixtures.length)return '<article class="decision-panel decision-fixtures"><header class="decision-panel-head"><div><h2>Live & upcoming fixtures</h2><p>Official FPL schedule</p></div><button class="decision-link" data-goto="fixtures">All fixtures ↗</button></header><div class="decision-empty">Fixture schedule is not available yet.</div></article>';
+    const now=Date.now(),visible=fixtures.filter(f=>f.finished||f.started||new Date(f.kickoff_time).getTime()>=now-6*60*60*1000).slice(0,8);
+    const groups=[];for(const fixture of visible){const date=new Date(fixture.kickoff_time).toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'});let group=groups.find(x=>x.date===date);if(!group){group={date,items:[]};groups.push(group);}group.items.push(fixture);}
+    const rows=groups.map(group=>'<div class="decision-fixture-date">'+safeName(group.date)+'</div>'+group.items.map(f=>{const home=state.teams[f.team_h],away=state.teams[f.team_a],live=f.started&&!f.finished,finished=f.finished,score=f.team_h_score!=null&&f.team_a_score!=null?f.team_h_score+' – '+f.team_a_score:'',time=new Date(f.kickoff_time).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});const status=live?'LIVE':finished?score:time;const prediction=live||finished?'':Math.abs(Number(f.team_h_difficulty)-Number(f.team_a_difficulty))<1?'Even FDR':Number(f.team_h_difficulty)<Number(f.team_a_difficulty)?'FDR lean: home':'FDR lean: away';return '<div class="decision-fixture-row"><div class="decision-fixture-team home"><strong>'+safeName(home?.name||'Home')+'</strong><span>'+safeName(home?.short_name||'')+'</span></div><div class="decision-fixture-center"><b class="decision-fixture-status '+(live?'live':finished?'finished':'')+'">'+safeName(status)+'</b><small>'+safeName(prediction||('GW '+(f.event||'—')))+' </small></div><div class="decision-fixture-team away"><span>'+safeName(away?.short_name||'')+'</span><strong>'+safeName(away?.name||'Away')+'</strong></div></div>';}).join('')).join('');
+    return '<article class="decision-panel decision-fixtures"><header class="decision-panel-head"><div><h2>Live & upcoming fixtures</h2><p>Official FPL schedule · local device time</p></div><button class="decision-link" data-goto="fixtures">All fixtures ↗</button></header><div class="decision-fixture-list">'+rows+'</div><footer class="decision-foot"><span>FDR lean is explanatory, not xG.</span><span>GW '+safeName(state.gw||'—')+'</span></footer></article>';
+  }
   function renderDecision(){
     if(!stage.isConnected)return;
     const ready=!!(state.entry&&state.picks);
     stage.hidden=!ready;
     if(!ready)return;
-    stage.innerHTML='<div class="decision-primary">'+pitchCard()+leagueCard()+'</div>'+planCard();
+    stage.innerHTML='<div class="decision-primary">'+pitchCard()+leagueCard()+'</div>'+decisionFixtureTicker()+planCard();
   }
   const initialHero=updateDashboardHero;
   updateDashboardHero=function(){initialHero();renderDecision();};
