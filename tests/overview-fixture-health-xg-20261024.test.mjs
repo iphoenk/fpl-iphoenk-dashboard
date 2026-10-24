@@ -90,3 +90,17 @@ test('Fixture navigation is bounded and independent of published squad selection
  assert.match(ui,/setInterval\(refreshCurrentFixtures,120000\)/);
  assert.match(decision,/fpl-fixtures-updated/);
 });
+
+test('provisional final score 1–1 displays FT; absent score remains explicitly pending',()=>{
+ const src=section(ui,'function fixturePhase(', '\nfunction projectedFixtureXg(');
+ const scope=vm.createContext({Date,Number});
+ vm.runInContext(src+'\nglobalThis.status=fixtureMatchStatus;',scope);
+ const ended={started:true,finished:false,finished_provisional:true,team_h_score:1,team_a_score:1,kickoff_time:'2026-10-23T19:00:00Z'};
+ assert.equal(scope.status(ended),'FT');
+ assert.equal(scope.status({...ended,team_h_score:0,team_a_score:0}),'FT');
+ assert.equal(scope.status({...ended,team_a_score:null}),'FT pending');
+ assert.equal(scope.status({...ended,finished:true,team_a_score:null}),'FT');
+ assert.equal(scope.status({...ended,started:true,finished:false,finished_provisional:false},Date.parse('2026-10-24T07:00:00Z')),'Final pending');
+ assert.match(section(decision,'  function decisionFixtureTicker(){','\n  function renderDecision(){'),/fixtureMatchStatus\(f\)/);
+ assert.match(section(ui,'function liveFixtureCards(){','\nfunction renderFixturesEnhanced()'),/fixtureMatchStatus\(f\)/);
+});
