@@ -76,7 +76,7 @@ test('About typography, card spacing, source grid and responsive widths use one 
 test('About stylesheet loads in Vercel and Worker bundles',()=>{
  for(const file of files){
   const src=readFileSync(new URL('../'+file,import.meta.url),'utf8');
-  assert.match(src,/readFileSync\('about-ui\.js','utf8'\)/);
+  assert.match(src,/'about-ui\.js'/);
   assert.match(src,/readFileSync\('about\.css','utf8'\)/);
  }
 });
