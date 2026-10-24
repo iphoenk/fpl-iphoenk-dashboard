@@ -11,6 +11,7 @@ function render(){
  const page={innerHTML:''},head={append(){}};
  const ctx=vm.createContext({
   document:{createElement:tag=>({tag}),head},
+  state:{bootstrap:{events:[{deadline_time:'2026-08-21T12:00:00Z'}]}},
   $:id=>{assert.equal(id,'view-about');return page;},
   esc:value=>String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
  });
@@ -28,7 +29,7 @@ test('About renders compact editorial content with consistent headings and nativ
  assert.match(html,/How the numbers work/);
  assert.match(html,/Sources & credits/);
  assert.match(html,/Privacy & independence/);
- assert.equal((html.match(/class="about-card(?:\s|")/g)||[]).length,5);
+ assert.equal((html.match(/class="about-card(?:\s|")/g)||[]).length,6);
  assert.doesNotMatch(html,/<table|class="panel-head"|class="table-wrap"/);
  assert.doesNotMatch(about, /aboutStyle\.textContent|line-height:1\.75/);
 });
@@ -78,5 +79,29 @@ test('About stylesheet loads in Vercel and Worker bundles',()=>{
   const src=readFileSync(new URL('../'+file,import.meta.url),'utf8');
   assert.match(src,/'about-ui\.js'/);
   assert.match(src,/readFileSync\('about\.css','utf8'\)/);
+ }
+});
+
+test('About includes verified FPL season, build revision and one unified Python engine card',()=>{
+ const html=render();
+ assert.match(html,/FPL season <strong>2026\/27<\/strong>/);
+ assert.match(html,/Dashboard build <strong>__FPL_DASHBOARD_BUILD__<\/strong>/);
+ assert.match(html,/class="about-card about-python"/);
+ assert.equal((html.match(/Independent Python Engine/g)||[]).length,1);
+ assert.match(html,/Python · experimental v0\.1\.1/);
+ assert.match(html,/calculated offline from checked Official FPL data/);
+ assert.match(html,/has not demonstrated superior predictive accuracy/);
+ const pos=html.indexOf('class="about-card about-python"'),end=html.indexOf('class="about-card about-bottom"');
+ assert.ok(pos>0&&end>pos,'Python card belongs in the same page and spacing as privacy');
+ assert.ok(pos<html.lastIndexOf('</div>'),'Python is rendered within the editorial wrapper');
+ const python=readFileSync(new URL('../own-model-ui.js',import.meta.url),'utf8');
+ assert.doesNotMatch(python,/renderAbout=function|ownAboutBefore|panel\('Independent Python Engine'/);
+ assert.match(style,/#view-about \.about-python\{display:grid;gap:8px\}/);
+ assert.match(style,/#view-about \.about-release\{/);
+});
+test('both build pipelines replace the dashboard revision with a non-secret commit SHA',()=>{
+ for(const file of files){
+  const src=readFileSync(new URL('../'+file,import.meta.url),'utf8');
+  assert.match(src,/\.replaceAll\('__FPL_DASHBOARD_BUILD__',\(process\.env\.VERCEL_GIT_COMMIT_SHA\|\|process\.env\.GITHUB_SHA\|\|'unpublished'\)\.slice\(0,8\)\)/);
  }
 });
