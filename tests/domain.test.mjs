@@ -16,3 +16,10 @@ test('model data must match deadline, player name, and club',()=>{const e={id:8,
 test('comparison separates common players and differentials',()=>assert.deepEqual(comparePicks([{element:1},{element:2}],[{element:2},{element:3}]),{shared:[2],onlyA:[1],onlyB:[3]}));
 test('transfer validates position and club rules',()=>{const players={1:{element_type:2,team:1},2:{element_type:2,team:2},3:{element_type:2,team:2},4:{element_type:2,team:2},5:{element_type:2,team:2},6:{element_type:3,team:3}};const picks=[1,2,3,4].map(element=>({element}));assert.match(validateTransfer(picks,1,5,players,10),/3 pemain/);assert.match(validateTransfer(picks,1,6,players,10),/Posisi/);});
 test('invalid methods and paths fail without upstream requests',async()=>{assert.equal((await handle(new Request('https://local/api/no'),{},{},'')).status,404);assert.equal((await handle(new Request('https://local/api/bootstrap-static/',{method:'POST'}),{},{},'')).status,405);assert.equal((await handle(new Request('https://local/api/leagues-classic/1/standings/?page_standings=bad'),{},{},'')).status,400);});
+
+test('dashboard HTML is not cached so clients do not retain an obsolete entry loader',async()=>{
+ const r=await handle(new Request('https://local/'),{},{},'<html></html>');
+ assert.equal(r.status,200);
+ assert.equal(r.headers.get('Cache-Control'),'no-store, no-cache, must-revalidate, max-age=0');
+ assert.equal(r.headers.get('Pragma'),'no-cache');
+});
