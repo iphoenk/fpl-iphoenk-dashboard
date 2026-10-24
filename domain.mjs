@@ -1,6 +1,6 @@
 export function entryId(value){const s=String(value).trim();const m=s.match(/\/entry\/(\d+)(?:\/|$)/);const id=m?m[1]:s;return /^[1-9]\d{0,9}$/.test(id)?id:null;}
-// Published manager picks are available for the latest finished GW, not necessarily for the FPL event currently marked is_current.
-export function defaultGameweek(events){const finished=[...events].reverse().find(e=>e.finished);return finished?.id||events.find(e=>e.is_current)?.id||null;}
+// Prefer the active GW; loadTeam falls back to the latest finished GW when current picks are not published yet.
+export function defaultGameweek(events){return events.find(e=>e.is_current)?.id||[...events].reverse().find(e=>e.finished)?.id||null;}
 export function snapshotIsCurrent(snapshot,events,next){
  if(!snapshot||!next||snapshot.gw!==next.id||!events?.length)return false;
  const generated=Date.parse(snapshot.generated),start=Date.parse(events[0].deadline_time),deadline=Date.parse(next.deadline_time);

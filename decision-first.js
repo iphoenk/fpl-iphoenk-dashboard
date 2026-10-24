@@ -158,6 +158,8 @@
     const weekLabel='GW '+gw+(actualHorizon>1?'–'+Math.min(38,gw+actualHorizon-1):'');
     const modelStamp=report?.evidence?.model_built_at?deviceDateTime(report.evidence.model_built_at):null;
     const generated=report?.generated_at?deviceDateTime(report.generated_at):null;
+    const account=report?.team_state;
+    const accountLine=account?'<small class="decision-plan-account">Free transfers: <strong>'+number(account.free_transfers)+'</strong> · Bank: <strong>'+money(account.bank)+'</strong> · Hit cost: '+(account.hit_cost==null?'not verified':number(account.hit_cost))+'</small>':'';
     const scope=publicPlan.loading?'Fetching Official FPL data…':modelReady?
       'Public model projection '+actualHorizon+' GW · not canonical V12':report?.status==='unavailable'?
       'Validated prediction not yet available':'Official FPL fallback, 1 GW coverage';
@@ -181,7 +183,7 @@
         '<button class="decision-action" data-goto="'+(s.transfers?'transfers':'planning')+'">Analysis ↗</button></div>'+
         '<small class="decision-scenario-note">'+weekLabel+' · Formation '+safeName(s.formation)+delta+' · '+(report?.team_state?.free_transfers!==null&&report?.team_state?.free_transfers!==undefined?'FT '+number(report.team_state.free_transfers)+' · hit cost remains unverified':'FT not verified')+'</small></div>';
     };
-    return '<article class="decision-panel decision-plan"><header class="decision-panel-head"><div><h2>Next GW Plan'+(gw?' · GW '+gw:'')+'</h2><p>'+safeName(scope)+' · no Monte Carlo</p></div><button class="decision-link" data-goto="planning">Planner ↗</button></header>'+
+    return '<article class="decision-panel decision-plan"><header class="decision-panel-head"><div><h2>Next GW Plan'+(gw?' · GW '+gw:'')+'</h2><p>'+safeName(scope)+' · no Monte Carlo</p>'+accountLine+'</div><button class="decision-link" data-goto="planning">Planner ↗</button></header>'+
       '<div class="decision-horizon"><label for="decisionHorizonSelect">Horizon</label><select id="decisionHorizonSelect" aria-label="Optimization horizon">'+[1,3,5].map(h=>'<option value="'+h+'"'+(publicPlan.horizon===h?' selected':'')+'>'+h+' GW</option>').join('')+'</select><span>'+(modelStamp?'Model '+safeName(modelStamp):generated?'Official '+safeName(generated):'Source being verified')+'</span></div>'+
       (report&&!modelReady&&publicPlan.horizon>1?'<p class="decision-fallback-notice">The '+publicPlan.horizon+' GW projection is not yet validated. The available result only uses 1 GW of Official FPL.</p>':'')+
       (report?.economics_status==='PUBLIC_CURRENT_PRICE_PROXY_INDICATIVE'?'<p class="decision-fallback-notice">B/C use the Official FPL market price as a proxy for the sale price, and the bank from the last published GW. <strong>This may not be affordable in your account.</strong> Verify the sale price and hit before transferring.</p>':'')+
