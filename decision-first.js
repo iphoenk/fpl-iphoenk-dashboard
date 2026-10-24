@@ -81,10 +81,13 @@
     const actualPitch=document.getElementById('pitch'),actualBench=document.getElementById('bench');
     const picks=state.picks?.picks||[];
     const cap=picks.find(p=>p.is_captain),vice=picks.find(p=>p.is_vice_captain);
+    const starters=picks.filter(p=>p.position<=11);
+    const outfield=[2,3,4].map(type=>starters.filter(p=>state.players[p.element]?.element_type===type).length);
+    const formation=starters.length===11&&outfield.reduce((sum,count)=>sum+count,0)===10?outfield.join('-'):null;
     const flags=picks.map(p=>state.players[p.element]).filter(p=>p&&p.status!=='a');
     const pitch=actualPitch?.innerHTML||'<div class="decision-empty">Starting XI is loading.</div>';
     const bench=actualBench?.innerHTML||'<div class="decision-empty">Bench is loading.</div>';
-    return '<article class="decision-panel decision-team"><header class="decision-panel-head"><div><h2>Current Team</h2><p>Starting XI and bench from published GW '+safeName(state.gw||'—')+'</p></div><button class="decision-link" data-goto="tim">Squad details ↗</button></header>'+
+    return '<article class="decision-panel decision-team"><header class="decision-panel-head"><div><h2>Current Team'+(formation?'<span class="decision-formation" aria-label="Formation '+formation+'">'+formation+'</span>':'')+'</h2><p>Starting XI and bench from published GW '+safeName(state.gw||'—')+'</p></div><button class="decision-link" data-goto="tim">Squad details ↗</button></header>'+
       '<div class="decision-pitch"><div class="pitch">'+pitch+'</div></div>'+
       '<div class="decision-bench"><strong>Bench · '+picks.filter(p=>p.position>11).length+' players</strong><div class="bench-row">'+bench+'</div></div>'+
       '<footer class="decision-foot"><span>Captain: <strong>'+safeName(state.players[cap?.element]?.web_name||'—')+'</strong></span><span>Vice: <strong>'+safeName(state.players[vice?.element]?.web_name||'—')+'</strong></span><span>'+flags.length+' fitness flag</span></footer></article>';
