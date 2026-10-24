@@ -64,7 +64,7 @@ test('Overview fixture card shows GW8 only, all matches, including 10th and live
 test('Fixtures page live cards use selected GW and honor completed/live/upcoming statuses',()=>{
  const c=setup(),html=c.cards();
  assert.match(html,/GW8 Home 10|>H10</);
- assert.match(html,/GW 8/);
+ assert.doesNotMatch(html,/<span>GW 8<\/span>/);
  assert.match(html,/FT/);
  assert.match(html,/LIVE/);
  assert.match(html,/Upcoming/);
