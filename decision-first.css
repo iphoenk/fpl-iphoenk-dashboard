@@ -1526,6 +1526,18 @@ body.has-team .header-account-actions #refreshButton:focus-visible{outline:2px s
  .approved-header .header-account-actions .team-context{order:3!important;max-width:clamp(80px,29vw,140px)!important}
 }
 
+/* Captain/vice badge is anchored to its own player portrait, never the gap between two forwards. */
+body.has-team[data-view=dashboard] .decision-primary .decision-pitch .pitch-row>.player{position:relative!important}
+body.has-team[data-view=dashboard] .decision-primary .decision-pitch .pitch-row>.player .cap{
+  position:absolute!important;top:2px!important;right:2px!important;left:auto!important;
+  transform:none!important;z-index:6!important;pointer-events:none
+}
+@media(max-width:767px){
+ body.has-team[data-view=dashboard] .decision-primary .decision-pitch .pitch-row>.player .cap{
+   top:2px!important;right:1px!important;left:auto!important;transform:none!important
+ }
+}
+
 /* Issue #67: one genuinely slim, consistent mobile masthead.
    Explicit parent height defeats the legacy --bar-h and inner min-height. */
 @media (max-width:767px) {
