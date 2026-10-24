@@ -10,7 +10,7 @@ test('visiting rival preserves saved home and league, including refresh and retu
  const source=readFileSync(new URL('../ui.js',import.meta.url),'utf8');
  const fn=source.slice(source.indexOf('async function loadTeam('),source.indexOf('function renderLeagueOptions()'));
  const stored=[],nodes=new Map(),state={bootstrap:{},gw:8,teamRequest:0,entry:{id:10},homeEntryId:10,league:{league:{id:100}}};
- const c=vm.createContext({state,entryId:value=>String(value),$:(id)=>{if(!nodes.has(id))nodes.set(id,{});return nodes.get(id);},alertMessage:()=>{},clearAlert:()=>{},fetchTeam:async id=>({entry:{id,leagues:{classic:[]}},picks:{}}),api:async()=>({elements:[]}),safeWrite:(key,id)=>stored.push(id),renderStats:()=>{},renderPitch:()=>{},renderInsights:()=>{},renderPlanner:()=>{},renderLeagueOptions:()=>{}});
+ const c=vm.createContext({state,entryId:value=>String(value),$:(id)=>{if(!nodes.has(id))nodes.set(id,{});return nodes.get(id);},alertMessage:()=>{},clearAlert:()=>{},fetchTeam:async id=>({entry:{id,leagues:{classic:[]}},picks:{}}),api:async()=>({elements:[]}),safeWrite:(key,id)=>stored.push(id),renderStats:()=>{},renderPitch:()=>{},renderInsights:()=>{},renderPlanner:()=>{},renderLeagueOptions:()=>{},renderFixtures:()=>{}});
  vm.runInContext(fn,c);
  await c.loadTeam(20,8,{visit:true});assert.equal(state.entry.id,20);assert.equal(state.visitingTeam,true);assert.deepEqual(stored,[]);assert.equal(state.league.league.id,100);
  await c.loadTeam(20,7);assert.deepEqual(stored,[]);assert.equal(state.visitingTeam,true);
@@ -20,7 +20,7 @@ test('team loader rejects a response whose loaded ID differs from the requested 
  const source=readFileSync(new URL('../ui.js',import.meta.url),'utf8');
  const fn=source.slice(source.indexOf('async function loadTeam('),source.indexOf('function renderLeagueOptions()'));
  const nodes=new Map(),messages=[],state={bootstrap:{},gw:8,teamRequest:0,entry:{id:10},homeEntryId:10};
- const c=vm.createContext({state,entryId:value=>String(value),$:(id)=>{if(!nodes.has(id))nodes.set(id,{});return nodes.get(id);},alertMessage:m=>messages.push(m),clearAlert:()=>{},fetchTeam:async()=>({entry:{id:99},picks:{}}),api:async()=>({elements:[]}),safeWrite:()=>{},renderStats:()=>{},renderPitch:()=>{},renderInsights:()=>{},renderPlanner:()=>{},renderLeagueOptions:()=>{}});
+ const c=vm.createContext({state,entryId:value=>String(value),$:(id)=>{if(!nodes.has(id))nodes.set(id,{});return nodes.get(id);},alertMessage:m=>messages.push(m),clearAlert:()=>{},fetchTeam:async()=>({entry:{id:99},picks:{}}),api:async()=>({elements:[]}),safeWrite:()=>{},renderStats:()=>{},renderPitch:()=>{},renderInsights:()=>{},renderPlanner:()=>{},renderLeagueOptions:()=>{},renderFixtures:()=>{}});
  vm.runInContext(fn,c);
  await c.loadTeam(10,8,{visit:false});
  assert.match(messages.join(' '),/does not match the entered FPL ID/);
@@ -32,7 +32,7 @@ test('team loader accepts a matching ID even when entryId() yields a string and 
  const nodes=new Map(),messages=[],state={bootstrap:{},gw:8,teamRequest:0,entry:null,homeEntryId:null};
  // entryId() is the REAL domain.mjs implementation here, not a Number-casting mock: it always
  // returns a string. fetchTeam below mimics the real Official FPL API, whose entry.id is a number.
- const c=vm.createContext({state,entryId,$:id=>{if(!nodes.has(id))nodes.set(id,{});return nodes.get(id);},alertMessage:m=>messages.push(m),clearAlert:()=>{},fetchTeam:async id=>({entry:{id:Number(id),leagues:{classic:[]}},picks:{}}),api:async()=>({elements:[]}),safeWrite:()=>{},renderStats:()=>{},renderPitch:()=>{},renderInsights:()=>{},renderPlanner:()=>{},renderLeagueOptions:()=>{}});
+ const c=vm.createContext({state,entryId,$:id=>{if(!nodes.has(id))nodes.set(id,{});return nodes.get(id);},alertMessage:m=>messages.push(m),clearAlert:()=>{},fetchTeam:async id=>({entry:{id:Number(id),leagues:{classic:[]}},picks:{}}),api:async()=>({elements:[]}),safeWrite:()=>{},renderStats:()=>{},renderPitch:()=>{},renderInsights:()=>{},renderPlanner:()=>{},renderLeagueOptions:()=>{},renderFixtures:()=>{}});
  vm.runInContext(fn,c);
  await c.loadTeam('3462711',8,{visit:false});
  assert.deepEqual(messages,[]);
