@@ -55,7 +55,7 @@ body.has-team[data-view=dashboard] .decision-first{
   width:100%;min-width:0;grid-column:auto!important;grid-row:auto!important
 }
 body.has-team[data-view=dashboard] .decision-first[hidden]{display:none!important}
-.decision-primary{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(0,1fr);gap:var(--decision-gap);align-items:stretch}
+.decision-primary{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(0,1fr);gap:var(--decision-gap);align-items:start}
 .decision-panel{
   min-width:0;display:flex;flex-direction:column;gap:12px;padding:16px;background:var(--panel);
   border:1px solid var(--line);border-radius:var(--decision-radius);color:var(--text);
@@ -581,16 +581,16 @@ body.has-team .player-fixture.upcoming{background:#eef3f7;color:#4d6276}
 body.has-team .player-fixture.finished{background:#e3f2eb;color:#167352}
 body.has-team .player-fixture.live{background:#ffe3e8;color:#b21f45}
 body.has-team .player-fixture.blank{background:#f0f1f2;color:#7b8792}
-body.has-team .decision-pitch .pitch-row .player-portrait{width:clamp(48px,5.4vw,72px);height:clamp(58px,6.8vw,86px)}
+body.has-team .decision-pitch .pitch-row .player-portrait{width:clamp(44px,4.8vw,60px);height:clamp(54px,5.8vw,72px)}
 body.has-team .decision-pitch .pitch-row .player-fixture{font-size:9px}
-body.has-team .decision-bench .player-portrait{width:48px;height:60px}
+body.has-team .decision-bench .player-portrait{width:44px;height:54px}
 body.has-team .decision-bench .player-fixture{font-size:8px}
 body.has-team[data-view=dashboard] .decision-pitch .pitch-row .player-score{border-radius:0 0 5px 5px}
 @media(max-width:767px){
   body.has-team .player-portrait{width:32px;height:40px}
   body.has-team .player-fixture{font-size:8px;padding:3px 1px}
-  body.has-team .decision-pitch .pitch-row .player-portrait{width:42px;height:54px}
-  body.has-team .decision-bench .player-portrait{width:39px;height:50px}
+  body.has-team .decision-pitch .pitch-row .player-portrait{width:40px;height:50px}
+  body.has-team .decision-bench .player-portrait{width:37px;height:47px}
   body.has-team .decision-bench .player-fixture{font-size:7px}
 }
 
