@@ -66,3 +66,12 @@ The published global model is NOT Canonical V12; only its deterministic package
 and lineup search approach is V12-inspired. If the global batch data cannot
 pass GW, freshness, identity and coverage checks, use the previous Official
 one-GW public advisory. Never invent free transfers, hit costs or net gains.
+
+## Canonical V12 decision boundary
+
+The dashboard uses Official FPL as its factual authority. To activate the Canonical V12 decision brain, configure the Vercel/server environment variable:
+
+`FPL_V12_CANONICAL_URL=https://<validated-canonical-v12-service>/api/decision`
+
+The adapter requires an identity-bound payload with contract `FPL_V12_CANONICAL_DECISION_V1`, matching `entry_id` and `horizon`, plus `provenance.input_fingerprint` and `provenance.canonical_v12_revision`. Invalid, stale, or unavailable canonical responses fail closed. Without this variable, the public deterministic route remains explicitly non-canonical and must not be labeled as full V12 production.
+
