@@ -28,7 +28,9 @@ function renderCard(pick,bench=false){
 test('Current Team photo and captain/vice labels remain readable and distinct',()=>{
   const captain=renderCard({is_captain:true,multiplier:2});
   const vice=renderCard({is_vice_captain:true});
-  assert.match(captain,/class="player-portrait"/);
+  assert.match(captain,/<span class="player-portrait-frame"><img class="player-portrait"/);
+  assert.match(captain,/onload="this.classList.add/);
+  assert.match(captain,/onerror="this.parentElement.classList.add/);
   assert.match(captain,/class="cap cap-captain" aria-label="Captain">C<\/span>/);
   assert.match(vice,/class="cap cap-vice" aria-label="Vice-captain">VC<\/span>/);
   assert.doesNotMatch(vice,/class="cap cap-captain"/);
@@ -49,4 +51,19 @@ test('Overview CSS covers pitch/bench portrait and 393/768/desktop layouts',()=>
   assert.match(stylesheet,/@media\(min-width:1100px\)/);
   assert.match(decision,/const formation=starters\.length===11/);
   assert.match(decision,/Formation '\+formation/);
+});
+
+test('Issue #145: true cropped headshots rather than only larger cards',()=>{
+  const portraitRule=stylesheet.slice(stylesheet.indexOf('/* Issue #145: true head-and-shoulders'));
+  assert.ok(portraitRule.length>500,'the latest headshot styles must be present');
+  assert.match(portraitRule,/\.player-portrait-frame\{/);
+  assert.match(portraitRule,/overflow:hidden!important/);
+  assert.match(portraitRule,/object-fit:cover!important/);
+  assert.match(portraitRule,/object-position:50% 0%!important/);
+  assert.match(portraitRule,/transform:scale\(1\.43\)!important/);
+  assert.match(portraitRule,/transform:scale\(1\.32\)!important/);
+  assert.match(portraitRule,/\.player-portrait-frame:has\(>\.player-portrait\.loaded\)\+\.shirt/);
+  assert.match(portraitRule,/\.player-portrait-frame\.failed\{/);
+  assert.match(portraitRule,/@media\(max-width:767px\)/);
+  assert.ok(stylesheet.lastIndexOf('/* Issue #145: true') < stylesheet.lastIndexOf('/* Issue #67: one genuinely slim'), 'mobile masthead must remain final block for its existing regression contract');
 });
