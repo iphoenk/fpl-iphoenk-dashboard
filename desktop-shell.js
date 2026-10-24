@@ -35,7 +35,7 @@ function shellPlaceExtras(){
  if(desk&&ctl){if(inGrid){if(inCtl)inCtl.remove();ctl.appendChild(inGrid);}}
  else if(inCtl&&grid&&!inGrid)grid.prepend(inCtl);
 }
-function shellPlaceRefresh(){const b=document.getElementById('refreshButton'),top=document.querySelector('.header-account-actions'),foot=document.querySelector('.footer');if(!b||!top||!foot)return;if(innerWidth>=1100){const ctx=document.getElementById('activeTeamContext');if(b.parentNode!==top){b.classList.add('shell-refresh');ctx&&ctx.parentNode===top?top.insertBefore(b,ctx):top.prepend(b);}}else if(b.parentNode!==foot){b.classList.remove('shell-refresh');foot.appendChild(b);}}
+function shellPlaceRefresh(){const b=document.getElementById('refreshButton'),top=document.querySelector('.header-account-actions'),foot=document.querySelector('.footer');if(!b||!top||!foot)return;const ctx=document.getElementById('activeTeamContext');if(b.parentNode!==top){b.classList.add('shell-refresh');ctx&&ctx.parentNode===top?top.insertBefore(b,ctx):top.prepend(b);}}
 addEventListener('resize',()=>{shellPlaceRefresh();shellPlaceExtras();});new MutationObserver(()=>{shellPlaceRefresh();shellPlaceExtras();}).observe(document.body,{childList:true,subtree:true});shellPlaceRefresh();shellPlaceExtras();
 addEventListener('resize',shellFitSoon);new MutationObserver(shellFitSoon).observe(document.body,{attributes:true,attributeFilter:['class']});
 const shellView=document.getElementById('view-dashboard');if(shellView)new MutationObserver(shellFitSoon).observe(shellView,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden']});
