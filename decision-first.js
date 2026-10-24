@@ -100,7 +100,7 @@
     return '<article class="decision-panel decision-team"><header class="decision-panel-head"><div><h2>Current Team'+(formation?'<span class="decision-formation" aria-label="Formation '+formation+'">'+formation+'</span>':'')+'</h2><p>Starting XI and bench from published GW '+safeName(state.gw||'—')+'</p></div></header>'+summary+
       '<div class="decision-pitch"><div class="pitch">'+pitch+'</div></div>'+
       '<div class="decision-bench"><strong>Bench · '+picks.filter(p=>p.position>11).length+' players</strong><div class="bench-row">'+bench+'</div></div>'+
-      '<footer class="decision-foot"><span>Captain: <strong>'+safeName(state.players[cap?.element]?.web_name||'—')+'</strong></span><span>Vice: <strong>'+safeName(state.players[vice?.element]?.web_name||'—')+'</strong></span><span>'+flags.length+' fitness flag</span></footer></article>';
+      '</article>';
   }
   function leagueCard(){
     const leagues=leagueList(),selected=currentLeagueId(),member=leagueMember(selected),ownId=String(state.entry?.id||'');
