@@ -62,9 +62,9 @@ async function loadBase(){
 }
 async function fetchTeam(id,gw){
  const result=await Promise.all([api('entry/'+id+'/'),api('entry/'+id+'/event/'+gw+'/picks/')]);
- if(Number(result[0]?.id)===id)return {entry:result[0],picks:result[1]};
+ if(Number(result[0]?.id)===Number(id))return {entry:result[0],picks:result[1]};
  const retry=await api('entry/'+id+'/?identity_retry='+Date.now());
- if(Number(retry?.id)!==id)throw new Error('The loaded team does not match the entered FPL ID. Please try again.');
+ if(Number(retry?.id)!==Number(id))throw new Error('The loaded team does not match the entered FPL ID. Please try again.');
  return {entry:retry,picks:result[1]};
 }
 async function loadTeam(raw,gw=state.gw,options={}){
