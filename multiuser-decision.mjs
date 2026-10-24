@@ -1,6 +1,10 @@
 /* No-login public advisory. V12-informed route structure, NOT canonical V12.
    Official FPL ep_next only; no MC, private state, inferred hits or fake 3GW. */
 export const PUBLIC_DECISION_VERSION='official-deterministic-v1';
+export const LEGAL_FORMATIONS=[
+ [3,4,3],[3,5,2],[4,3,3],[4,4,2],
+ [4,5,1],[5,2,3],[5,3,2],[5,4,1]
+];
 const finite=v=>v===null||v===undefined||v===''?null:Number.isFinite(Number(v))?Number(v):null;
 const score=p=>{const n=finite(p?.ep_next);return n!==null&&n>=0&&n<=40?n:null};
 const cost=p=>{const n=finite(p?.now_cost);return n!==null&&Number.isInteger(n)&&n>0?n:null};
@@ -13,8 +17,7 @@ export function selectPublicXI(squad){
  if(!validSquad(squad)||squad.some(p=>score(p)===null))return null;
  const groups=[1,2,3,4].map(pos=>squad.filter(p=>p.element_type===pos).sort(better));
  let best=null;
- for(let d=3;d<=5;d++)for(let m=2;m<=5;m++){
-  const f=10-d-m;if(f<1||f>3)continue;
+ for(const [d,m,f] of LEGAL_FORMATIONS){
   const xi=[groups[0][0],...groups[1].slice(0,d),...groups[2].slice(0,m),...groups[3].slice(0,f)];
   if(xi.length!==11)continue;
   const ordered=[...xi].sort(better),captain=ordered[0],vice=ordered[1],sum=xi.reduce((a,p)=>a+score(p),0)+score(captain);

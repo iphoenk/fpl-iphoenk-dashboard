@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {publicDecision} from '../multiuser-decision.mjs';
+import {publicDecision,selectPublicXI,LEGAL_FORMATIONS} from '../multiuser-decision.mjs';
 import {createPublicDecisionService,publicDecisionResponse} from '../multiuser-decision-server.mjs';
 let id=1;const players=[];
 function add(pos,team,ep,cost=45){
@@ -12,6 +12,14 @@ const squad=[...take(1,[1,2]),...take(2,[3,4,5,6,7]),...take(3,[8,9,10,11,12]),
  players.find(p=>p.element_type===4&&p.team===13),players.find(p=>p.element_type===4&&p.team===14),players.find(p=>p.element_type===4&&p.team===13&&p.id!==players.find(x=>x.element_type===4&&x.team===13).id)];
 const bootstrap={elements:players,events:[{id:7,is_current:true,deadline_time:'2026-10-18T11:00:00Z'},{id:8,is_next:true,deadline_time:'2026-10-25T11:00:00Z'}]};
 const picks={picks:squad.map((p,i)=>({element:p.id,position:i+1,selling_price:p.now_cost})),entry_history:{bank:120,event:7}};
+test('optimizer enumerates every legal FPL formation',()=>{
+ assert.deepEqual(LEGAL_FORMATIONS,[[3,4,3],[3,5,2],[4,3,3],[4,4,2],[4,5,1],[5,2,3],[5,3,2],[5,4,1]]);
+ const result=selectPublicXI(squad);
+ assert.ok(result);
+ assert.ok(LEGAL_FORMATIONS.some(([d,m,f])=>result.formation===d+'-'+m+'-'+f));
+ assert.equal(result.starting_xi.length,11);
+ assert.equal(result.bench.length,4);
+});
 test('A/B/C reoptimize legal XI, four bench, captain/vice with no fake hits',()=>{
  const r=publicDecision({entry:{id:900},picks,bootstrap,planningGw:8});
  assert.equal(r.status,'ready');assert.equal(r.canonical_v12,false);assert.equal(r.monte_carlo,false);
