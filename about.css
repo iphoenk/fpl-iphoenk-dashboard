@@ -110,6 +110,19 @@
 #view-about .about-bottom p{
  font-size:13px;line-height:1.45;color:var(--muted)
 }
+/* Build/season identity and independent engine are peers in the same card rhythm. */
+#view-about .about-release{
+ display:flex;flex-wrap:wrap;gap:6px 16px;
+ margin-top:11px;padding-top:10px;border-top:1px solid var(--line);
+ color:var(--muted);font-size:12px;line-height:1.4
+}
+#view-about .about-release strong{color:var(--text);font-weight:650}
+#view-about .about-python{display:grid;gap:8px}
+#view-about .about-python .about-section-head{margin:0}
+#view-about .about-python p{
+ margin:0;font-size:13px;line-height:1.45;color:var(--muted)
+}
+#view-about .about-python .about-section-head p{margin-top:4px}
 @media(max-width:900px){
  #view-about .about-method-grid{grid-template-columns:1fr;gap:7px}
  #view-about .about-method-step{padding:10px 12px}
