@@ -1538,6 +1538,24 @@ body.has-team[data-view=dashboard] .decision-primary .decision-pitch .pitch-row>
  }
 }
 
+/* Mini-league standings must follow the active color scheme, including thead. */
+html[data-theme=dark] body.has-team .decision-league .decision-table-wrap table,
+html[data-theme=dark] body.has-team .decision-league .decision-table-wrap thead,
+html[data-theme=dark] body.has-team .decision-league .decision-table-wrap thead tr,
+html[data-theme=dark] body.has-team .decision-league .decision-table-wrap thead th{
+  background:#182536!important;background-color:#182536!important;
+  color:#aebed0!important;border-color:#344356!important;
+}
+html[data-theme=dark] body.has-team .decision-league .decision-table-wrap tbody,
+html[data-theme=dark] body.has-team .decision-league .decision-table-wrap tbody tr,
+html[data-theme=dark] body.has-team .decision-league .decision-table-wrap tbody td{
+  color:var(--text)!important;border-color:var(--line)!important;
+}
+html[data-theme=dark] body.has-team .decision-league .decision-table-wrap tbody tr.decision-mine,
+html[data-theme=dark] body.has-team .decision-league .decision-table-wrap tbody tr.decision-mine td{
+  background:color-mix(in srgb,var(--lime) 9%,var(--panel))!important;
+}
+
 /* Issue #67: one genuinely slim, consistent mobile masthead.
    Explicit parent height defeats the legacy --bar-h and inner min-height. */
 @media (max-width:767px) {
