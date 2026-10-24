@@ -1227,6 +1227,66 @@ body.has-team[data-view=dashboard] .decision-fixture-center small{font-size:10px
  body.has-team[data-view=dashboard] .decision-team .player-fitness{width:17px;height:17px;top:20px;font-size:12px}
 }
 
+
+/* Issue #155: equal visual weight for all 15 players (XI and 4 bench).
+   Position badges are overlays, never a separate row in the bench. */
+body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row>.player{
+  position:relative!important;display:flex!important;flex-direction:column!important;
+  width:100%!important;min-width:0!important;max-width:100%!important;
+  align-items:center!important;justify-content:flex-end!important;
+  gap:0!important;padding:5px 3px 3px!important;
+  overflow:visible!important;box-sizing:border-box!important
+}
+body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-position{
+  position:absolute!important;top:8px!important;left:6px!important;
+  display:grid!important;place-items:center!important;z-index:4!important;
+  width:auto!important;min-width:27px!important;max-width:39px!important;
+  height:20px!important;min-height:20px!important;padding:0 4px!important;
+  margin:0!important;box-sizing:border-box!important;
+  border:1px solid rgba(255,255,255,.8)!important;
+  border-radius:12px!important;
+  background:rgba(17,49,38,.95)!important;color:#fff!important;
+  box-shadow:0 1px 3px #0004!important;
+  font-size:10px!important;line-height:1!important;
+  font-weight:850!important;letter-spacing:0!important;
+  pointer-events:none
+}
+body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row .player-portrait-frame{
+  width:min(100%,94px)!important;height:clamp(66px,6.5vw,84px)!important
+}
+body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row .player-portrait-frame>.player-portrait{
+  transform:scale(1.43)!important;transform-origin:50% 4%!important
+}
+body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row .shirt{
+  width:52px!important;height:68px!important;max-width:100%!important;
+  margin-inline:auto!important
+}
+body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row :is(.player-name,.player-fixture,.player-score){
+  font-size:clamp(10px,1.12vw,12px)!important;line-height:1.15!important
+}
+@media(max-width:767px){
+ body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row>.player{
+   padding:5px 1px 2px!important
+ }
+ body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row .player-portrait-frame{
+   width:min(100%,70px)!important;height:clamp(50px,15vw,69px)!important
+ }
+ body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row .player-portrait-frame>.player-portrait{
+   transform:scale(1.32)!important
+ }
+ body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row .shirt{
+   width:clamp(38px,11vw,52px)!important;height:clamp(50px,14vw,68px)!important
+ }
+ body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-position{
+   top:6px!important;left:1px!important;min-width:24px!important;
+   height:18px!important;min-height:18px!important;padding:0 3px!important;
+   font-size:9px!important
+ }
+ body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row :is(.player-name,.player-fixture,.player-score){
+   font-size:clamp(9px,2.4vw,11px)!important;line-height:1.15!important
+ }
+}
+
 /* Issue #67: one genuinely slim, consistent mobile masthead.
    Explicit parent height defeats the legacy --bar-h and inner min-height. */
 @media (max-width:767px) {
