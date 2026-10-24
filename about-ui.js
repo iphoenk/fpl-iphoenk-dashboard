@@ -10,7 +10,19 @@ function renderAbout(){
   ['FPL Core Insights','https://github.com/olbauday/FPL-Core-Insights','Additional public reference data, where explicitly sourced.'],
   ['The Guardian','https://www.theguardian.com/football','Football reporting, linked to its source when shown.'],
   ['FPL Jakarta','https://github.com/fpljakarta/fpl-jakarta-dashboard','Inspiration for awards; interface and calculations are independent.'],
-  ['FPL iphoenk V6/V12 Engine','https://github.com/iphoenk/FPL-iphoenk-engine','Separate workflows, not a canonical input to this public dashboard.']
+  ['Doocey FPL Dashboard','https://github.com/Doocey/fpl-dashboard','Reference for official-data price history and scheduled refresh patterns; implementation is independent.'],
+  ['thinesrao FPL Dashboard Streamlit','https://github.com/thinesrao/fpl-dashboard-streamlit','Reference for mini-league awards and historical league analytics; implementation is independent.'],
+  ['j-maslin Virtuoso FPL Dashboard','https://github.com/j-maslin/fpl-dashboard','Reference for compact wallboard league presentation and adaptive charts; implementation is independent.'],
+  ['JonnoMillar FPL Insights','https://github.com/JonnoMillar/fpl-insights','Reference for xGI, defensive contribution, fixture, captaincy and uncertainty analysis; implementation is independently integrated.'],
+  ['jorgefhernandezg FPL Dashboard','https://github.com/jorgefhernandezg/fpl-dashboard','Public FPL dashboard reference reviewed during architecture research.'],
+  ['requiemalex Scoutline','https://github.com/requiemalex/fpl-analytics-dashboard','Reference for validation, normalization, cache, retry, stale fallback and provenance patterns; implementation is independent.'],
+  ['uixori-code FPL Fantasy Dashboard','https://github.com/uixori-code/fpl-fantasy-dashboard','Reference for public Team ID UX, React structure and data-fetch separation; implementation is independent.'],
+  ['avgcloudwizard Wireless','https://github.com/avgcloudwizard/wireless','Reference for one consistent snapshot, freshness, last-good data and mini-league metrics; implementation is independent.'],
+  ['ahmedrashadtxt FPL Strategic Dashboard','https://github.com/ahmedrashadtxt/fpl-strategic-dashboard','Reference for deterministic constraints, transfer friction and audit-journal concepts; implementation is independently governed.'],
+  ['dhruvgupta2109 FPL Manager','https://github.com/dhruvgupta2109/fplmanager','Reference for guest Team ID flow, pitch, fixtures and rank-trend UX; implementation is independent.'],
+  ['pdamkier-del FPL Analytics App','https://github.com/pdamkier-del/fpl-analytics-app','Reference for model versioning and updater separation.'],
+  ['maballouk FPL Analytic','https://github.com/maballouk/fplanalytic','Reference for TypeScript project structure and test organization.'],
+  ['FPL iphoenk V6/V12/MC Engine','https://github.com/iphoenk/FPL-iphoenk-engine','Canonical factual, decision, audit and MC500K engine owned by FPL iphoenk.']
  ];
  const sourceCard=([name,url,summary])=>'<li class="about-source"><a href="'+url+'" target="_blank" rel="noopener noreferrer">'+esc(name)+' <span aria-hidden="true">↗</span></a><p>'+esc(summary)+'</p></li>';
  const methodItem=(number,title,description)=>'<div class="about-method-step"><span class="about-method-number">'+number+'</span><div><h4>'+title+'</h4><p>'+description+'</p></div></div>';
@@ -28,9 +40,9 @@ function renderAbout(){
     methodItem('03','Independent forecasts','FPLens and other attributed sources provide third-party model inputs. Forecast accuracy varies by GW.')+
    '</div>'+
    '<details class="about-details"><summary>Technical methodology & uncertainty</summary><div class="about-details-body">'+
-    '<p>Public transfer candidates are evaluated with bounded deterministic search and XI/bench/C/VC optimization, not Monte Carlo. Public prices and historical bank balances are indicative: real selling prices, free transfers and hit costs cannot always be verified.</p>'+
+    '<p>Public transfer candidates are evaluated with bounded deterministic search and XI/bench/C/VC optimization. Monte Carlo is not executed in the browser: our FPL iphoenk engine owns MC500K as a governed research and evidence layer, and the dashboard may consume only validated, contract-compliant outputs. Public prices and historical bank balances are indicative: real selling prices, free transfers and hit costs cannot always be verified.</p>'+
     '<p>Projected xG shown beside upcoming fixtures is an experimental estimate derived from Official FPL season xG and goalkeeper xGC, not recorded match xG. Missing or stale evidence is displayed as unavailable rather than invented.</p>'+
-    '<p>FPL iphoenk V6 and Canonical V12 operate separately. This no-login dashboard does not run or publish private canonical V12 decisions, reports or credentials.</p>'+
+    '<p>FPL iphoenk V6 owns factual acquisition and provenance, Canonical V12 owns the decision contract, and the MC500K layer remains inside the engine for governed probability evidence. This no-login dashboard consumes only public or explicitly published contract outputs and never exposes private credentials.</p>'+
    '</div></details>'+
   '</section>'+
   '<section class="about-card about-sources"><div class="about-section-head"><div><h3>Sources & credits</h3><p>Each provider retains ownership of its data and models.</p></div></div><ul class="about-source-grid">'+sources.map(sourceCard).join('')+'</ul></section>'+
