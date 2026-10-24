@@ -114,6 +114,6 @@ test('Current Team shows C/VC only on pitch, not in a duplicate bottom footer',(
  assert.doesNotMatch(result,/fitness flag/);
  state.players[2].status='d';
  const flagged=context.renderCard();
- assert.match(flagged,/published GW 8 · 1 fitness flag/);
+ assert.doesNotMatch(flagged,/fitness flag/);
  assert.doesNotMatch(flagged,/decision-foot/);
 });

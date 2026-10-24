@@ -53,7 +53,7 @@ export function officialPhotoSources(player){
  if(player?.has_temporary_code)return [placeholder];
  const code=String(player?.code||player?.photo||'').replace(/\.[^.]+$/,'');
  if(!/^\d+$/.test(code))return [placeholder];
- return [current+code+'.png','https://resources.premierleague.com/premierleague/photos/players/110x140/p'+code+'.png',placeholder];
+ return [current+code+'.png','https://resources.premierleague.com/premierleague/photos/players/110x140/p'+code+'.png','https://resources.premierleague.com/premierleague25/photos/players/250x250/'+code+'.png','https://resources.premierleague.com/premierleague25/photos/players/40x40/'+code+'.png',placeholder];
 }
 export function keeperScoutRows(players,fixtures,teams){
  return players.filter(p=>p.element_type===1).map(p=>{

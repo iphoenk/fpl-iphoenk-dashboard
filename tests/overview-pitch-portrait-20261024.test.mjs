@@ -20,6 +20,7 @@ function renderCard(pick,bench=false){
     xp:()=>5,fmt:value=>String(value),displayPickPoints:(value,selected)=>value*selected.multiplier,
     playerPortraitUrl:()=> 'https://resources.premierleague.com/example.png',
     playerFixture:()=>'<span class="player-fixture upcoming">TOT (H)</span>',
+    playerFitnessMarker:()=>'',
     esc:value=>String(value)
   });
   return render({...pick,element:7,multiplier:pick.multiplier??1},bench);
@@ -30,7 +31,7 @@ test('Current Team photo and captain/vice labels remain readable and distinct',(
   const vice=renderCard({is_vice_captain:true});
   assert.match(captain,/<span class="player-portrait-frame"><img class="player-portrait"/);
   assert.match(captain,/onload="this.classList.add/);
-  assert.match(captain,/onerror="this.parentElement.classList.add/);
+  assert.doesNotMatch(captain,/onerror="this.parentElement.classList.add/);
   assert.match(captain,/class="cap cap-captain" aria-label="Captain">C<\/span>/);
   assert.match(vice,/class="cap cap-vice" aria-label="Vice-captain">VC<\/span>/);
   assert.doesNotMatch(vice,/class="cap cap-captain"/);

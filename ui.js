@@ -32,12 +32,52 @@ function selectedGwFixtures(gw=state.gw){
  });
 }
 function currentFixture(team){const gw=Number(state.gw);if(!gw)return null;return state.fixtures.find(f=>Number(f.event)===gw&&(f.team_h===team||f.team_a===team))||null;}
-function playerFixture(team){const fixture=currentFixture(team);if(!fixture)return '<span class="player-fixture blank" title="No fixture in the selected gameweek">BLANK</span>';const home=fixture.team_h===team,op=state.teams[home?fixture.team_a:fixture.team_h],side=home?'H':'A';const live=fixture.started&&!fixture.finished;const finished=fixture.finished;const score=finished&&fixture.team_h_score!=null&&fixture.team_a_score!=null?' · '+fixture.team_h_score+'-'+fixture.team_a_score:'';const label=(op?.short_name||'?')+' ('+side+')';return '<span class="player-fixture '+(live?'live':finished?'finished':'upcoming')+'" title="GW '+fixture.event+(live?' · Live':finished?' · Finished':' · Upcoming')+'">'+esc(label)+esc(score)+(live?' · LIVE':'')+'</span>';}
-function playerPortraitUrl(p){const code=String(p?.code||p?.photo||'').replace(/\.[^.]+$/,'');return /^\d+$/.test(code)?'https://resources.premierleague.com/premierleague25/photos/players/110x140/'+code+'.png':'';}
+function playerFixture(team){const fixture=currentFixture(team);if(!fixture)return '<span class="player-fixture blank" title="No fixture in the selected gameweek">BLANK</span>';const home=fixture.team_h===team,op=state.teams[home?fixture.team_a:fixture.team_h],side=home?'H':'A';const phase=fixturePhase(fixture),live=phase==='live',finished=phase==='finished';const score=finished&&fixture.team_h_score!=null&&fixture.team_a_score!=null?' · '+fixture.team_h_score+'-'+fixture.team_a_score:'';const label=(op?.short_name||'?')+' ('+side+')';return '<span class="player-fixture '+(live?'live':finished?'finished':'upcoming')+'" title="GW '+fixture.event+(live?' · Live':finished?' · Finished':' · Upcoming')+'">'+esc(label)+esc(score)+(live?' · LIVE':'')+'</span>';}
+function playerPortraitUrl(p){return officialPhotoSources(p)[0]||'';}
+function playerFitnessMarker(p){
+ const flag=String(p?.status||'a');if(flag==='a')return '';
+ const label=flag==='d'?'Doubtful':flag==='s'?'Suspended':flag==='i'?'Injured':'Unavailable';
+ return '<span class="player-fitness '+(flag==='d'?'caution':'danger')+'" title="'+esc(label+(p.news?' · '+p.news:''))+'" aria-label="'+esc(label)+'">!</span>';
+}
+document.addEventListener('error',event=>{
+ const img=event.target;if(!img||img.tagName!=='IMG'||!img.hasAttribute('data-player-photo'))return;
+ const srcs=officialPhotoSources(state.players[Number(img.dataset.playerPhoto)]||{}),next=(Number(img.dataset.photoStage)||0)+1;
+ img.classList.remove('loaded');
+ if(next<srcs.length){img.dataset.photoStage=String(next);img.src=srcs[next];}
+ else img.parentElement?.classList.add('failed');
+},true);
+function fixturePhase(f,now=Date.now()){
+ if(f.finished===true)return 'finished';
+ if(f.finished_provisional===true)return 'provisional';
+ const kickoff=Date.parse(f.kickoff_time||'');
+ if(Number.isFinite(kickoff)&&now-kickoff>4*60*60*1000)return 'awaiting';
+ return f.started===true?'live':f.kickoff_time?'upcoming':'tbc';
+}
+function projectedFixtureXg(f){
+ if(!f||fixturePhase(f)!=='upcoming')return null;
+ const completed=(state.fixtures||[]).filter(g=>g.finished===true);
+ const players=Object.values(state.players||{});
+ const estimates=team=>{
+  const played=completed.filter(g=>g.team_h===team||g.team_a===team).length;
+  const roster=players.filter(p=>p.team===team);
+  const xg=roster.filter(p=>p.expected_goals!=null&&p.expected_goals!==''&&Number.isFinite(Number(p.expected_goals)));
+  const gk=roster.filter(p=>p.element_type===1&&p.expected_goals_conceded!=null&&p.expected_goals_conceded!==''&&Number.isFinite(Number(p.expected_goals_conceded)));
+  if(played<3||xg.length<8||!gk.length)return null;
+  const attack=xg.reduce((sum,p)=>sum+Number(p.expected_goals),0)/played;
+  const conceded=gk.reduce((sum,p)=>sum+Number(p.expected_goals_conceded),0)/played;
+  return attack>0&&conceded>0?{attack,conceded}:null;
+ };
+ const home=estimates(f.team_h),away=estimates(f.team_a);
+ if(!home||!away)return null;
+ const h=Math.sqrt(home.attack*away.conceded)*1.05,a=Math.sqrt(away.attack*home.conceded)*.95;
+ if(!Number.isFinite(h)||!Number.isFinite(a))return null;
+ return {home:Math.max(.1,Math.min(4.5,h)),away:Math.max(.1,Math.min(4.5,a)),source:'Official FPL season xG and goalkeeper xGC',method:'Experimental deterministic pre-match estimate'};
+}
+
 function showView(view){if(!['tim','liga','banding','scout','planner'].includes(view))view='tim';state.view=view;document.querySelectorAll('.page-view').forEach(el=>el.classList.toggle('hidden',el.id!=='view-'+view));document.querySelectorAll('[data-view]').forEach(el=>{el.classList.toggle('active',el.dataset.view===view);el.setAttribute('aria-current',el.dataset.view===view?'page':'false');});const copy={tim:['My Team','Your team.<br><span class="lime">The bigger picture.</span>','Everything you need, before the first whistle.'],liga:['Mini League','Your league.<br><span class="lime">Every rival, in focus.</span>','Know who to chase, and where the opportunities are.'],banding:['Compare','Two teams.<br><span class="lime">One clearer picture.</span>','See what is shared. Find what gives you the edge.'],scout:['Scout','Less guesswork.<br><span class="lime">More game plan.</span>','Find players for your next move.'],planner:['Planner','Think ahead.<br><span class="lime">Play your next move.</span>','From transfer idea to gameweek plan.']}[view];$('crumb').textContent=copy[0];$('pageTitle').innerHTML=copy[1];$('pageDesc').textContent=copy[2];if(location.hash!=='#'+view)history.replaceState(null,'','#'+view);if(view==='scout')renderScout();if(view==='planner'){renderPlanner();renderFixtures();}}
 function stat(label,value,note,first=false){return '<article class="stat"><div class="eyebrow">'+esc(label)+'</div><div class="stat-decoration">↗</div><div class="stat-num">'+value+'</div><div class="stat-foot">'+esc(note)+'</div></article>';}
 function renderStats(){const e=state.entry,h=state.picks?.entry_history;$('teamStats').innerHTML=stat('Gameweek '+(state.gw||'—'),fmt(h?.points),'GW points from public picks')+stat('Total points',fmt(e?.summary_overall_points),'Season total • FPL data')+stat('Overall rank',fmt(e?.summary_overall_rank),e?'Manager: '+e.player_first_name+' '+e.player_last_name:'Time to connect your team')+stat('Squad value',h?money(h.value):'—',h?'Public bank: '+money(h.bank):'Value at the selected gameweek');}
-function playerCard(pick,bench=false){const p=state.players[pick.element];if(!p)return '';const pred=xp(p);const points=state.live[p.id]?.stats?.total_points;const value=state.metric==='xp'?(pred===null?'—':fmt(pred,1)+' xP'):(points==null?'—':fmt(displayPickPoints(points,pick))+' pts');const team=state.teams[p.team],photo=playerPortraitUrl(p);return '<button type="button" class="player'+(bench?' bench':'')+'" data-player="'+p.id+'" aria-label="Details '+esc(p.web_name)+'">'+(photo?'<span class="player-portrait-frame"><img class="player-portrait" src="'+photo+'" alt="" loading="lazy" data-player-photo="'+p.id+'" data-photo-stage="0" onload="this.classList.add(\'loaded\')" onerror="this.parentElement.classList.add(\'failed\')"></span>':'')+(bench?'<span class="bench-position">'+esc(positions[p.element_type]||'')+'</span>':'')+'<svg class="shirt" style="color:'+esc(palettes[team?.short_name]||'#c0d88a')+'"><use href="#i-shirt"/></svg>'+(pick.is_captain?'<span class="cap cap-captain" aria-label="Captain">C</span>':pick.is_vice_captain?'<span class="cap cap-vice" aria-label="Vice-captain">VC</span>':'')+'<span class="player-name">'+esc(p.web_name)+'</span>'+playerFixture(p.team)+'<span class="player-score">'+value+'</span></button>';}
+function playerCard(pick,bench=false){const p=state.players[pick.element];if(!p)return '';const pred=xp(p);const points=state.live[p.id]?.stats?.total_points;const value=state.metric==='xp'?(pred===null?'—':fmt(pred,1)+' xP'):(points==null?'—':fmt(displayPickPoints(points,pick))+' pts');const team=state.teams[p.team],photo=playerPortraitUrl(p);return '<button type="button" class="player'+(bench?' bench':'')+'" data-player="'+p.id+'" aria-label="Details '+esc(p.web_name)+'">'+(photo?'<span class="player-portrait-frame"><img class="player-portrait" src="'+photo+'" alt="" loading="lazy" data-player-photo="'+p.id+'" data-photo-stage="0" onload="this.classList.add(\'loaded\')"></span>':'')+(bench?'<span class="bench-position">'+esc(positions[p.element_type]||'')+'</span>':'')+'<svg class="shirt" style="color:'+esc(palettes[team?.short_name]||'#c0d88a')+'"><use href="#i-shirt"/></svg>'+(pick.is_captain?'<span class="cap cap-captain" aria-label="Captain">C</span>':pick.is_vice_captain?'<span class="cap cap-vice" aria-label="Vice-captain">VC</span>':'')+playerFitnessMarker(p)+'<span class="player-name">'+esc(p.web_name)+'</span>'+playerFixture(p.team)+'<span class="player-score">'+value+'</span></button>';}
 function renderPitch(){
  if(!state.picks)return;
  const picks=state.picks.picks;const starting=picks.filter(p=>p.position<=11);
@@ -59,7 +99,7 @@ function renderInsights(){
 async function loadBase(){
  $('dataStatus').innerHTML='<span class="loader"></span> Loading data';
  const [bootstrap,fixtures]=await Promise.all([api('bootstrap-static/'),api('fixtures/')]);
- state.bootstrap=bootstrap;state.players=Object.fromEntries(bootstrap.elements.map(p=>[p.id,p]));state.teams=Object.fromEntries(bootstrap.teams.map(t=>[t.id,t]));state.fixtures=fixtures;state.next=bootstrap.events.find(e=>e.is_next)||bootstrap.events.find(e=>!e.finished&&!e.is_current);state.gw=defaultGameweek(bootstrap.events);
+ state.bootstrap=bootstrap;state.players=Object.fromEntries(bootstrap.elements.map(p=>[p.id,p]));state.teams=Object.fromEntries(bootstrap.teams.map(t=>[t.id,t]));state.fixtures=fixtures;state.fixturesFetchedAt=Date.now();state.next=bootstrap.events.find(e=>e.is_next)||bootstrap.events.find(e=>!e.finished&&!e.is_current);state.gw=defaultGameweek(bootstrap.events);
  const events=bootstrap.events.filter(e=>e.id<=(state.gw||0));$('gwSelect').innerHTML=events.reverse().map(e=>'<option value="'+e.id+'"'+(e.id===state.gw?' selected':'')+'>GW '+e.id+'</option>').join('')||'<option value="">Not started yet</option>';
  $('dataStatus').innerHTML='<span class="dot"></span> FPL connected';$('dataStatus').title='Fetched '+new Date(state.apiTime).toLocaleString('en-GB');
  $('deadline').textContent=state.next?deviceDateTime(state.next.deadline_time):'Season finished';$('deadlineGw').textContent=state.next?'GAMEWEEK '+state.next.id+' · '+deviceTimeLabel():'Waiting for next season';
@@ -135,15 +175,37 @@ function liveFixtureCards(){
  const gw=Number(state.gw),relevant=selectedGwFixtures(gw);
  if(!relevant.length)return '<div class="fixture-live-empty">No Official FPL fixtures published for selected GW '+esc(gw||'—')+'.</div>';
  return '<div class="fixture-live-grid">'+relevant.map(f=>{
-  const home=state.teams[f.team_h],away=state.teams[f.team_a],live=Boolean(f.started&&!f.finished),finished=Boolean(f.finished);
+  const home=state.teams[f.team_h],away=state.teams[f.team_a],phase=fixturePhase(f),live=phase==='live',finished=phase==='finished';
   const score=f.team_h_score!=null&&f.team_a_score!=null?fmt(f.team_h_score)+' – '+fmt(f.team_a_score):'–';
-  const status=live?'LIVE':finished?'Finished':f.kickoff_time?'Upcoming':'Kickoff TBC';
-  const prediction=!live&&!finished&&f.kickoff_time?fixturePrediction(f):null;
-  return '<article class="fixture-live-card"><div class="fixture-live-meta"><span class="badge '+(live?'live':'')+'">'+esc(status)+'</span><time>'+esc(localKickoff(f.kickoff_time))+'</time><span>GW '+esc(gw)+'</span></div><div class="fixture-live-teams"><strong>'+esc(home?.short_name||'Home')+'</strong><b>'+score+'</b><strong>'+esc(away?.short_name||'Away')+'</strong></div>'+(prediction?'<div class="fixture-live-prediction">'+esc(prediction)+' · FDR '+esc(f.team_h_difficulty||'—')+' / '+esc(f.team_a_difficulty||'—')+'</div>':'')+'</article>';
- }).join('')+'</div><p class="fixture-live-note">Only GW '+esc(gw)+' · Official FPL kickoff in device-local time. FDR lean is not xG.</p>';
+  const status=live?'LIVE':finished?'FT':phase==='provisional'?'FT pending':phase==='awaiting'?'Final pending':f.kickoff_time?'Upcoming':'Kickoff TBC';
+  const xg=projectedFixtureXg(f),prediction=xg?'Est. xG '+fmt(xg.home,2)+' – '+fmt(xg.away,2):null;
+  return '<article class="fixture-live-card"><div class="fixture-live-meta"><span class="badge '+(live?'live':'')+'">'+esc(status)+'</span><time>'+esc(localKickoff(f.kickoff_time))+'</time></div><div class="fixture-live-teams"><strong>'+esc(home?.short_name||'Home')+'</strong><b>'+score+'</b><strong>'+esc(away?.short_name||'Away')+'</strong></div>'+(prediction?'<div class="fixture-live-prediction">'+esc(prediction)+' · Experimental, not live xG</div>':'')+'</article>';
+ }).join('')+'</div><p class="fixture-live-note">Official FPL kickoff in device-local time. Estimated xG is experimental (season player xG and goalkeeper xGC), not live match xG.</p>';
 }
 function renderFixturesEnhanced(){if(!state.bootstrap)return;const teams=Object.values(state.teams);const weeks=Array.from({length:6},(_,i)=>(Number(state.gw)||state.next?.id||39)+i).filter(v=>v<=38);const table=weeks.length?'<table><thead><tr><th>Club</th>'+weeks.map(w=>'<th>GW '+w+'</th>').join('')+'</tr></thead><tbody>'+teams.map(t=>'<tr><td class="team-name">'+esc(t.name)+'</td>'+weeks.map(w=>{const fs=state.fixtures.filter(f=>f.event===w&&(f.team_h===t.id||f.team_a===t.id));return '<td>'+(fs.length?fs.map(f=>{const home=f.team_h===t.id,d=home?f.team_h_difficulty:f.team_a_difficulty;return '<span class="fixture fdr'+d+'">'+esc(state.teams[home?f.team_a:f.team_h]?.short_name)+' '+(home?'H':'A')+' · '+d+'</span>';}).join(''):'<span class="muted">Blank / not yet scheduled</span>')+'</td>';}).join('')+'</tr>').join('')+'</tbody></table>':'<div class="empty">Next gameweek schedule not yet available.</div>';$('fixtureTable').innerHTML='<section class="fixture-live"><div class="fixture-live-head"><div><h3>GW '+esc(state.gw||'—')+' Fixtures</h3><p>Matches and scores for the selected gameweek only.</p></div></div>'+liveFixtureCards()+'</section><div class="fixture-outlook-table">'+table+'</div>';}
 renderFixtures=renderFixturesEnhanced;
+let fixtureRefreshRunning=false;
+async function refreshCurrentFixtures(){
+ if(fixtureRefreshRunning||!state.bootstrap||document.hidden||!state.entry)return;
+ if(Date.now()-(state.fixturesFetchedAt||0)<120000)return;
+ const current=selectedGwFixtures();
+ const near=current.some(f=>{
+  const kickoff=Date.parse(f.kickoff_time||'');
+  return Number.isFinite(kickoff)&&Date.now()-kickoff>-12*60*60*1000&&Date.now()-kickoff<10*60*60*1000;
+ });
+ if(!near)return;
+ fixtureRefreshRunning=true;
+ try{
+  const latest=await api('fixtures/');
+  if(!Array.isArray(latest)||latest.length<100)return;
+  state.fixtures=latest;state.fixturesFetchedAt=Date.now();
+  renderFixtures();
+  document.dispatchEvent(new Event('fpl-fixtures-updated'));
+ }catch{/* Keep the last Official snapshot; phase guards stop stale LIVE labels. */}
+ finally{fixtureRefreshRunning=false;}
+}
+setInterval(refreshCurrentFixtures,120000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshCurrentFixtures();});
 /*__EXTENSIONS__*/
 renderStats();renderInsights();showView(requestedView||'dashboard');
 const savedEntry=safeRead('dugout-entry');
