@@ -1490,6 +1490,18 @@ body.has-team .header-account-actions #refreshButton{font-size:0!important;line-
 body.has-team .header-account-actions #refreshButton svg{display:block!important;width:19px;height:19px;flex:none}
 @media(max-width:767px){body.has-team .header-account-actions #refreshButton{min-width:34px!important;max-width:34px!important;width:34px!important;height:34px!important;padding:7px!important}}
 
+/* Bare refresh glyph: no card, no border, no background. */
+body.has-team .header-account-actions #refreshButton,
+body.has-team .header-account-actions #refreshButton:hover,
+body.has-team .header-account-actions #refreshButton:active{
+ background:transparent!important;background-image:none!important;border:0!important;box-shadow:none!important;
+ outline-offset:2px;border-radius:50%!important;color:var(--text)!important;
+ min-width:32px!important;max-width:32px!important;width:32px!important;height:36px!important;padding:5px!important;
+}
+body.has-team .header-account-actions #refreshButton svg{width:22px!important;height:22px!important;stroke-width:1.9}
+body.has-team .header-account-actions #refreshButton:hover svg{opacity:.75}
+body.has-team .header-account-actions #refreshButton:focus-visible{outline:2px solid var(--lime)!important}
+
 /* Issue #67: one genuinely slim, consistent mobile masthead.
    Explicit parent height defeats the legacy --bar-h and inner min-height. */
 @media (max-width:767px) {
