@@ -20,7 +20,7 @@ function shouldCompactPaginate(list){return !list.closest('#squadTable');}
   previous.className=next.className='btn small';previous.type=next.type='button';previous.textContent='← Previous';next.textContent='Next →';label.setAttribute('aria-live','polite');
   nav.append(previous,label,next);
   const anchor=list.matches('tbody')?list.closest('.table-wrap')||list.closest('table'):list;
-  if(league){const host=document.getElementById('leaguePagination');host.replaceChildren(nav);}else anchor.after(nav);let page=league&&backTarget?.id===state.league?.league.id&&backTarget?.page===state.leaguePage?Math.floor((items.length-1)/10):0;if(league)backTarget=null;
+  if(league){const host=document.getElementById('leagueHeaderPage')||document.getElementById('leaguePagination');host.replaceChildren(nav);}else anchor.after(nav);let page=league&&backTarget?.id===state.league?.league.id&&backTarget?.page===state.leaguePage?Math.floor((items.length-1)/10):0;if(league)backTarget=null;
   const render=()=>{items.forEach((item,i)=>{item.hidden=i<page*10||i>=(page+1)*10;});previous.disabled=page===0&&!upstream?.hasPrevious;next.disabled=(page+1)*10>=items.length&&!upstream?.hasNext;label.textContent=(page*10+1)+'–'+Math.min((page+1)*10,items.length)+' of '+items.length+(league?' · group '+state.leaguePage:'');};
   previous.onclick=()=>{if(page===0){if(league)backTarget={id:state.league.league.id,page:state.leaguePage-1};upstream?.previous?.();return;}page--;render();};next.onclick=()=>{if((page+1)*10>=items.length){upstream?.next?.();return;}page++;render();};
   registered.set(list,{nav,items});render();
