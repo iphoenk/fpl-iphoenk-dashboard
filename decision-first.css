@@ -1409,29 +1409,18 @@ body.has-team[data-view=dashboard] .decision-fixture-foot{
  }
 }
 
-/* Issue #67: one genuinely slim, consistent mobile masthead.
-   Explicit parent height defeats the legacy --bar-h and inner min-height. */
-@media (max-width:767px) {
-  body.has-team:not(.connecting-team) .approved-header {
-    box-sizing:border-box!important;
-    height:48px!important;
-    min-height:48px!important;
-    max-height:48px!important;
-  }
-  body.has-team:not(.connecting-team) .approved-header-inner {
-    box-sizing:border-box!important;
-    min-height:0!important;
-    height:47px!important;
-    max-height:47px!important;
-    padding:0 12px!important;
-    gap:8px!important;
-  }
-  body.has-team:not(.connecting-team) .approved-brand img {
-    width:clamp(114px,31vw,122px)!important;
-    height:auto!important;
-    max-height:43px!important;
-  }
-}
+/* Single compact overview card: responsive and without duplicate hero. */
+body.has-team[data-view=dashboard] #dashboardLayout>.team-hero{display:none!important}
+body.has-team[data-view=dashboard] .decision-team-summary{display:grid!important;grid-template-columns:minmax(0,1fr) auto;gap:10px 16px;align-items:start}
+body.has-team[data-view=dashboard] .decision-team-identity{grid-column:1;min-width:0}
+body.has-team[data-view=dashboard] .decision-team-finance{grid-column:2;grid-row:1;display:grid;gap:5px;text-align:right;align-content:start}
+body.has-team[data-view=dashboard] .decision-team-finance>div{display:flex;flex-direction:column;gap:1px}
+body.has-team[data-view=dashboard] .decision-team-finance span{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+body.has-team[data-view=dashboard] .decision-team-finance strong{font-size:16px;line-height:1.2}
+body.has-team[data-view=dashboard] .decision-team-stats{grid-column:1/-1;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important}
+body.has-team[data-view=dashboard] .decision-panel-head p{display:none!important}
+@media(max-width:420px){body.has-team[data-view=dashboard] .decision-team-summary{gap:9px 10px}body.has-team[data-view=dashboard] .decision-team-finance span{font-size:9px}body.has-team[data-view=dashboard] .decision-team-finance strong{font-size:14px}}
+
 
 /* FPL Core-style compact team identity and GW summary above the pitch. */
 body.has-team[data-view=dashboard] .decision-team-summary{
@@ -1457,3 +1446,29 @@ body.has-team[data-view=dashboard] .decision-team-chip strong{color:var(--lime)}
  body.has-team[data-view=dashboard] .decision-team-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 6px}
  body.has-team[data-view=dashboard] .decision-team-stat strong,body.has-team[data-view=dashboard] .decision-team-chip strong{font-size:13px}
 }
+
+
+/* Issue #67: one genuinely slim, consistent mobile masthead.
+   Explicit parent height defeats the legacy --bar-h and inner min-height. */
+@media (max-width:767px) {
+  body.has-team:not(.connecting-team) .approved-header {
+    box-sizing:border-box!important;
+    height:48px!important;
+    min-height:48px!important;
+    max-height:48px!important;
+  }
+  body.has-team:not(.connecting-team) .approved-header-inner {
+    box-sizing:border-box!important;
+    min-height:0!important;
+    height:47px!important;
+    max-height:47px!important;
+    padding:0 12px!important;
+    gap:8px!important;
+  }
+  body.has-team:not(.connecting-team) .approved-brand img {
+    width:clamp(114px,31vw,122px)!important;
+    height:auto!important;
+    max-height:43px!important;
+  }
+}
+
