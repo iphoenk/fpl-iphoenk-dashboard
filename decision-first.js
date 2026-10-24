@@ -205,26 +205,39 @@
     const gw=activeFixtureGw(),fixtures=selectedGwFixtures(gw),choices=fixtureWeekChoices(),index=choices.indexOf(gw);
     const prev=index>0?choices[index-1]:null,after=index>=0&&index<choices.length-1?choices[index+1]:null;
     const navigation='<nav class="decision-fixture-nav" aria-label="Browse fixture gameweeks"><button type="button" data-fixture-step="-1" aria-label="Previous gameweek"'+(prev===null?' disabled':'')+'>‹</button><span>GW '+safeName(gw||'—')+'</span><button type="button" data-fixture-step="1" aria-label="Next gameweek"'+(after===null?' disabled':'')+'>›</button></nav>';
-    const header='<header class="decision-panel-head decision-fixture-head"><div><h2>Fixtures & results</h2><p>Official FPL · past, live & upcoming</p></div><div class="decision-fixture-actions">'+navigation+'<button class="decision-link" data-goto="fixtures">All ↗</button></div></header>';
+    const header='<header class="decision-panel-head decision-fixture-head"><div><h2>Fixtures & results</h2><p>Official FPL · local time (24h)</p></div><div class="decision-fixture-actions">'+navigation+'</div></header>';
     if(!fixtures.length)return '<article class="decision-panel decision-fixtures">'+header+'<div class="decision-empty">No Official FPL fixtures published for GW '+safeName(gw||'—')+'.</div></article>';
     const groups=[];
     for(const fixture of fixtures){
       const kickoff=fixture.kickoff_time?new Date(fixture.kickoff_time):null;
-      const date=kickoff&&Number.isFinite(kickoff.getTime())?kickoff.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'}):'Kickoff TBC';
+      const date=kickoff&&Number.isFinite(kickoff.getTime())?kickoff.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'}):'Kickoff TBC';
       let group=groups.find(x=>x.date===date);
       if(!group){group={date,items:[]};groups.push(group);}
       group.items.push(fixture);
     }
+    let projectedCount=0;
     const rows=groups.map(group=>'<div class="decision-fixture-date">'+safeName(group.date)+'</div>'+group.items.map(f=>{
       const home=state.teams[f.team_h],away=state.teams[f.team_a],phase=fixturePhase(f);
       const hasScore=f.team_h_score!=null&&f.team_a_score!=null,score=hasScore?f.team_h_score+' – '+f.team_a_score:null;
-      const time=f.kickoff_time?new Date(f.kickoff_time).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'}):'TBC';
+      const kickoff=f.kickoff_time?new Date(f.kickoff_time):null;
+      const time=kickoff&&Number.isFinite(kickoff.getTime())?kickoff.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',hour12:false}):'TBC';
       const prediction=projectedFixtureXg(f);
-      const status=fixtureMatchStatus(f)||(prediction?'Est. xG '+fmt(prediction.home,2)+' – '+fmt(prediction.away,2):'');
+      if(prediction)projectedCount++;
+      const status=fixtureMatchStatus(f)||'';
       const primary=score||time;
-      return '<div class="decision-fixture-row"><div class="decision-fixture-team home"><strong>'+safeName(home?.name||'Home')+'</strong><span>'+safeName(home?.short_name||'')+'</span></div><div class="decision-fixture-center"><b class="decision-fixture-status '+(phase==='live'?'live':status==='FT'?'finished':'')+'">'+safeName(primary)+'</b>'+(status?'<small title="'+(prediction?'Experimental pre-match xG based on Official FPL player xG and GK xGC. Not a live match statistic.':phase==='provisional'&&status==='FT'?'Full time with complete score in Official FPL; result validation provisional.':'Official FPL status')+'">'+safeName(status)+'</small>':'')+'</div><div class="decision-fixture-team away"><span>'+safeName(away?.short_name||'')+'</span><strong>'+safeName(away?.name||'Away')+'</strong></div></div>';
+      const fixtureTeam=(team,side,estimate)=>{
+        const full=safeName(team?.name||side),short=safeName(team?.short_name||team?.name||side);
+        const badge=estimate==null?'':'<span class="decision-fixture-xg" title="Experimental pre-match xG estimate, derived from Official FPL season player xG and goalkeeper xGC. Not actual match xG.">xG <b>'+fmt(estimate,2)+'</b></span>';
+        const label='<strong class="decision-fixture-team-name" title="'+full+'"><span class="decision-fixture-team-full">'+full+'</span><span class="decision-fixture-team-short">'+short+'</span></strong>';
+        return '<div class="decision-fixture-team '+side+'">'+(side==='away'?badge+label:label+badge)+'</div>';
+      };
+      return '<div class="decision-fixture-row">'+fixtureTeam(home,'home',prediction?.home)+
+        '<div class="decision-fixture-center"><b class="decision-fixture-status '+(phase==='live'?'live':status==='FT'?'finished':'')+'">'+safeName(primary)+'</b>'+
+        (status?'<small title="'+(phase==='provisional'&&status==='FT'?'Full time with complete score in Official FPL; result validation provisional.':'Official FPL match status')+'">'+safeName(status)+'</small>':'')+
+        '</div>'+fixtureTeam(away,'away',prediction?.away)+'</div>';
     }).join('')).join('');
-    return '<article class="decision-panel decision-fixtures">'+header+'<div class="decision-fixture-list">'+rows+'</div><footer class="decision-foot"><span>'+fixtures.length+' matches · GW '+safeName(gw)+'</span><span>Estimated xG is experimental, not actual match xG</span></footer></article>';
+    const footer='<footer class="decision-foot decision-fixture-foot"><span>'+fixtures.length+' matches · GW '+safeName(gw)+'</span>'+(projectedCount?'<span>xG: experimental pre-match estimate, not actual match xG</span>':'')+'</footer>';
+    return '<article class="decision-panel decision-fixtures">'+header+'<div class="decision-fixture-list">'+rows+'</div>'+footer+'</article>';
   }
   function renderDecision(){
     if(!stage.isConnected)return;
