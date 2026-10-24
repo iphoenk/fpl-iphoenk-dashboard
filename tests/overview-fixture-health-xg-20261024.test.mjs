@@ -25,11 +25,13 @@ test('Official player status uses no green/no 0 flags, yellow doubtful and red u
  assert.doesNotMatch(card,/fitness flag|Captain:|Vice:/);
 });
 test('Konsa photo rotates through trusted official assets and falls back to shirt',()=>{
- const p={id:31,code:199170,web_name:'Konsa'},sources=officialPhotoSources(p);
- assert.equal(sources.length,5);
- assert.match(sources[1],/premierleague\/photos\/players\/110x140/);
- assert.match(sources[2],/250x250/);
- assert.match(sources[3],/40x40/);
+ const p={id:31,code:199798,photo:'199798.jpg',has_temporary_code:true,web_name:'Konsa'},sources=officialPhotoSources(p);
+ assert.equal(sources.length,7);
+ assert.match(sources[0],/static\.sky\.it/);
+ assert.match(sources[1],/premierleague25\/photos\/players\/110x140/);
+ assert.match(sources[2],/premierleague\/photos\/players\/110x140/);
+ assert.match(sources[3],/250x250/);
+ assert.match(sources[4],/40x40/);
  let callback;
  const c=vm.createContext({
   state:{players:{31:p}},Number,String,officialPhotoSources,
