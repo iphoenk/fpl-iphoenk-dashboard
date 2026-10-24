@@ -1432,3 +1432,28 @@ body.has-team[data-view=dashboard] .decision-fixture-foot{
     max-height:43px!important;
   }
 }
+
+/* FPL Core-style compact team identity and GW summary above the pitch. */
+body.has-team[data-view=dashboard] .decision-team-summary{
+ display:grid;grid-template-columns:max-content minmax(0,1fr);align-items:center;gap:12px;
+ padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:color-mix(in srgb,var(--bg) 72%,var(--panel));
+}
+body.has-team[data-view=dashboard] .decision-team-identity{display:flex;flex-direction:column;gap:2px;min-width:0;padding-right:10px;border-right:1px solid var(--line)}
+body.has-team[data-view=dashboard] .decision-team-identity strong{font-size:14px;line-height:1.2;white-space:nowrap}
+body.has-team[data-view=dashboard] .decision-team-identity small{font-size:10px;color:var(--muted);white-space:nowrap}
+body.has-team[data-view=dashboard] .decision-team-stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;min-width:0}
+body.has-team[data-view=dashboard] .decision-team-stat,body.has-team[data-view=dashboard] .decision-team-chip{display:flex;flex-direction:column;gap:2px;min-width:0}
+body.has-team[data-view=dashboard] .decision-team-stat span,body.has-team[data-view=dashboard] .decision-team-chip span{font-size:9px;color:var(--muted);line-height:1.2;white-space:nowrap}
+body.has-team[data-view=dashboard] .decision-team-stat strong,body.has-team[data-view=dashboard] .decision-team-chip strong{font-size:14px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.has-team[data-view=dashboard] .decision-team-chip strong{color:var(--lime)}
+@media(max-width:1100px) and (min-width:768px){
+ body.has-team[data-view=dashboard] .decision-team-summary{grid-template-columns:1fr;gap:8px}
+ body.has-team[data-view=dashboard] .decision-team-identity{padding:0;border:0}
+ body.has-team[data-view=dashboard] .decision-team-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:767px){
+ body.has-team[data-view=dashboard] .decision-team-summary{grid-template-columns:1fr;gap:8px;padding:9px}
+ body.has-team[data-view=dashboard] .decision-team-identity{padding:0;border:0}
+ body.has-team[data-view=dashboard] .decision-team-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 6px}
+ body.has-team[data-view=dashboard] .decision-team-stat strong,body.has-team[data-view=dashboard] .decision-team-chip strong{font-size:13px}
+}
