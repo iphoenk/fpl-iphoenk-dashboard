@@ -233,6 +233,7 @@
     if(!ready)return;
     stage.innerHTML='<div class="decision-primary">'+pitchCard()+leagueCard()+'</div>'+decisionFixtureTicker()+planCard();
   }
+  document.addEventListener('fpl-fixtures-updated',()=>{const current=stage.querySelector('.decision-fixtures');if(current)current.outerHTML=decisionFixtureTicker();});
   const initialHero=updateDashboardHero;
   updateDashboardHero=function(){initialHero();renderDecision();};
   const initialPitch=renderPitch;
