@@ -3,6 +3,18 @@
 import {selectPublicXI} from './multiuser-decision.mjs';
 const n=x=>x!==null&&x!==undefined&&x!==''&&Number.isFinite(Number(x))?Number(x):null;
 const rnd=x=>Math.round(x*100)/100;
+const liteRisk=(scenario,verified)=>{
+ const explicit=Array.isArray(scenario?.starter_risk)?scenario.starter_risk:[];
+ const rows=explicit.length?explicit:(scenario?.starting_xi||[]).map(id=>({id,pstart:verified?.map?.get(id)?.pstart??null}));
+ const known=rows.map(row=>Number(row?.pstart)).filter(Number.isFinite);
+ return {
+  starter_risk:rows,
+  known_player_count:known.length,
+  average_p_start:known.length?rnd(known.reduce((a,b)=>a+b,0)/known.length):null,
+  risk_status:known.length?'INDICATIVE':'UNAVAILABLE',
+  risk_note:'Vercel V12 Lite exposes available starter evidence; it does not invent calibrated probabilities.'
+ };
+};
 const legal=s=>s.length===15&&new Set(s.map(p=>p.id)).size===15&&
  [[1,2],[2,5],[3,5],[4,3]].every(([pos,num])=>s.filter(p=>p.element_type===pos).length===num)&&
  Object.values(s.reduce((a,p)=>(a[p.team]=(a[p.team]||0)+1,a),{})).every(x=>x<=3);
@@ -87,6 +99,26 @@ export function multiGwDecision({entry,picks,bootstrap,planningGw,snapshot,horiz
    'Free transfers are supplied from Official FPL history when available; hit cost and net gain remain unknown',
    'No Monte Carlo; pair search bounded and not globally optimal'],
   scenarios:{A:scenario('HOLD',hold),B:null,C:null}};
+ res.vercel_v12_lite={
+  contract:'FPL_V12_VERCEL_DECISION_V1',
+  status:'READY_LITE',
+  scope:['LEGAL_FORMATIONS','STARTING_XI','BENCH','CAPTAIN_VICE_CAPTAIN','HORIZON_1_3_5','TRANSFER_A_B_C','RISK','PROVENANCE'],
+  canonical_v12:false,
+  implementation:'VERCEL_NATIVE_V12_LITE',
+  monte_carlo:false,
+  authoritative_facts:'OFFICIAL_FPL',
+  methodology:'DETERMINISTIC_PUBLIC_PACKAGE_SEARCH',
+  provenance:{
+   model_built_at:verified.built_at,
+   verified_players:verified.coverage,
+   source_health:verified.source_health,
+   challenger:verified.challenger,
+   canonical_v12_projections_used:false
+  }
+ };
+ res.risk=liteRisk(res.scenarios.A,verified);
+ res.provenance=res.vercel_v12_lite.provenance;
+ res.scenarios.A.risk=liteRisk(res.scenarios.A,verified);
  if(!known){res.reason='HISTORICAL_BANK_OR_SELLING_PRICE_MISSING';return res;}
  const ids=new Set(owned.map(p=>p.id));
  const universe=[...verified.map.values()].filter(p=>!ids.has(p.id)&&['a','d'].includes(p.status)&&Number.isInteger(p.now_cost)&&p.now_cost>0);
@@ -139,6 +171,7 @@ export function multiGwDecision({entry,picks,bootstrap,planningGw,snapshot,horiz
  }
  if(bestPair)res.scenarios.C=scenario('TWO_TRANSFERS',bestPair.value,
   [{out:bestPair.a.out,in:bestPair.a.in},{out:bestPair.b.out,in:bestPair.b.in}],bestPair.cash);
+ for(const key of ['A','B','C'])if(res.scenarios[key])res.scenarios[key].risk=liteRisk(res.scenarios[key],verified);
  res.search_evidence={legal_single_routes:singles.length,legal_pair_routes:pairCount,candidate_pool:candidates.size};
  return res;
 }
