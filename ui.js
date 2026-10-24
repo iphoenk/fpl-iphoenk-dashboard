@@ -66,7 +66,7 @@ async function fetchTeam(id,gw){
 }
 async function loadTeam(raw,gw=state.gw,options={}){
  const visiting=options.visit??state.visitingTeam??false;
- const id=entryId(raw);if(!id){alertMessage('Enter an Entry ID as a number or a valid FPL team link.');return;}
+ const parsedId=entryId(raw);if(!parsedId){alertMessage('Enter an Entry ID as a number or a valid FPL team link.');return;}const id=Number(parsedId);
  if(!state.bootstrap){alertMessage('FPL data is not ready yet. Try reloading the data.');return;}
  if(!gw){alertMessage('No public gameweek yet for this team. Try again after the first deadline.');return;}
  const request=++state.teamRequest;$('entrySubmit').disabled=true;$('entrySubmit').textContent='Connecting…';clearAlert();
