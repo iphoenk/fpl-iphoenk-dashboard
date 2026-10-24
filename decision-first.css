@@ -920,6 +920,24 @@ body.has-team[data-view=dashboard] .decision-league .decision-table-wrap :is(th,
  body.has-team[data-view=dashboard] .decision-primary .decision-league-kpis>div{padding:7px 6px!important}
  body.has-team[data-view=dashboard] .decision-primary .decision-table-wrap :is(th,td){padding-top:6px!important;padding-bottom:6px!important}
 }
+/* Desktop/tablet composition: use the right column below Mini League for the
+   fixture ticker, so the Overview does not leave a dead white rail beside the
+   taller Current Team panel. Mobile remains a natural single-column flow. */
+@media(min-width:768px){
+ body.has-team[data-view=dashboard] .decision-first{
+  display:grid!important;grid-template-columns:minmax(0,1.18fr) minmax(0,1fr)!important;
+  gap:var(--decision-gap)!important;align-items:start!important
+ }
+ body.has-team[data-view=dashboard] .decision-primary{display:contents!important}
+ body.has-team[data-view=dashboard] .decision-primary>.decision-team{grid-column:1;grid-row:1 / span 2}
+ body.has-team[data-view=dashboard] .decision-primary>.decision-league{grid-column:2;grid-row:1}
+ body.has-team[data-view=dashboard] .decision-first>.decision-fixtures{grid-column:2;grid-row:2}
+ body.has-team[data-view=dashboard] .decision-first>.decision-plan{grid-column:1 / -1;grid-row:3}
+}
+@media(max-width:767px){
+ body.has-team[data-view=dashboard] .decision-first{display:flex!important;flex-direction:column!important}
+ body.has-team[data-view=dashboard] .decision-primary{display:grid!important;grid-template-columns:minmax(0,1fr)!important}
+}
 @media(max-width:767px){
  body.has-team[data-view=dashboard] .decision-league .decision-league-foot{
   display:grid!important;flex-direction:row!important;align-items:center!important;
