@@ -1126,6 +1126,67 @@ body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row 
   }
 }
 
+/* Issue #145: true head-and-shoulders crop of the Official FPL portraits.
+   Original 110x140 image includes torso. A clipped viewport with a centered
+   top-anchored zoom makes the FACE visibly larger, not merely its container. */
+body.has-team .player-portrait-frame{display:contents}
+body.has-team .player-portrait-frame:has(>.player-portrait.loaded)+.shirt{display:none!important}
+body.has-team .player-portrait-frame:not(:has(>.player-portrait.loaded))+.shirt{display:block!important}
+body.has-team .player-portrait-frame.failed{display:none!important}
+body.has-team .player-portrait-frame:not(:has(>.player-portrait.loaded))>.player-portrait{visibility:hidden}
+body.has-team[data-view=dashboard] .decision-primary .decision-pitch .pitch-row .player-portrait-frame,
+body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row .player-portrait-frame{
+  position:relative;display:block!important;box-sizing:border-box!important;
+  overflow:hidden!important;isolation:isolate;flex:none!important;
+  margin:0 auto!important;
+  border-radius:9px 9px 0 0!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(8,43,22,.1))
+}
+body.has-team[data-view=dashboard] .decision-primary .decision-pitch .pitch-row .player-portrait-frame{
+  width:min(100%,94px)!important;
+  height:clamp(66px,6.5vw,84px)!important
+}
+body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row .player-portrait-frame{
+  width:min(100%,68px)!important;
+  height:62px!important
+}
+body.has-team[data-view=dashboard] .decision-primary .decision-pitch .pitch-row .player-portrait-frame>.player-portrait,
+body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row .player-portrait-frame>.player-portrait{
+  position:absolute!important;top:0!important;left:0!important;
+  display:block!important;box-sizing:border-box!important;
+  width:100%!important;height:100%!important;
+  max-width:none!important;max-height:none!important;
+  margin:0!important;padding:0!important;
+  aspect-ratio:auto!important;border-radius:0!important;
+  object-fit:cover!important;object-position:50% 0%!important;
+  transform:scale(1.43)!important;transform-origin:50% 4%!important;
+  filter:none!important;background:transparent!important
+}
+body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row .player-portrait-frame>.player-portrait{
+  transform:scale(1.35)!important;transform-origin:50% 4%!important
+}
+
+body.has-team[data-view=dashboard] .decision-primary .decision-pitch .pitch-row .player-portrait-frame.failed,
+body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row .player-portrait-frame.failed{
+  display:none!important
+}
+
+@media(max-width:767px){
+  body.has-team[data-view=dashboard] .decision-primary .decision-pitch .pitch-row .player-portrait-frame{
+    width:min(100%,70px)!important;
+    height:clamp(50px,15vw,69px)!important
+  }
+  body.has-team[data-view=dashboard] .decision-primary .decision-pitch .pitch-row .player-portrait-frame>.player-portrait{
+    transform:scale(1.32)!important
+  }
+  body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row .player-portrait-frame{
+    width:min(100%,53px)!important;height:52px!important
+  }
+  body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row .player-portrait-frame>.player-portrait{
+    transform:scale(1.28)!important
+  }
+}
+
 /* Issue #67: one genuinely slim, consistent mobile masthead.
    Explicit parent height defeats the legacy --bar-h and inner min-height. */
 @media (max-width:767px) {
