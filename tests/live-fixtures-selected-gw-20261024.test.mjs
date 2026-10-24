@@ -183,3 +183,14 @@ test('larger club labels and plain-text experimental xG remain readable on mobil
  assert.match(style,/\.decision-fixture-status\.live\{[^}]*#ffe3e8!important[^}]*#a7193a!important/s);
  assert.match(style,/\.decision-fixture-status\.pending\{/);
 });
+
+test('xG figures use regular weight without altering fixture layout or text size',()=>{
+ const css=readFileSync(new URL('../decision-first.css',import.meta.url),'utf8');
+ const start=css.indexOf('body.has-team[data-view=dashboard] .decision-fixture-xg b{',css.indexOf('/* Issue #157: compact fully visible fixtures'));
+ const end=css.indexOf('}',start);
+ assert.ok(start>=0&&end>start);
+ const rule=css.slice(start,end+1);
+ assert.match(rule,/font-size:11px;font-weight:400/);
+ assert.doesNotMatch(rule,/font-weight:(?:600|700|800|900)/);
+ assert.match(css,/body\.has-team\[data-view=dashboard\] \.decision-fixture-xg\{/);
+});
