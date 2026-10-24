@@ -11,7 +11,9 @@ const palettes={ARS:'#df4545',AVL:'#9d5a7d',BOU:'#e85454',BRE:'#f06464',BHA:'#69
 function alertMessage(message){$('alertText').textContent=message;$('alert').classList.remove('hidden');}
 function clearAlert(){$('alert').classList.add('hidden');}
 async function api(path){
- const response=await fetch('/api/'+path.replace(/\/(?=\?|$)/,''),{signal:AbortSignal.timeout(27000)});let data;
+ const requestPath='/api/'+path.replace(/\/(?=\?|$)/,'');
+ const joiner=requestPath.includes('?')?'&':'?';
+ const response=await fetch(requestPath+joiner+'_client_nonce='+Date.now(),{cache:'no-store',signal:AbortSignal.timeout(27000)});let data;
  try{data=await response.json();}catch{throw new Error('Invalid data source response. Try reloading.');}
  const providerMode=response.headers.get('X-Provider-Mode');if(providerMode){state.providers??={};state.providers[path]={mode:providerMode,captured:response.headers.get('X-Provider-Captured-At')};if(typeof renderProviderStatus==='function')renderProviderStatus();}
  if(!response.ok)throw new Error(data.error||'Data not yet available.');
