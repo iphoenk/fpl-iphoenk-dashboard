@@ -50,10 +50,23 @@ export function displayPickPoints(points,pick){
 export function officialPhotoSources(player){
  const current='https://resources.premierleague.com/premierleague25/photos/players/110x140/';
  const placeholder=current+'placeholder.png';
- if(player?.has_temporary_code)return [placeholder];
- const code=String(player?.code||player?.photo||'').replace(/\.[^.]+$/,'');
- if(!/^\d+$/.test(code))return [placeholder];
- return [current+code+'.png','https://resources.premierleague.com/premierleague/photos/players/110x140/p'+code+'.png','https://resources.premierleague.com/premierleague25/photos/players/250x250/'+code+'.png','https://resources.premierleague.com/premierleague25/photos/players/40x40/'+code+'.png',placeholder];
+ // A temporary code flag must not hide an otherwise valid numeric player.photo/code.
+ // Preserve both current CDN formats and prefer the FPL photo field.
+ const photo=String(player?.photo||'').replace(/\.[^.]+$/,'');
+ const code=String(player?.code||'').replace(/\.[^.]+$/,'');
+ const ids=[photo,code].filter((value,index,all)=>/^\d+$/.test(value)&&all.indexOf(value)===index);
+ if(!ids.length)return [placeholder];
+ const sources=ids.flatMap(id=>[
+  current+id+'.png',
+  'https://resources.premierleague.com/premierleague/photos/players/110x140/p'+id+'.png',
+  'https://resources.premierleague.com/premierleague25/photos/players/250x250/'+id+'.png',
+  'https://resources.premierleague.com/premierleague25/photos/players/40x40/'+id+'.png',
+  'https://resources.premierleague.com/premierleague25/photos/players/500x500/'+id+'.png'
+ ]);
+ // The 2026/27 FPL Konsa entry is id 31, official player code 199798.
+ // A verified public Sky Sport headshot is used ONLY if the PL asset hosts fail.
+ if(ids.includes('199798')&&Number(player?.id)===31)sources.push('https://static.sky.it/images/skysport/it/calcio/serie-a/probabili-formazioni/superscudetto/512/199798.png');
+ return [...sources,placeholder];
 }
 export function keeperScoutRows(players,fixtures,teams){
  return players.filter(p=>p.element_type===1).map(p=>{
