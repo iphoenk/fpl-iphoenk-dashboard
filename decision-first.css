@@ -804,6 +804,16 @@ body.has-team .advanced-skeleton-row.short{width:63%}
 @keyframes loading-row{from{background-position:100% 0}to{background-position:-100% 0}}
 @media(prefers-reduced-motion:reduce){body.has-team .advanced-skeleton-row{animation:none}}
 
+/* Keep Next GW Plan dense without turning the scenarios into a wall of text. */
+body.has-team[data-view=dashboard] .decision-plan{gap:9px!important;padding:14px!important}
+body.has-team[data-view=dashboard] .decision-plan .decision-panel-head{gap:8px!important}
+body.has-team[data-view=dashboard] .decision-plan .decision-horizon{padding-bottom:4px!important}
+body.has-team[data-view=dashboard] .decision-plan .decision-fallback-notice{padding:8px 10px!important;font-size:10.5px!important;line-height:1.4!important}
+body.has-team[data-view=dashboard] .decision-plan .decision-scenarios{gap:7px!important}
+body.has-team[data-view=dashboard] .decision-plan .decision-scenario{padding:10px!important;gap:5px!important}
+body.has-team[data-view=dashboard] .decision-plan .decision-captains span{padding:5px 6px!important;min-height:28px!important}
+body.has-team[data-view=dashboard] .decision-plan .decision-foot{padding-top:7px!important;font-size:10px!important}
+
 /* 22 Oct Safari acceptance: compact league footer, always a SINGLE row.
    Retain the complete league name in the select; ellipsize only this footer. */
 body.has-team[data-view=dashboard] .decision-league .decision-league-foot{
