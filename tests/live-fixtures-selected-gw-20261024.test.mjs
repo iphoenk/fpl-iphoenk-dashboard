@@ -52,7 +52,8 @@ test('Overview fixture card shows GW8 only, all matches, including 10th and live
  assert.match(html,/GW8 Home 1/);
  assert.match(html,/10 matches · GW 8/);
  assert.match(html,/Kickoff TBC/);
- assert.match(html,/LIVE/);
+ assert.match(html,/class="decision-fixture-status live"/);
+ assert.match(html,/aria-label="Live match score/);
  assert.match(html,/2 – 1/);
  assert.doesNotMatch(html,/PREVIOUS GW ONLY|NEXT GW ONLY/);
  assert.doesNotMatch(html,/GW 7|GW 9/);
@@ -88,7 +89,9 @@ test('1–1 scored Official FPL provisional full-time appears FT on Overview and
  ipswich.team_a_score=1;
  const overviewHtml=c.overview();
  assert.match(overviewHtml,/>1 – 1</);
- assert.match(overviewHtml,/>FT<\/small>/);
+ assert.match(overviewHtml,/class="decision-fixture-status finished"/);
+ assert.match(overviewHtml,/aria-label="Full time score 1 – 1"/);
+ assert.doesNotMatch(overviewHtml,/>FT<\/small>/);
  assert.doesNotMatch(overviewHtml,/FT pending/);
  const fixturesHtml=c.cards();
  assert.match(fixturesHtml,/1 – 1/);
@@ -122,6 +125,8 @@ test('pre-match experimental xG is inline beside each team, not under kickoff',(
  const centerOnly=target.slice(center,away);
  assert.doesNotMatch(centerOnly,/xG|Est\./,'no combined xG line under the kickoff');
  assert.equal((html.match(/decision-fixture-xg/g)||[]).length,2,'only sides with evidence show xG');
+ assert.match(html,/Est\. xG <b>1\.23<\/b>/);
+ assert.match(html,/Est\. xG <b>0\.87<\/b>/);
  assert.match(html,/xG: experimental pre-match estimate/);
 });
 
@@ -148,4 +153,33 @@ test('compact all-fixture CSS fits team-side xG, status and GW navigation on mob
  assert.match(rules,/@media\(max-width:767px\)/);
  assert.match(rules,/grid-template-columns:minmax\(0,1fr\) 60px minmax\(0,1fr\)!important/);
  assert.match(rules,/padding:4px 5px!important/);
+});
+
+test('Overview score states are color-only for finished and live, retaining accessible text',()=>{
+ const c=setup(),html=c.overview();
+ const finish=html.split('<div class="decision-fixture-row">').find(r=>r.includes('GW8 Home 1'));
+ const playing=html.split('<div class="decision-fixture-row">').find(r=>r.includes('GW8 Home 2'));
+ assert.ok(finish&&playing);
+ assert.match(finish,/class="decision-fixture-status finished"/);
+ assert.match(finish,/aria-label="Full time score 2 – 1"/);
+ assert.doesNotMatch(finish,/<small[^>]*>FT<\/small>/);
+ assert.match(playing,/class="decision-fixture-status live"/);
+ assert.match(playing,/aria-label="Live match score/);
+ assert.doesNotMatch(playing,/<small[^>]*>LIVE<\/small>/);
+ c.state.fixtures.find(f=>f.id===81).team_h_score=null;
+ const incomplete=c.overview();
+ assert.match(incomplete,/<small title="Official FPL result not yet confirmed">FT<\/small>/);
+});
+test('larger club labels and plain-text experimental xG remain readable on mobile and desktop',()=>{
+ const css=readFileSync(new URL('../decision-first.css',import.meta.url),'utf8');
+ const start=css.indexOf('/* Issue #157: compact fully visible fixtures');
+ const end=css.indexOf('/* Issue #67: one genuinely slim',start);
+ assert.ok(start>=0&&end>start);
+ const style=css.slice(start,end);
+ assert.match(style,/\.decision-fixture-team \.decision-fixture-team-name span\{[^}]*font-size:14px!important/s);
+ assert.match(style,/@media\(max-width:767px\)[^]*font-size:13px!important/);
+ assert.match(style,/\.decision-fixture-xg\{[^}]*border:0;border-radius:0;background:transparent/s);
+ assert.match(style,/\.decision-fixture-status\.finished\{[^}]*#e0f3e9!important[^}]*#096341!important/s);
+ assert.match(style,/\.decision-fixture-status\.live\{[^}]*#ffe3e8!important[^}]*#a7193a!important/s);
+ assert.match(style,/\.decision-fixture-status\.pending\{/);
 });

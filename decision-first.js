@@ -225,15 +225,20 @@
       if(prediction)projectedCount++;
       const status=fixtureMatchStatus(f)||'';
       const primary=score||time;
+      // A colored, accessible score conveys a confirmed FT or LIVE without a redundant line.
+      // Pending states still display an explicit qualifier (not silently treated as final).
+      const visibleStatus=status==='LIVE'||(status==='FT'&&hasScore)?'':status;
+      const scoreClass=status==='FT'&&hasScore?'finished':status==='LIVE'?'live':visibleStatus?'pending':'';
+      const scoreA11y=status==='FT'?'Full time score '+primary:status==='LIVE'?'Live match score '+primary:primary;
       const fixtureTeam=(team,side,estimate)=>{
         const full=safeName(team?.name||side),short=safeName(team?.short_name||team?.name||side);
-        const badge=estimate==null?'':'<span class="decision-fixture-xg" title="Experimental pre-match xG estimate, derived from Official FPL season player xG and goalkeeper xGC. Not actual match xG.">xG <b>'+fmt(estimate,2)+'</b></span>';
+        const badge=estimate==null?'':'<span class="decision-fixture-xg" title="Experimental pre-match xG estimate, derived from Official FPL season player xG and goalkeeper xGC. Not actual match xG.">Est. xG <b>'+fmt(estimate,2)+'</b></span>';
         const label='<strong class="decision-fixture-team-name" title="'+full+'"><span class="decision-fixture-team-full">'+full+'</span><span class="decision-fixture-team-short">'+short+'</span></strong>';
         return '<div class="decision-fixture-team '+side+'">'+(side==='away'?badge+label:label+badge)+'</div>';
       };
       return '<div class="decision-fixture-row">'+fixtureTeam(home,'home',prediction?.home)+
-        '<div class="decision-fixture-center"><b class="decision-fixture-status '+(phase==='live'?'live':status==='FT'?'finished':'')+'">'+safeName(primary)+'</b>'+
-        (status?'<small title="'+(phase==='provisional'&&status==='FT'?'Full time with complete score in Official FPL; result validation provisional.':'Official FPL match status')+'">'+safeName(status)+'</small>':'')+
+        '<div class="decision-fixture-center"><b class="decision-fixture-status '+scoreClass+'" title="'+safeName(status==='FT'?'Full time · Official FPL':status==='LIVE'?'Live match · Official FPL':status||'Scheduled kickoff')+'" aria-label="'+safeName(scoreA11y)+'">'+safeName(primary)+'</b>'+
+        (visibleStatus?'<small title="Official FPL result not yet confirmed">'+safeName(visibleStatus)+'</small>':'')+
         '</div>'+fixtureTeam(away,'away',prediction?.away)+'</div>';
     }).join('')).join('');
     const footer='<footer class="decision-foot decision-fixture-foot"><span>'+fixtures.length+' matches · GW '+safeName(gw)+'</span>'+(projectedCount?'<span>xG: experimental pre-match estimate, not actual match xG</span>':'')+'</footer>';
