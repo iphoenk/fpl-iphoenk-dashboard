@@ -8,7 +8,8 @@ const decision=readFileSync(new URL('../decision-first.js',import.meta.url),'utf
 const isolate=(source,start,end)=>{const a=source.indexOf(start),b=source.indexOf(end,a);assert.ok(a>=0&&b>a,'fixture function extraction must succeed');return source.slice(a,b);};
 const helper=isolate(ui,'function selectedGwFixtures(', '\nfunction currentFixture(');
 const compact=isolate(ui,'function liveFixtureCards(', '\nfunction renderFixturesEnhanced(');
-const overview=isolate(decision,'  function decisionFixtureTicker(){','\n  function renderDecision(){');
+const overview=isolate(decision,'  let fixturePageGw=null','\n  function renderDecision(){');
+const phases=isolate(ui,'function fixturePhase(', '\nfunction showView(');
 
 function setup(gw=8){
  const fixtures=[{id:70,event:7,team_h:41,team_a:42,kickoff_time:'2026-10-17T17:00:00Z',started:true,finished:true,team_h_score:4,team_a_score:1}];
@@ -32,7 +33,7 @@ function setup(gw=8){
   fmt:value=>String(value),localKickoff:value=>value||'Kickoff TBC',
   fixturePrediction:()=> 'FDR lean: home'
  });
- vm.runInContext(helper+'\n'+compact+'\n'+overview+'\nglobalThis.select=selectedGwFixtures;globalThis.cards=liveFixtureCards;globalThis.overview=decisionFixtureTicker;',scope);
+ vm.runInContext(helper+'\n'+phases+'\n'+compact+'\n'+overview+'\nglobalThis.select=selectedGwFixtures;globalThis.cards=liveFixtureCards;globalThis.overview=decisionFixtureTicker;',scope);
  return scope;
 }
 test('selected GW is sole source for fixtures; all ten included with TBC and double-GW support',()=>{
@@ -46,17 +47,17 @@ test('selected GW is sole source for fixtures; all ten included with TBC and dou
 });
 test('Overview fixture card shows GW8 only, all matches, including 10th and live/FT, not stale GW7/9',()=>{
  const c=setup(),html=c.overview();
- assert.match(html,/GW 8 fixtures/);
+ assert.match(html,/Fixtures & results/);assert.match(html,/GW 8/);
  assert.match(html,/GW8 Home 10/);
  assert.match(html,/GW8 Home 1/);
- assert.match(html,/10 fixtures in selected GW/);
+ assert.match(html,/10 matches · GW 8/);
  assert.match(html,/Kickoff TBC/);
  assert.match(html,/LIVE/);
  assert.match(html,/2 – 1/);
  assert.doesNotMatch(html,/PREVIOUS GW ONLY|NEXT GW ONLY/);
  assert.doesNotMatch(html,/GW 7|GW 9/);
  c.state.gw=7;const prev=c.overview();
- assert.match(prev,/GW 7 fixtures/);
+ assert.match(prev,/GW 7/);
  assert.match(prev,/PREVIOUS GW ONLY/);
  assert.doesNotMatch(prev,/GW8 Home/);
 });
@@ -64,7 +65,7 @@ test('Fixtures page live cards use selected GW and honor completed/live/upcoming
  const c=setup(),html=c.cards();
  assert.match(html,/GW8 Home 10|>H10</);
  assert.match(html,/GW 8/);
- assert.match(html,/Finished/);
+ assert.match(html,/FT/);
  assert.match(html,/LIVE/);
  assert.match(html,/Upcoming/);
  assert.match(html,/Kickoff TBC/);
