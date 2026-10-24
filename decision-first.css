@@ -900,6 +900,21 @@ body.has-team[data-view=dashboard] .decision-league .decision-table-wrap :is(th,
 body.has-team[data-view=dashboard] .decision-league .decision-table-wrap :is(th,td):nth-child(3){width:45px}
 body.has-team[data-view=dashboard] .decision-league .decision-table-wrap :is(th,td):nth-child(4){width:52px}
 body.has-team[data-view=dashboard] .decision-league .decision-table-wrap :is(th,td):nth-child(5){width:48px}
+/* Keep the desktop Overview panels dense: the league snapshot should end
+   shortly after its table instead of reading like a tall empty card. */
+@media(min-width:768px){
+ body.has-team[data-view=dashboard] .decision-primary .decision-panel{padding:12px!important;gap:8px!important}
+ body.has-team[data-view=dashboard] .decision-primary .decision-pitch .pitch{min-height:300px!important;padding:10px 4px!important;gap:8px!important}
+ body.has-team[data-view=dashboard] .decision-primary .decision-league-kpis>div{padding:7px 8px!important}
+ body.has-team[data-view=dashboard] .decision-primary .decision-league-kpis strong{font-size:18px!important}
+ body.has-team[data-view=dashboard] .decision-primary .decision-table-wrap :is(th,td){padding-top:6px!important;padding-bottom:6px!important}
+ body.has-team[data-view=dashboard] .decision-primary #decisionLeagueSelect{min-height:36px!important;padding-top:6px!important;padding-bottom:6px!important}
+}
+@media(max-width:767px){
+ body.has-team[data-view=dashboard] .decision-primary .decision-panel{padding:12px!important;gap:9px!important}
+ body.has-team[data-view=dashboard] .decision-primary .decision-league-kpis>div{padding:7px 6px!important}
+ body.has-team[data-view=dashboard] .decision-primary .decision-table-wrap :is(th,td){padding-top:6px!important;padding-bottom:6px!important}
+}
 @media(max-width:767px){
  body.has-team[data-view=dashboard] .decision-league .decision-league-foot{
   display:grid!important;flex-direction:row!important;align-items:center!important;
