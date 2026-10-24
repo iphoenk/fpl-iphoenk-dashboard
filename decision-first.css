@@ -1448,6 +1448,13 @@ body.has-team[data-view=dashboard] .decision-team-chip strong{color:var(--lime)}
 }
 
 
+/* Compact Current Team finance: each label followed immediately by its amount. */
+body.has-team[data-view=dashboard] .decision-team-finance{display:flex;flex-direction:column;align-items:flex-end;gap:7px;text-align:right}
+body.has-team[data-view=dashboard] .decision-team-finance>div{display:flex;flex-direction:row;align-items:baseline;justify-content:flex-end;flex-wrap:wrap;gap:4px 8px}
+body.has-team[data-view=dashboard] .decision-team-finance span{font-size:10px;line-height:1.2;white-space:nowrap}
+body.has-team[data-view=dashboard] .decision-team-finance strong{font-size:15px;line-height:1.2;white-space:nowrap}
+@media(max-width:420px){body.has-team[data-view=dashboard] .decision-team-finance span{font-size:9px}body.has-team[data-view=dashboard] .decision-team-finance strong{font-size:14px}}
+
 /* Issue #67: one genuinely slim, consistent mobile masthead.
    Explicit parent height defeats the legacy --bar-h and inner min-height. */
 @media (max-width:767px) {
@@ -1473,9 +1480,3 @@ body.has-team[data-view=dashboard] .decision-team-chip strong{color:var(--lime)}
 }
 
 
-/* Compact Current Team finance: each label followed immediately by its amount. */
-body.has-team[data-view=dashboard] .decision-team-finance{display:flex;flex-direction:column;align-items:flex-end;gap:7px;text-align:right}
-body.has-team[data-view=dashboard] .decision-team-finance>div{display:flex;flex-direction:row;align-items:baseline;justify-content:flex-end;flex-wrap:wrap;gap:4px 8px}
-body.has-team[data-view=dashboard] .decision-team-finance span{font-size:10px;line-height:1.2;white-space:nowrap}
-body.has-team[data-view=dashboard] .decision-team-finance strong{font-size:15px;line-height:1.2;white-space:nowrap}
-@media(max-width:420px){body.has-team[data-view=dashboard] .decision-team-finance span{font-size:9px}body.has-team[data-view=dashboard] .decision-team-finance strong{font-size:14px}}
