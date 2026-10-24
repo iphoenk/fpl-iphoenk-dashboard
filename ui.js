@@ -53,6 +53,15 @@ function fixturePhase(f,now=Date.now()){
  if(Number.isFinite(kickoff)&&now-kickoff>4*60*60*1000)return 'awaiting';
  return f.started===true?'live':f.kickoff_time?'upcoming':'tbc';
 }
+function fixtureMatchStatus(f,now=Date.now()){
+ const phase=fixturePhase(f,now);
+ const completeScore=f.team_h_score!=null&&f.team_a_score!=null;
+ if(phase==='finished'||(phase==='provisional'&&completeScore))return 'FT';
+ if(phase==='provisional')return 'FT pending';
+ if(phase==='awaiting')return 'Final pending';
+ if(phase==='live')return 'LIVE';
+ return null;
+}
 function projectedFixtureXg(f){
  if(!f||fixturePhase(f)!=='upcoming')return null;
  const completed=(state.fixtures||[]).filter(g=>g.finished===true);
@@ -177,7 +186,7 @@ function liveFixtureCards(){
  return '<div class="fixture-live-grid">'+relevant.map(f=>{
   const home=state.teams[f.team_h],away=state.teams[f.team_a],phase=fixturePhase(f),live=phase==='live',finished=phase==='finished';
   const score=f.team_h_score!=null&&f.team_a_score!=null?fmt(f.team_h_score)+' – '+fmt(f.team_a_score):'–';
-  const status=live?'LIVE':finished?'FT':phase==='provisional'?'FT pending':phase==='awaiting'?'Final pending':f.kickoff_time?'Upcoming':'Kickoff TBC';
+  const status=fixtureMatchStatus(f)||(f.kickoff_time?'Upcoming':'Kickoff TBC');
   const xg=projectedFixtureXg(f),prediction=xg?'Est. xG '+fmt(xg.home,2)+' – '+fmt(xg.away,2):null;
   return '<article class="fixture-live-card"><div class="fixture-live-meta"><span class="badge '+(live?'live':'')+'">'+esc(status)+'</span><time>'+esc(localKickoff(f.kickoff_time))+'</time></div><div class="fixture-live-teams"><strong>'+esc(home?.short_name||'Home')+'</strong><b>'+score+'</b><strong>'+esc(away?.short_name||'Away')+'</strong></div>'+(prediction?'<div class="fixture-live-prediction">'+esc(prediction)+' · Experimental, not live xG</div>':'')+'</article>';
  }).join('')+'</div><p class="fixture-live-note">Official FPL kickoff in device-local time. Estimated xG is experimental (season player xG and goalkeeper xGC), not live match xG.</p>';

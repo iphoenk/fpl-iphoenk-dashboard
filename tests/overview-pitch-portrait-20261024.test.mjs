@@ -63,8 +63,22 @@ test('Issue #145: true cropped headshots rather than only larger cards',()=>{
   assert.match(portraitRule,/object-position:50% 0%!important/);
   assert.match(portraitRule,/transform:scale\(1\.43\)!important/);
   assert.match(portraitRule,/transform:scale\(1\.32\)!important/);
-  assert.match(portraitRule,/\.player-portrait-frame:has\(>\.player-portrait\.loaded\)\+\.shirt/);
+  assert.match(portraitRule,/\.player:has\(>\.player-portrait-frame > \.player-portrait\.loaded\) > \.shirt\{display:none!important\}/);
   assert.match(portraitRule,/\.player-portrait-frame\.failed\{/);
   assert.match(portraitRule,/@media\(max-width:767px\)/);
   assert.ok(stylesheet.lastIndexOf('/* Issue #145: true') < stylesheet.lastIndexOf('/* Issue #67: one genuinely slim'), 'mobile masthead must remain final block for its existing regression contract');
+});
+
+test('bench and XI use photo-or-shirt, not both, regardless of bench-position sibling',()=>{
+ const bench=renderCard({},true),xi=renderCard({},false);
+ assert.match(bench, /class="player bench"/);
+ assert.match(bench, /class="player-portrait-frame"[^]*class="bench-position"[^]*<svg class="shirt"/);
+ assert.match(xi, /class="player-portrait-frame"[^]*<svg class="shirt"/);
+ const marker=stylesheet.indexOf('/* Issue #145: true head-and-shoulders');
+ const rules=stylesheet.slice(marker);
+ assert.ok(marker>=0);
+ assert.match(rules,/\.player:has\(>\.player-portrait-frame > \.player-portrait\.loaded\) > \.shirt\{display:none!important\}/);
+ assert.match(rules,/\.player:not\(:has\(>\.player-portrait-frame > \.player-portrait\.loaded\)\) > \.shirt\{display:block!important\}/);
+ assert.doesNotMatch(rules,/\.player-portrait-frame:has\(>\.player-portrait\.loaded\)\+\.shirt/);
+ assert.match(rules,/\.player-portrait-frame\.failed\{display:none!important\}/);
 });

@@ -1130,8 +1130,9 @@ body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row 
    Original 110x140 image includes torso. A clipped viewport with a centered
    top-anchored zoom makes the FACE visibly larger, not merely its container. */
 body.has-team .player-portrait-frame{display:contents}
-body.has-team .player-portrait-frame:has(>.player-portrait.loaded)+.shirt{display:none!important}
-body.has-team .player-portrait-frame:not(:has(>.player-portrait.loaded))+.shirt{display:block!important}
+/* Check the containing player rather than the adjacent image sibling: bench inserts a position label. */
+body.has-team .player:has(>.player-portrait-frame > .player-portrait.loaded) > .shirt{display:none!important}
+body.has-team .player:not(:has(>.player-portrait-frame > .player-portrait.loaded)) > .shirt{display:block!important}
 body.has-team .player-portrait-frame.failed{display:none!important}
 body.has-team .player-portrait-frame:not(:has(>.player-portrait.loaded))>.player-portrait{visibility:hidden}
 body.has-team[data-view=dashboard] .decision-primary .decision-pitch .pitch-row .player-portrait-frame,

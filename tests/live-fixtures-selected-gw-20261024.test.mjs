@@ -78,3 +78,23 @@ test('gameweek changes refresh fixtures and six-week outlook starts from selecte
  assert.match(ui,/else\{state\.gw=Number\(\$\('gwSelect'\)\.value\);renderStats\(\);renderFixtures\(\);\}/);
  assert.match(ui,/const weeks=Array\.from\(\{length:6\},\(_,i\)=>\(Number\(state\.gw\)\|\|state\.next\?\.id\|\|39\)\+i\)/);
 });
+
+test('1–1 scored Official FPL provisional full-time appears FT on Overview and fixtures',()=>{
+ const c=setup(),ipswich=c.state.fixtures.find(f=>f.id===81);
+ ipswich.finished=false;
+ ipswich.finished_provisional=true;
+ ipswich.started=true;
+ ipswich.team_h_score=1;
+ ipswich.team_a_score=1;
+ const overviewHtml=c.overview();
+ assert.match(overviewHtml,/>1 – 1</);
+ assert.match(overviewHtml,/>FT<\/small>/);
+ assert.doesNotMatch(overviewHtml,/FT pending/);
+ const fixturesHtml=c.cards();
+ assert.match(fixturesHtml,/1 – 1/);
+ assert.match(fixturesHtml,/>FT</);
+ assert.doesNotMatch(fixturesHtml,/FT pending/);
+ ipswich.team_a_score=null;
+ assert.match(c.overview(),/FT pending/);
+ assert.match(c.cards(),/FT pending/);
+});
