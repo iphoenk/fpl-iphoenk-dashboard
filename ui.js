@@ -219,6 +219,15 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshCur
 renderStats();renderInsights();showView(requestedView||'dashboard');
 const savedEntry=safeRead('dugout-entry');
 if(savedEntry&&!state.manualEntryAttempt)$('entryInput').value=savedEntry;
-try{await loadBase();if(savedEntry&&!state.manualEntryAttempt){$('entryInput').value=savedEntry;await loadTeam(savedEntry);}}catch(error){$('dataStatus').innerHTML='<span style="color:var(--orange)">●</span> Connection delayed';$('deadline').textContent='Not yet available';if(savedEntry&&!state.manualEntryAttempt)$('entryInput').value=savedEntry;alertMessage('Official FPL data is temporarily unavailable. Your saved Entry ID is still here. Use Reload to try again.');$('radar').innerHTML='<div class="empty">Official FPL data could not be reached. No stale team data is shown as current.</div>';}
+try{await loadBase();if(savedEntry&&!state.manualEntryAttempt){$('entryInput').value=savedEntry;await loadTeam(savedEntry);}}catch(error){
+ $('dataStatus').innerHTML='<span style="color:var(--orange)">●</span> Connection delayed';$('deadline').textContent='Not yet available';
+ if(savedEntry&&!state.manualEntryAttempt)$('entryInput').value=savedEntry;
+ const cachedBundle=safeRead('fpl-bootstrap-cache-v1'),cachedTeam=savedEntry?safeRead('fpl-team-cache-v1-'+savedEntry):null;
+ if(cachedBundle?.bootstrap?.elements?.length&&Array.isArray(cachedBundle.fixtures)){
+  const bootstrap=cachedBundle.bootstrap;state.bootstrap=bootstrap;state.players=Object.fromEntries(bootstrap.elements.map(p=>[p.id,p]));state.teams=Object.fromEntries(bootstrap.teams.map(t=>[t.id,t]));state.fixtures=cachedBundle.fixtures;state.next=bootstrap.events.find(e=>e.is_next)||bootstrap.events.find(e=>!e.finished&&!e.is_current);state.gw=defaultGameweek(bootstrap.events);
+  if(cachedTeam?.entry?.id&&cachedTeam?.picks){state.entry=cachedTeam.entry;state.picks=cachedTeam.picks;state.gw=Number(cachedTeam.selectedGw)||state.gw;state.live=Object.fromEntries((cachedTeam.live?.elements||[]).map(p=>[p.id,p]));$('entryInput').value=String(cachedTeam.entry.id);renderStats();renderPitch();renderInsights();renderPlanner();renderLeagueOptions();document.body.classList.add('has-team');document.getElementById('connectionGate')?.classList.add('hidden');}
+  renderStats();renderInsights();renderScout();renderFixtures();alertMessage('Official FPL is temporarily unavailable. Showing your last verified team snapshot. Press Reload when the source is back.');
+ }else{alertMessage('Official FPL data is temporarily unavailable. Your saved Entry ID is still here. Use Reload to try again.');$('radar').innerHTML='<div class="empty">Official FPL data could not be reached. No stale team data is shown as current.</div>';}
+}
 
 
