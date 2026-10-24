@@ -31,6 +31,7 @@ function renderAbout(){
     '<p>Public transfer candidates are evaluated with bounded deterministic search and XI/bench/C/VC optimization, not Monte Carlo. Public prices and historical bank balances are indicative: real selling prices, free transfers and hit costs cannot always be verified.</p>'+
     '<p>Projected xG shown beside upcoming fixtures is an experimental estimate derived from Official FPL season xG and goalkeeper xGC, not recorded match xG. Missing or stale evidence is displayed as unavailable rather than invented.</p>'+
     '<p>FPL iphoenk V6 and Canonical V12 operate separately. This no-login dashboard does not run or publish private canonical V12 decisions, reports or credentials.</p>'+
+    '<p>Offline Monte Carlo snapshots can be checked through a separate private shadow connection. A valid snapshot must cover the full current Official FPL player universe for every gameweek in its horizon. Missing or expired output remains unavailable. Shadow checks do not change xP, XI, C/VC or A/B/C; V12 Lite remains deterministic. Player marginal summaries do not reproduce correlated route risk or autosubs. Optional MC storage is outside the A/B/C request path; a maximum response below one second still requires live acceptance.</p>'+
    '</div></details>'+
   '</section>'+
   '<section class="about-card about-sources"><div class="about-section-head"><div><h3>Sources & credits</h3><p>Each provider retains ownership of its data and models.</p></div></div><ul class="about-source-grid">'+sources.map(sourceCard).join('')+'</ul></section>'+
