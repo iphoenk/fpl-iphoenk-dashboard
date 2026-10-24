@@ -82,3 +82,20 @@ test('bench and XI use photo-or-shirt, not both, regardless of bench-position si
  assert.doesNotMatch(rules,/\.player-portrait-frame:has\(>\.player-portrait\.loaded\)\+\.shirt/);
  assert.match(rules,/\.player-portrait-frame\.failed\{display:none!important\}/);
 });
+
+test('bench uses same XI-size head-and-shoulders crop, with badge overlay rather than a row',()=>{
+ const bench=renderCard({},true);
+ assert.match(bench,/class="bench-position">MID<\/span>/);
+ const styleStart=stylesheet.indexOf('/* Issue #155: equal visual weight');
+ assert.ok(styleStart>0);
+ const styles=stylesheet.slice(styleStart);
+ assert.match(styles,/\.decision-bench \.bench-row \.player-portrait-frame\{\s*width:min\(100%,94px\)!important;height:clamp\(66px,6\.5vw,84px\)!important/);
+ assert.match(styles,/\.decision-bench \.bench-row \.player-portrait-frame>\.player-portrait\{\s*transform:scale\(1\.43\)!important/);
+ assert.match(styles,/\.decision-bench \.bench-position\{\s*position:absolute!important/);
+ assert.match(styles,/\.decision-bench \.bench-row \.shirt\{\s*width:52px!important;height:68px!important/);
+ assert.match(styles,/@media\(max-width:767px\)/);
+ assert.match(styles,/width:min\(100%,70px\)!important;height:clamp\(50px,15vw,69px\)!important/);
+ assert.match(styles,/transform:scale\(1\.32\)!important/);
+ assert.match(styles,/font-size:clamp\(9px,2\.4vw,11px\)!important/);
+ assert.match(stylesheet,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)!important/);
+});
