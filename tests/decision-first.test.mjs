@@ -1,6 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
 const js=readFileSync(new URL('../decision-first.js',import.meta.url),'utf8');
 const css=readFileSync(new URL('../decision-first.css',import.meta.url),'utf8');
 const shell=readFileSync(new URL('../desktop-shell.js',import.meta.url),'utf8');
@@ -79,4 +80,40 @@ test('decision response must match the active canonical squad before rendering',
  assert.match(js,/function decisionMatchesActiveTeam\(report,id,gw\)/);
  assert.match(js,/!decisionMatchesActiveTeam\(report,id,gw\)/);
  assert.match(js,/sameSquad\(team\.squad,state\.picks\?\.picks\)/);
+});
+
+test('Current Team shows C/VC only on pitch, not in a duplicate bottom footer',()=>{
+ const start=js.indexOf('  function pitchCard(){');
+ const end=js.indexOf('\n  function leagueCard(){',start);
+ assert.ok(start>=0&&end>start);
+ const state={
+  gw:8,
+  picks:{picks:[
+   {position:1,element:1,is_captain:true},
+   {position:2,element:2,is_vice_captain:true}
+  ]},
+  players:{
+   1:{element_type:1,web_name:'Haaland',status:'a'},
+   2:{element_type:2,web_name:'Groß',status:'a'}
+  }
+ };
+ const pitch='<span class="cap cap-captain">C</span><span class="cap cap-vice">VC</span>';
+ const context=vm.createContext({
+  state,safeName:String,
+  document:{getElementById:id=>({innerHTML:id==='pitch'?pitch:'Four bench player tiles'})}
+ });
+ vm.runInContext(js.slice(start,end)+'\nglobalThis.renderCard=pitchCard;',context);
+ const result=context.renderCard();
+ assert.match(result,/Current Team/);
+ assert.match(result,/cap-captain/);
+ assert.match(result,/cap-vice/);
+ assert.match(result,/Bench/);
+ assert.doesNotMatch(result,/Captain:|Vice:/);
+ assert.doesNotMatch(result,/Haaland|Groß/);
+ assert.doesNotMatch(result,/decision-foot/);
+ assert.doesNotMatch(result,/fitness flag/);
+ state.players[2].status='d';
+ const flagged=context.renderCard();
+ assert.match(flagged,/published GW 8 · 1 fitness flag/);
+ assert.doesNotMatch(flagged,/decision-foot/);
 });
