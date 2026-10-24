@@ -99,7 +99,7 @@ function renderInsights(){
 async function loadBase(){
  $('dataStatus').innerHTML='<span class="loader"></span> Loading data';
  const [bootstrap,fixtures]=await Promise.all([api('bootstrap-static/'),api('fixtures/')]);
- state.bootstrap=bootstrap;state.players=Object.fromEntries(bootstrap.elements.map(p=>[p.id,p]));state.teams=Object.fromEntries(bootstrap.teams.map(t=>[t.id,t]));state.fixtures=fixtures;state.next=bootstrap.events.find(e=>e.is_next)||bootstrap.events.find(e=>!e.finished&&!e.is_current);state.gw=defaultGameweek(bootstrap.events);
+ state.bootstrap=bootstrap;state.players=Object.fromEntries(bootstrap.elements.map(p=>[p.id,p]));state.teams=Object.fromEntries(bootstrap.teams.map(t=>[t.id,t]));state.fixtures=fixtures;state.fixturesFetchedAt=Date.now();state.next=bootstrap.events.find(e=>e.is_next)||bootstrap.events.find(e=>!e.finished&&!e.is_current);state.gw=defaultGameweek(bootstrap.events);
  const events=bootstrap.events.filter(e=>e.id<=(state.gw||0));$('gwSelect').innerHTML=events.reverse().map(e=>'<option value="'+e.id+'"'+(e.id===state.gw?' selected':'')+'>GW '+e.id+'</option>').join('')||'<option value="">Not started yet</option>';
  $('dataStatus').innerHTML='<span class="dot"></span> FPL connected';$('dataStatus').title='Fetched '+new Date(state.apiTime).toLocaleString('en-GB');
  $('deadline').textContent=state.next?deviceDateTime(state.next.deadline_time):'Season finished';$('deadlineGw').textContent=state.next?'GAMEWEEK '+state.next.id+' · '+deviceTimeLabel():'Waiting for next season';
@@ -184,6 +184,28 @@ function liveFixtureCards(){
 }
 function renderFixturesEnhanced(){if(!state.bootstrap)return;const teams=Object.values(state.teams);const weeks=Array.from({length:6},(_,i)=>(Number(state.gw)||state.next?.id||39)+i).filter(v=>v<=38);const table=weeks.length?'<table><thead><tr><th>Club</th>'+weeks.map(w=>'<th>GW '+w+'</th>').join('')+'</tr></thead><tbody>'+teams.map(t=>'<tr><td class="team-name">'+esc(t.name)+'</td>'+weeks.map(w=>{const fs=state.fixtures.filter(f=>f.event===w&&(f.team_h===t.id||f.team_a===t.id));return '<td>'+(fs.length?fs.map(f=>{const home=f.team_h===t.id,d=home?f.team_h_difficulty:f.team_a_difficulty;return '<span class="fixture fdr'+d+'">'+esc(state.teams[home?f.team_a:f.team_h]?.short_name)+' '+(home?'H':'A')+' · '+d+'</span>';}).join(''):'<span class="muted">Blank / not yet scheduled</span>')+'</td>';}).join('')+'</tr>').join('')+'</tbody></table>':'<div class="empty">Next gameweek schedule not yet available.</div>';$('fixtureTable').innerHTML='<section class="fixture-live"><div class="fixture-live-head"><div><h3>GW '+esc(state.gw||'—')+' Fixtures</h3><p>Matches and scores for the selected gameweek only.</p></div></div>'+liveFixtureCards()+'</section><div class="fixture-outlook-table">'+table+'</div>';}
 renderFixtures=renderFixturesEnhanced;
+let fixtureRefreshRunning=false;
+async function refreshCurrentFixtures(){
+ if(fixtureRefreshRunning||!state.bootstrap||document.hidden||!state.entry)return;
+ if(Date.now()-(state.fixturesFetchedAt||0)<120000)return;
+ const current=selectedGwFixtures();
+ const near=current.some(f=>{
+  const kickoff=Date.parse(f.kickoff_time||'');
+  return Number.isFinite(kickoff)&&Date.now()-kickoff>-12*60*60*1000&&Date.now()-kickoff<10*60*60*1000;
+ });
+ if(!near)return;
+ fixtureRefreshRunning=true;
+ try{
+  const latest=await api('fixtures/');
+  if(!Array.isArray(latest)||latest.length<100)return;
+  state.fixtures=latest;state.fixturesFetchedAt=Date.now();
+  renderFixtures();
+  document.dispatchEvent(new Event('fpl-fixtures-updated'));
+ }catch{/* Keep the last Official snapshot; phase guards stop stale LIVE labels. */}
+ finally{fixtureRefreshRunning=false;}
+}
+setInterval(refreshCurrentFixtures,120000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshCurrentFixtures();});
 /*__EXTENSIONS__*/
 renderStats();renderInsights();showView(requestedView||'dashboard');
 const savedEntry=safeRead('dugout-entry');
