@@ -70,8 +70,8 @@ test('Fixtures page live cards use selected GW and honor completed/live/upcoming
  assert.match(html,/Upcoming/);
  assert.match(html,/Kickoff TBC/);
  assert.doesNotMatch(html,/OLD|NEW/);
- c.state.gw=9;assert.match(c.cards(),/GW 9/);
- assert.doesNotMatch(c.cards(),/GW 8/);
+ c.state.gw=9;assert.match(c.cards(),/>NEW</);
+ assert.doesNotMatch(c.cards(),/>H10</);
 });
 test('gameweek changes refresh fixtures and six-week outlook starts from selected GW',()=>{
  assert.match(ui,/renderStats\(\);renderPitch\(\);renderInsights\(\);renderPlanner\(\);renderLeagueOptions\(\);renderFixtures\(\)/);
