@@ -5,7 +5,9 @@ function decorateAvailability(root=document){
   if(el.classList.contains('player')||el.dataset.fitDone==='1')continue;
   const p=state.players?.[Number(el.dataset.player)];if(!p){continue;}
   el.dataset.fitDone='1';
-  const level=playerAvailabilityLevel(p);if(!level)continue;
+  let level=playerAvailabilityLevel(p);if(!level)continue;
+  // Departed/inactive players are not injured: neutral style in lists, never red.
+  if(String(p.status)==='u')level='inactive';
   const label=playerAvailabilityLabel(p);
   el.classList.add('fit-inline','fit-'+level);
   if(!el.getAttribute('title'))el.setAttribute('title',label);
@@ -19,3 +21,8 @@ function decorateAvailability(root=document){
  new MutationObserver(()=>{if(!queued){queued=true;setTimeout(run,40);}}).observe(document.body,{childList:true,subtree:true});
  run();
 })();
+if(typeof document!=='undefined')document.addEventListener('change',e=>{
+ if(!e.target?.hasAttribute?.('data-show-inactive'))return;
+ ext.showInactive=!!e.target.checked;
+ if(state.view==='market')renderMarket();else if(state.view==='labs')renderLabs();
+});

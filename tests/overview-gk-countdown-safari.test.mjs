@@ -16,7 +16,7 @@ function fixture(pos='GK'){
  const players={7:keeper,8:defender},ctx=vm.createContext({
   ext:{dashboardPosition:pos,snapshot:null},
   state:{bootstrap:{events:[]},next:{id:8},players,fixtures:[{started:true,event:7,team_h:1,team_a:2}],teams:{1:{short_name:'BHA'},2:{short_name:'MCI'}}},
-  allPlayers:()=>Object.values(players),snapshotIsCurrent:()=>false,keeperScoutRows,labPlayer:p=>Boolean(p),
+  allPlayers:()=>Object.values(players),candidatePlayers:()=>Object.values(players),isInactivePlayer:()=>false,inactiveToggle:()=>"",snapshotIsCurrent:()=>false,keeperScoutRows,labPlayer:p=>Boolean(p),
   ownIds:()=>new Set([7]),fmt:(v,places)=>v==null?'—':Number(v).toFixed(places??0),esc:String,
   sourceNote:x=>'<p>'+x+'</p>',snapshotNotice:()=>'<p>Snapshot unavailable</p>',
   panel:(title,body)=>'<section><h2>'+title+'</h2>'+body+'</section>'

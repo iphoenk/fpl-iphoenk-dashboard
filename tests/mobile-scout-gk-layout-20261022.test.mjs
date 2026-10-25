@@ -18,7 +18,7 @@ function renderLab(pos='GK') {
  const ctx=vm.createContext({
   ext:{labPos:pos,labQuery:'',labPage:1,labClub:'',labMax:'',labMinStart:null,compare:[],snapshot:{scouts:{DEF:{rows:[]},MID:{rows:[]},FWD:{rows:[]}}}},
   state:{players:{1:{id:1,element_type:1,web_name:'Keeper'}},fixtures:[],teams:{1:{id:1,short_name:'ABC'}}},
-  $:element,allPlayers:()=>[],keeperScoutRows:()=>[goalkeeper],score:()=>5,
+  $:element,allPlayers:()=>[],candidatePlayers:()=>[],isInactivePlayer:()=>false,inactiveToggle:()=>"",keeperScoutRows:()=>[goalkeeper],score:()=>5,
   snapshotPlayer:()=>null,ownIds:()=>new Set(),fmt:v=>String(v??'—'),esc:String,
   scatter:()=>'<svg></svg>',sourceNote:()=>'<p>Official FPL</p>',snapshotNotice:()=>'<p>Snapshot</p>',
   panel:(title,body)=>'<section>'+title+body+'</section>'
