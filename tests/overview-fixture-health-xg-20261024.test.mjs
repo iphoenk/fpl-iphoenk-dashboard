@@ -12,15 +12,9 @@ const section=(s,start,end)=>{
  assert.ok(a>=0&&b>a,'expected function '+start);
  return s.slice(a,b);
 };
-test('Official player status uses no green/no 0 flags, yellow doubtful and red unavailable',()=>{
- const source=section(ui,'function playerFitnessMarker(', "\ndocument.addEventListener('error',");
- const c=vm.createContext({String,esc:s=>String(s)});
- vm.runInContext(source+'\nglobalThis.marker=playerFitnessMarker;',c);
- assert.equal(c.marker({status:'a'}),'');
- assert.match(c.marker({status:'d'}),/player-fitness caution/);
- for(const flag of ['i','s','n','u'])assert.match(c.marker({status:flag}),/player-fitness danger/);
- assert.match(css,/\.player-fitness\.caution\{background:#ffd348/);
- assert.match(css,/\.player-fitness\.danger\{background:#d63043/);
+test('Official player status is shown by card shading and tooltip, with no "!" badge',()=>{
+ assert.doesNotMatch(ui,/class="player-fitness/);
+ assert.doesNotMatch(css,/\.player-fitness/);
  const card=section(decision,'  function pitchCard(){','\n  function leagueCard(){');
  assert.doesNotMatch(card,/fitness flag|Captain:|Vice:/);
 });
