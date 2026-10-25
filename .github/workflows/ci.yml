@@ -25,3 +25,7 @@ jobs:
       - run: npm run build
       - name: Check generated browser script syntax
         run: node scripts/check-browser-syntax.mjs
+      - name: Install Chromium for browser regression tests
+        run: npx playwright install --with-deps chromium
+      - name: Browser regression tests (frozen API fixtures, no live FPL calls)
+        run: npm run test:browser

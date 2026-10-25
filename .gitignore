@@ -17,3 +17,5 @@ dist/
 .superpowers/
 __pycache__/
 *.pyc
+test-results/
+playwright-report/

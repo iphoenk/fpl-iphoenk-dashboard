@@ -1086,6 +1086,13 @@ body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row 
   body.has-team[data-view=dashboard] .decision-primary{
     display:grid!important;grid-template-columns:minmax(0,1fr)!important
   }
+  /* The min-width:768px composition above pins the panels to columns 1/2 and
+     row spans. Reset that placement for the stacked layout, otherwise the
+     children create a second implicit track and the pitch collapses to 0px. */
+  body.has-team[data-view=dashboard] .decision-primary>:is(.decision-team,.decision-league),
+  body.has-team[data-view=dashboard] .decision-first>:is(.decision-fixtures,.decision-plan){
+    grid-column:auto!important;grid-row:auto!important
+  }
 }
 @media(max-width:767px){
   body.has-team[data-view=dashboard] .decision-primary .decision-pitch .pitch{
