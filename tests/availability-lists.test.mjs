@@ -36,3 +36,9 @@ test('both builds load availability-ui.js and the CSS styles inline buttons',()=
  for(const f of ['scripts/build-vercel.mjs','scripts/build.mjs'])assert.match(readFileSync(new URL('../'+f,import.meta.url),'utf8'),/'planning-compact\.js','availability-ui\.js'\]/);
  assert.match(readFileSync(new URL('../availability.css',import.meta.url),'utf8'),/button\.fit-inline\.fit-red/);
 });
+
+test('observer uses a timer, not requestAnimationFrame, so hidden tabs are still decorated',()=>{
+ const src=readFileSync(new URL('../availability-ui.js',import.meta.url),'utf8');
+ assert.doesNotMatch(src,/requestAnimationFrame/);
+ assert.match(src,/setTimeout\(run,40\)/);
+});

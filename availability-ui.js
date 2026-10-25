@@ -16,6 +16,6 @@ function decorateAvailability(root=document){
  if(typeof MutationObserver==='undefined'||typeof document==='undefined'||!document.body)return;
  let queued=false;
  const run=()=>{queued=false;try{decorateAvailability();}catch{}};
- new MutationObserver(()=>{if(!queued){queued=true;requestAnimationFrame(run);}}).observe(document.body,{childList:true,subtree:true});
+ new MutationObserver(()=>{if(!queued){queued=true;setTimeout(run,40);}}).observe(document.body,{childList:true,subtree:true});
  run();
 })();
