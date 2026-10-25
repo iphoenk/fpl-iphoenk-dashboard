@@ -6,7 +6,7 @@ const read=name=>readFileSync(path.join(dir,name),'utf8');
 export const ENTRY_ID=3462711;
 export const LEAGUE_ID=16;
 /** Frozen public FPL API responses (captured 2026-10-25, GW8). The browser tests never reach the live service. */
-export async function mockApi(page){
+export async function mockApi(page,{failLeaguePage2=false}={}){
   const json=body=>({status:200,contentType:'application/json',body});
   const routes={
     'bootstrap-static':'bootstrap-static.json','fixtures':'fixtures.json',
@@ -17,16 +17,33 @@ export async function mockApi(page){
   await page.route('**/api/**',route=>{
     const url=new URL(route.request().url());
     const key=url.pathname.replace(/^\/api\//,'').replace(/\/$/,'');
+    // Full ICON+ league (anonymised, 58 members, 2 standings pages), picks for GW8 and rank history per member.
+    const standings=key.match(/^leagues-classic\/9477\/standings$/);
+    if(standings){
+      const pageNumber=Number(url.searchParams.get('page_standings')||1);
+      if(failLeaguePage2&&pageNumber===2)return route.fulfill({status:502,contentType:'application/json',body:'{"error":"upstream"}'});
+      const league=JSON.parse(read('league-9477.json'));
+      return route.fulfill(json(JSON.stringify(league.pages[pageNumber-1]||{error:'no page'})));
+    }
+    const memberPicks=key.match(/^entry\/(\d+)\/event\/8\/picks$/),memberHistory=key.match(/^entry\/(\d+)\/history$/);
+    if(memberPicks&&Number(memberPicks[1])!==ENTRY_ID){
+      const all=JSON.parse(read('league-9477-picks.json'));
+      if(all[memberPicks[1]])return route.fulfill(json(JSON.stringify(all[memberPicks[1]])));
+    }
+    if(memberHistory){
+      const all=JSON.parse(read('league-9477-history.json'));
+      if(all[memberHistory[1]])return route.fulfill(json(JSON.stringify(all[memberHistory[1]])));
+    }
     const file=routes[key];
     if(!file)return route.fulfill({status:404,contentType:'application/json',body:'{"error":"not mocked"}'});
     return route.fulfill(json(read(file)));
   });
 }
 /** Open the dashboard with a connected team, theme and sidebar state, and wait until the pitch has real players (not the loading state). */
-export async function openOverview(page,{width,height=1024,theme='light',sidebarCollapsed=false}){
+export async function openOverview(page,{width,height=1024,theme='light',sidebarCollapsed=false,mock={}}){
   await page.setViewportSize({width,height});
   await page.emulateMedia({colorScheme:theme});
-  await mockApi(page);
+  await mockApi(page,mock);
   await page.addInitScript(({id,theme,sidebarCollapsed})=>{
     try{localStorage.setItem('dugout-entry',JSON.stringify(id));localStorage.setItem('fpl-iphoenk-theme',JSON.stringify(theme));localStorage.setItem('fpl-sidebar-collapsed',JSON.stringify(sidebarCollapsed));}catch{}
   },{id:ENTRY_ID,theme,sidebarCollapsed});
