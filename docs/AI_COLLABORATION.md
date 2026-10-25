@@ -41,3 +41,7 @@ Public read access does not grant write access. Agents need an authorized connec
 Keep CLAUDE.md and GEMINI.md as pointers to shared instructions. Do not copy secrets into prompts, issues, PRs, or commits. Do not upload .model-data/, environment files, or private Vercel Blob contents.
 
 The production Vercel project is fpl-iphoenk, not the legacy project. The dashboard is a public companion; private Canonical V12 and its scheduler remain separately governed.
+
+
+## Owner-authorized AI fast track
+For ChatGPT, Claude, and Gemini sessions authenticated or explicitly authorized by the repository owner, avoid redundant approval loops, repeated source-provenance narratives for original internal edits, and verbose handoffs. They may inspect, implement, refactor, test, and coordinate on authorized repository code within the existing branch/PR workflow. Keep PR summaries compact, and reuse previously verified license evidence. This exception does not authorize copying third-party code without permission, exposing private assets, bypassing protected branches, skipping essential tests, or deploying without authorization. An agent's brand or self-asserted ownership alone is insufficient proof of authorization.
