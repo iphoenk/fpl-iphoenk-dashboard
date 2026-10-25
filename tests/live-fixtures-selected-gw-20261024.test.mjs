@@ -11,6 +11,9 @@ const compact=isolate(ui,'function liveFixtureCards(', '\nfunction renderFixture
 const overview=isolate(decision,'  let fixturePageGw=null','\n  function renderDecision(){');
 const phases=isolate(ui,'function fixturePhase(', '\nfunction showView(');
 
+// Pin the clock: live/pending states depend on Date.now(); fixtures kick off 2026-10-24T17:00Z.
+const PINNED_NOW=Date.parse('2026-10-24T18:00:00Z');
+class PinnedDate extends Date{constructor(...a){a.length?super(...a):super(PINNED_NOW)}static now(){return PINNED_NOW}}
 function setup(gw=8){
  const fixtures=[{id:70,event:7,team_h:41,team_a:42,kickoff_time:'2026-10-17T17:00:00Z',started:true,finished:true,team_h_score:4,team_a_score:1}];
  const teams={41:{name:'PREVIOUS GW ONLY',short_name:'OLD'},42:{name:'Previous Away',short_name:'PA'}};
@@ -29,7 +32,7 @@ function setup(gw=8){
  teams[43]={name:'NEXT GW ONLY',short_name:'NEW'};teams[44]={name:'Next Away',short_name:'NA'};
  fixtures.push({id:90,event:9,team_h:43,team_a:44,kickoff_time:'2026-10-31T17:00:00Z',started:false,finished:false});
  const state={gw,fixtures,teams},scope=vm.createContext({
-  state,Date,Number,String,Boolean,Math,esc:String,safeName:String,
+  state,Date:PinnedDate,Number,String,Boolean,Math,esc:String,safeName:String,
   fmt:value=>String(value),localKickoff:value=>value||'Kickoff TBC',
   fixturePrediction:()=> 'FDR lean: home'
  });
