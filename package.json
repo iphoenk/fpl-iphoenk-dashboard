@@ -7,12 +7,16 @@
     "test": "node --test tests/*.test.mjs",
     "dev": "node scripts/preview.mjs",
     "build:vercel": "node scripts/build-vercel.mjs",
-    "check:browser": "node scripts/check-browser-syntax.mjs"
+    "check:browser": "node scripts/check-browser-syntax.mjs",
+    "test:browser": "playwright test --project=chromium"
   },
   "engines": {
     "node": ">=22"
   },
   "dependencies": {
     "@vercel/blob": "2.8.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
   }
 }
