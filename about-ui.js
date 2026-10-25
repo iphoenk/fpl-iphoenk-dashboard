@@ -3,26 +3,30 @@ function renderAbout(){
  const seasonStart=Number(state.bootstrap?.events?.[0]?.deadline_time?.slice(0,4));
  const season=Number.isInteger(seasonStart)&&seasonStart>=2020&&seasonStart<2100?seasonStart+'/'+String(seasonStart+1).slice(-2):'Awaiting Official FPL season';
  const revision='__FPL_DASHBOARD_BUILD__';
- const sources=[
+ const providers=[
   ['Official Fantasy Premier League','https://fantasy.premierleague.com/','Published players, fixtures, prices, points, teams and leagues.'],
   ['FPLens','https://github.com/abdelmalek-maskri/fplens','Independent model snapshots and player projections.'],
   ['FPL Core Insights','https://github.com/olbauday/FPL-Core-Insights','Additional public reference data, where explicitly sourced.'],
   ['The Guardian','https://www.theguardian.com/football','Football reporting, linked to its source when shown.'],
   ['FPL Jakarta','https://github.com/fpljakarta/fpl-jakarta-dashboard','Inspiration for awards; interface and calculations are independent.'],
-  ['Doocey FPL Dashboard','https://github.com/Doocey/fpl-dashboard','Reference for official-data price history and scheduled refresh patterns; implementation is independent.'],
-  ['thinesrao FPL Dashboard Streamlit','https://github.com/thinesrao/fpl-dashboard-streamlit','Reference for mini-league awards and historical league analytics; implementation is independent.'],
-  ['j-maslin Virtuoso FPL Dashboard','https://github.com/j-maslin/fpl-dashboard','Reference for compact wallboard league presentation and adaptive charts; implementation is independent.'],
-  ['JonnoMillar FPL Insights','https://github.com/JonnoMillar/fpl-insights','Reference for xGI, defensive contribution, fixture, captaincy and uncertainty analysis; implementation is independently integrated.'],
-  ['jorgefhernandezg FPL Dashboard','https://github.com/jorgefhernandezg/fpl-dashboard','Public FPL dashboard reference reviewed during architecture research.'],
-  ['requiemalex Scoutline','https://github.com/requiemalex/fpl-analytics-dashboard','Reference for validation, normalization, cache, retry, stale fallback and provenance patterns; implementation is independent.'],
-  ['uixori-code FPL Fantasy Dashboard','https://github.com/uixori-code/fpl-fantasy-dashboard','Reference for public Team ID UX, React structure and data-fetch separation; implementation is independent.'],
-  ['avgcloudwizard Wireless','https://github.com/avgcloudwizard/wireless','Reference for one consistent snapshot, freshness, last-good data and mini-league metrics; implementation is independent.'],
-  ['ahmedrashadtxt FPL Strategic Dashboard','https://github.com/ahmedrashadtxt/fpl-strategic-dashboard','Reference for deterministic constraints, transfer friction and audit-journal concepts; implementation is independently governed.'],
-  ['dhruvgupta2109 FPL Manager','https://github.com/dhruvgupta2109/fplmanager','Reference for guest Team ID flow, pitch, fixtures and rank-trend UX; implementation is independent.'],
-  ['pdamkier-del FPL Analytics App','https://github.com/pdamkier-del/fpl-analytics-app','Reference for model versioning and updater separation.'],
-  ['maballouk FPL Analytic','https://github.com/maballouk/fplanalytic','Reference for TypeScript project structure and test organization.'],
   ['FPL iphoenk V6/V12/MC Engine','https://github.com/iphoenk/FPL-iphoenk-engine','Canonical factual, decision, audit and MC500K engine owned by FPL iphoenk.']
  ];
+ const credits=(typeof FPL_CREDITS!=='undefined'&&Array.isArray(FPL_CREDITS.entries))?FPL_CREDITS.entries:[];
+ const safeUrl=url=>/^https:\/\/github\.com\//.test(String(url||''))?url:'#';
+ const licenseLabel=entry=>entry.license==='MIT'?'MIT license':entry.license==='none-visible'?'No license visible · ideas only':'License unverified · ideas only';
+ const statusLabel={planned:'Planned',backlog:'Backlog','reviewed-no-adoption':'Reviewed'};
+ const creditCard=entry=>{
+  const ideas=(entry.adopted||[]).length?'<details class="about-credit-ideas"><summary>'+(entry.status==='reviewed-no-adoption'?'Reviewed':'Ideas under evaluation')+' ('+entry.adopted.length+')</summary><ul>'+entry.adopted.map(item=>'<li>'+esc(item)+'</li>').join('')+'</ul></details>':'';
+  return '<li class="about-source about-credit" data-credit="'+esc(entry.id)+'"><a href="'+esc(safeUrl(entry.url))+'" target="_blank" rel="noopener noreferrer">'+esc(entry.name)+' <span aria-hidden="true">↗</span></a><p class="about-credit-meta">by '+esc(entry.author)+' · '+esc(licenseLabel(entry))+' · '+esc(statusLabel[entry.status]||entry.status)+'</p><p>'+esc(entry.summary)+'</p>'+ideas+'</li>';
+ };
+ const creditGroup=(title,note,list)=>list.length?'<div class="about-credit-group"><h4>'+title+'</h4><p class="about-credit-note">'+note+'</p><ul class="about-source-grid">'+list.map(creditCard).join('')+'</ul></div>':'';
+ const codeCredits=credits.filter(entry=>entry.codeCopied===true&&entry.license==='MIT');
+ const referenceCredits=credits.filter(entry=>entry.codeCopied!==true&&entry.status!=='reviewed-no-adoption');
+ const reviewedCredits=credits.filter(entry=>entry.codeCopied!==true&&entry.status==='reviewed-no-adoption');
+ const creditsHtml=
+  creditGroup('Code used (MIT)','Source code copied under the MIT license; the license notice ships with this project.',codeCredits)+
+  creditGroup('Inspired by','Ideas studied and rewritten independently. No code is copied from these projects.',referenceCredits)+
+  creditGroup('Reviewed, nothing adopted','Looked at during research; no code or design was taken.',reviewedCredits);
  const sourceCard=([name,url,summary])=>'<li class="about-source"><a href="'+url+'" target="_blank" rel="noopener noreferrer">'+esc(name)+' <span aria-hidden="true">↗</span></a><p>'+esc(summary)+'</p></li>';
  const methodItem=(number,title,description)=>'<div class="about-method-step"><span class="about-method-number">'+number+'</span><div><h4>'+title+'</h4><p>'+description+'</p></div></div>';
  $('view-about').innerHTML=
@@ -44,7 +48,7 @@ function renderAbout(){
     '<p>FPL iphoenk V6 owns factual acquisition and provenance, Canonical V12 owns the decision contract, and the MC500K layer remains inside the engine for governed probability evidence. This no-login dashboard consumes only public or explicitly published contract outputs and never exposes private credentials.</p>'+
    '</div></details>'+
   '</section>'+
-  '<section class="about-card about-sources"><div class="about-section-head"><div><h3>Sources & credits</h3><p>Each provider retains ownership of its data and models.</p></div></div><ul class="about-source-grid">'+sources.map(sourceCard).join('')+'</ul></section>'+
+  '<section class="about-card about-sources"><div class="about-section-head"><div><h3>Sources & credits</h3><p>Each provider retains ownership of its data and models. Linked repositories are credited for the ideas listed; inclusion is not an endorsement.</p></div></div><ul class="about-source-grid">'+providers.map(sourceCard).join('')+'</ul>'+creditsHtml+'</section>'+
   '<section class="about-card about-python"><div class="about-section-head"><div><h3>Independent Python Engine</h3><p>FPL iphoenk Python · experimental v0.1.1</p></div></div><p>Our position-aware Python baseline is calculated offline from checked Official FPL data. The dashboard can optionally load validated precomputed forecasts for comparison; it never executes Python in the browser or silently replaces public planning recommendations.</p><p>Third-party models such as FPLens retain separate attribution. The Python model is experimental and has not demonstrated superior predictive accuracy.</p></section>'+'<section class="about-card about-bottom"><h3>Privacy & independence</h3><p>FPL iphoenk is independently built and is not affiliated with or endorsed by the Premier League. Source data, editorial content, models and trademarks belong to their respective owners.</p><p>Public team IDs do not prove account ownership. This website cannot make transfers, activate chips or read authenticated private FPL account data.</p></section>'+
  '</div>';
 }
