@@ -48,7 +48,9 @@ export async function openOverview(page,{width,height=1024,theme='light',sidebar
   await page.addInitScript(({id,theme,sidebarCollapsed})=>{
     try{localStorage.setItem('dugout-entry',JSON.stringify(id));localStorage.setItem('fpl-iphoenk-theme',JSON.stringify(theme));localStorage.setItem('fpl-sidebar-collapsed',JSON.stringify(sidebarCollapsed));}catch{}
   },{id:ENTRY_ID,theme,sidebarCollapsed});
-  await page.goto('/#dashboard');
+  // Upstream images/fonts may never complete; app readiness is the populated
+  // pitch and stable geometry below, not an unrelated remote load event.
+  await page.goto('/#dashboard',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.querySelectorAll('.decision-pitch .pitch-row .player').length>=11&&document.querySelectorAll('.decision-bench .player').length>=4,null,{timeout:30000});
   await waitForStableLayout(page);
 }
