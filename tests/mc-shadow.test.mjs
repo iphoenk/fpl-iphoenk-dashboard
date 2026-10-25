@@ -113,3 +113,12 @@ test('universe is every Official player for every GW, including more than 1000 p
  assert.equal(result.ok,true);assert.equal(result.metadata.coverage,1501);
  snapshot.players.pop();assert.equal(validateMcShadowRecord(record(snapshot),{bootstrap,now}).ok,false);
 });
+test('status u players are outside the MC universe: snapshot without them passes, snapshot with them is rejected',()=>{
+ const {snapshot,bootstrap}=fixture(20);
+ const marked={...bootstrap,elements:bootstrap.elements.map((p,i)=>i<3?{...p,status:'u'}:{...p,status:'a'})};
+ const without={...snapshot,players:snapshot.players.filter(p=>p.id>3)};
+ const ok=validateMcShadowRecord(record(without),{bootstrap:marked,now});
+ assert.equal(ok.ok,true);assert.equal(ok.metadata.coverage,17);assert.equal(ok.metadata.excluded_inactive,3);
+ assert.equal(validateMcShadowRecord(record(snapshot),{bootstrap:marked,now}).ok,false);
+ assert.equal(validateMcShadowRecord(record(without),{bootstrap,now}).ok,false);
+});

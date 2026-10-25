@@ -32,8 +32,11 @@ export function validateMcShadowRecord(record,{bootstrap,now=Date.now()}={}){
    ![1,3,5].includes(s.horizon)||s.start_gw+s.horizon-1>38||
    mcTimestamp(s.next_deadline)!==deadline||![acquired,generated,expiry,deadline,now].every(Number.isFinite)||
    !(acquired<=generated&&generated<=now&&now<expiry&&expiry<=Math.min(acquired+21600000,generated+21600000,deadline)))return invalid;
-  const players=bootstrap?.elements;
-  if(!Array.isArray(players)||players.length===0)return invalid;
+  const all=bootstrap?.elements;
+  if(!Array.isArray(all))return invalid;
+  // Owner decision 2026-10-25: status u (no longer in the Premier League) is outside the MC universe.
+  const players=all.filter(p=>p?.status!=='u'),excluded=all.length-players.length;
+  if(players.length===0)return invalid;
   const official=new Map(players.map(p=>[p.id,p]));
   if(official.size!==players.length||!Array.isArray(s.players)||s.players.length!==official.size*s.horizon)return invalid;
   const seen=new Set();
@@ -48,6 +51,6 @@ export function validateMcShadowRecord(record,{bootstrap,now=Date.now()}={}){
   }
   return {ok:true,metadata:{status:'SHADOW_ONLY',validation_status:'PASS',applied_to_decisions:false,
    canonical_v12:false,scope:'PLAYER_MARGINAL_SUMMARIES_ONLY',planning_gw:s.start_gw,horizon:s.horizon,
-   generated_at:new Date(generated).toISOString(),expires_at:new Date(expiry).toISOString(),coverage:official.size,actual_samples:s.actual_samples}};
+   generated_at:new Date(generated).toISOString(),expires_at:new Date(expiry).toISOString(),coverage:official.size,excluded_inactive:excluded,actual_samples:s.actual_samples}};
  }catch{return invalid;}
 }
