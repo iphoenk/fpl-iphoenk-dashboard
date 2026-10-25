@@ -1,3 +1,15 @@
+function publicFormationEvidence(s,planningGw,name){
+  const esc1=x=>String(x??'').replace(/[&<>"']/g,'');
+  const weeks=s.weeks||[{offset:0,...s}];
+  if(!weeks.some(w=>w.formation_comparison?.length))return '';
+  return '<details class="decision-optimizer"><summary>Compare 8 formations · XI &amp; bench</summary>'+
+    '<p>Public xP optimizer: 550 legal XIs per squad and GW. Total = xP of the eleven starters plus one extra captain xP (captain counts twice). The bench is ordered by xP; autosub chances and vice-captain takeover are not modelled.</p>'+
+    weeks.map(w=>'<details class="decision-optimizer-week"'+(weeks.length===1?' open':'')+'><summary>GW '+(planningGw+w.offset)+' · '+esc1(w.formation)+' · '+fmt(w.expected_points,2)+' xP</summary>'+
+      '<div class="decision-formation-scroll" role="region" aria-label="Formation comparison GW '+(planningGw+w.offset)+'" tabindex="0"><table><caption>Eight formations · GW '+(planningGw+w.offset)+' · same scenario</caption><thead><tr><th scope="col">Formation</th><th scope="col">xP</th><th scope="col">Gap to best</th><th scope="col">Lineup</th></tr></thead><tbody>'+
+      w.formation_comparison.map(row=>'<tr data-formation-row="'+esc1(row.formation)+'"'+(row.selected?' class="formation-selected"':'')+'><th scope="row">'+esc1(row.formation)+(row.selected?'<small>Selected</small>':'')+'</th><td>'+fmt(row.expected_points,2)+'</td><td>'+fmt(row.delta_vs_best,2)+'</td><td><details><summary>View XI &amp; bench</summary><p><strong>XI:</strong> '+row.starting_xi.map(name).join(' · ')+'</p><p><strong>Bench:</strong> '+row.bench.map(name).join(' · ')+'</p><p><strong>C:</strong> '+name(row.captain)+' · <strong>VC:</strong> '+name(row.vice_captain)+'</p></details></td></tr>').join('')+
+      '</tbody></table></div></details>').join('')+'</details>';
+}
+/* END_FORMATION_EVIDENCE */
 /* Decision-first dashboard: uses canonical FPL data; never synthesizes results. */
 (function(){
   'use strict';
@@ -194,7 +206,7 @@
         '<p class="decision-scenario-move">'+changes+'</p><div class="decision-scenario-bottom">'+
         '<div class="decision-captains"><span><b>C</b> '+name(s.captain)+'</span><span><b>VC</b> '+name(s.vice_captain)+'</span></div>'+
         '<button class="decision-action" data-goto="'+(s.transfers?'transfers':'planning')+'">Analysis ↗</button></div>'+
-        '<small class="decision-scenario-note">'+weekLabel+' · Formation '+safeName(s.formation)+delta+' · '+(report?.team_state?.free_transfers!==null&&report?.team_state?.free_transfers!==undefined?'FT '+number(report.team_state.free_transfers)+' · hit cost remains unverified':'FT not verified')+'</small></div>';
+        '<small class="decision-scenario-note">'+weekLabel+' · Formation '+safeName(s.formation)+delta+' · '+(report?.team_state?.free_transfers!==null&&report?.team_state?.free_transfers!==undefined?'FT '+number(report.team_state.free_transfers)+' · hit cost remains unverified':'FT not verified')+'</small>'+publicFormationEvidence(s,gw,name)+'</div>';
     };
     const economicsLabel={PUBLIC_CURRENT_PRICE_PROXY_INDICATIVE:'Sale price proxy · verify before transfer',PUBLIC_HISTORICAL_INDICATIVE:'Historical price/bank · indicative',UNAVAILABLE:'Affordability not verified'}[report?.economics_status]|| (report?.economics_status?'Economics status · verify before transfer':report?.status==='unavailable'?'Projection unavailable':publicPlan.error?'Official data unavailable':'Awaiting official data');
     return '<article class="decision-panel decision-plan"><header class="decision-panel-head"><div><h2>Next GW Plan'+(gw?' · GW '+gw:'')+'</h2><p>'+safeName(scope)+' · no Monte Carlo</p>'+accountLine+'</div><button class="decision-link" data-goto="planning">Planner ↗</button></header>'+

@@ -42,7 +42,7 @@ function renderAbout(){
   '<section class="about-card about-method"><div class="about-section-head"><div><h3>How the numbers work</h3><p>Public facts and model estimates have different roles.</p></div><button type="button" class="about-link-button" data-goto="accuracy">Model accuracy <span aria-hidden="true">↗</span></button></div>'+
    '<div class="about-method-grid">'+
     methodItem('01','Official data','Published picks, scores, player availability, fixtures and prices come from Official FPL.')+
-    methodItem('02','Public decisions','A/B/C uses legal formations and Official FPL ep_next for a one-GW fallback. Longer horizons require a validated public snapshot.')+
+    methodItem('02','Public decisions','A/B/C compares the eight legal formations (550 legal XIs per squad) by mean xP, with the captain counted twice, and uses Official FPL ep_next for a one-GW fallback. It is a public mean-xP optimizer, not the canonical V12 distributional optimizer. Longer horizons require a validated public snapshot.')+
     methodItem('03','Independent forecasts','FPLens and other attributed sources provide third-party model inputs. Forecast accuracy varies by GW.')+
    '</div>'+
    '<details class="about-details"><summary>Technical methodology & uncertainty</summary><div class="about-details-body">'+

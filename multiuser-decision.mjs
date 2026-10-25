@@ -1,3 +1,5 @@
+import canonicalRules from './vendor/v12/fpl_2026_27.json' with {type:'json'};
+import canonicalProvenance from './vendor/v12/provenance.json' with {type:'json'};
 /* No-login public advisory. V12-informed route structure, NOT canonical V12.
    Official FPL ep_next only; no MC, private state, inferred hits or fake 3GW. */
 export const PUBLIC_DECISION_VERSION='official-deterministic-v1';
@@ -10,26 +12,93 @@ const score=p=>{const n=finite(p?.ep_next);return n!==null&&n>=0&&n<=40?n:null};
 const cost=p=>{const n=finite(p?.now_cost);return n!==null&&Number.isInteger(n)&&n>0?n:null};
 const round=n=>Math.round(n*100)/100;
 const better=(a,b)=>score(b)-score(a)||a.id-b.id;
-const validSquad=s=>s.length===15&&new Set(s.map(p=>p.id)).size===15&&
- [[1,2],[2,5],[3,5],[4,3]].every(([pos,n])=>s.filter(p=>p.element_type===pos).length===n)&&
- Object.values(s.reduce((a,p)=>(a[p.team]=(a[p.team]||0)+1,a),{})).every(n=>n<=3);
-export function selectPublicXI(squad){
+export const CANONICAL_RULES_PROVENANCE={...canonicalProvenance,scope:'SQUAD_LEGALITY_AND_LEGAL_XI_ENUMERATION',canonical_optimizer:false};
+// Adapter of pinned V12 legal_squad. Inputs are public Official player rows.
+export function canonicalSquadCheck(rows){
+ const rules=canonicalRules.squad;
+ if(!Array.isArray(rows)||rows.length!==rules.squad_size)return [false,'SQUAD_SIZE'];
+ if(rows.some(p=>!Number.isSafeInteger(p?.id)||p.id<1||!Number.isSafeInteger(p?.team)||p.team<1||![1,2,3,4].includes(p?.element_type)))return [false,'INVALID_PUBLIC_PLAYER'];
+ if(new Set(rows.map(p=>p.id)).size!==rows.length)return [false,'DUPLICATE_PLAYER'];
+ const positions={GK:1,DEF:2,MID:3,FWD:4};
+ if(!Object.entries(rules.position_counts).every(([pos,count])=>rows.filter(p=>p.element_type===positions[pos]).length===count))return [false,'POSITION_COMPOSITION'];
+ const clubs=rows.reduce((a,p)=>(a[p.team]=(a[p.team]||0)+1,a),{});
+ if(Object.values(clubs).some(count=>count>rules.max_players_per_club))return [false,'MAX_THREE_PER_CLUB'];
+ return [true,'PASS'];
+}
+const validSquad=s=>canonicalSquadCheck(s)[0];
+const templateCache=new Map();
+// Adapter of pinned V12 _legal_xi_templates/enumerate_legal_xi. Cache only
+// position masks, never account state or projections. Same index order as V12.
+export function enumeratePublicXI(squad){
+ if(!validSquad(squad))return [];
+ const signature=squad.map(p=>p.element_type).join('');
+ let masks=templateCache.get(signature);
+ if(!masks){
+  masks=[];
+  const choose=(start,selected)=>{
+   if(selected.length===canonicalRules.lineup.starting_xi_size){
+    const counts=[0,0,0,0,0];for(const i of selected)counts[squad[i].element_type]++;
+    if(counts[1]===canonicalRules.lineup.starting_goalkeepers&&canonicalRules.lineup.legal_formations.includes(counts.slice(2).join('-')))masks.push([...selected]);
+    return;
+   }
+   for(let i=start;i<=squad.length-(11-selected.length);i++){selected.push(i);choose(i+1,selected);selected.pop();}
+  };
+  choose(0,[]);templateCache.set(signature,masks);
+  if(templateCache.size>64)templateCache.delete(templateCache.keys().next().value);
+ }
+ return masks.map(mask=>[...mask]);
+}
+const compareIds=(a,b)=>{for(let i=0;i<a.length;i++){if(a[i]!==b[i])return a[i]-b[i];}return 0;};
+export function optimizePublicLineup(squad){
+ if(!validSquad(squad)||squad.some(p=>score(p)===null))return null;
+ const masks=enumeratePublicXI(squad),byFormation=new Map();
+ // For the additive mean-xP objective, the best XI for each formation is
+ // exactly its highest-xP players in each position. Swapping any selected
+ // player for a lower-xP player cannot increase either the starter sum or
+ // the captain maximum. Preserve the 550-mask canonical legality audit,
+ // but score only the eight provably optimal formation representatives.
+ const groups=[1,2,3,4].map(pos=>squad.filter(p=>p.element_type===pos).sort(better));
+ for(const formation of canonicalRules.lineup.legal_formations){
+  const [d,m,f]=formation.split('-').map(Number);
+  const rows=[groups[0][0],...groups[1].slice(0,d),...groups[2].slice(0,m),...groups[3].slice(0,f)];
+  if(rows.length!==canonicalRules.lineup.starting_xi_size)continue;
+  const ranked=[...rows].sort(better),ids=rows.map(p=>p.id),chosen=new Set(ids);
+  const sum=rows.reduce((a,p)=>a+score(p),0)+score(ranked[0]);
+  const reserves=squad.filter(p=>!chosen.has(p.id));
+  const bench=[...reserves.filter(p=>p.element_type===1).sort(better),...reserves.filter(p=>p.element_type!==1).sort(better)];
+  byFormation.set(formation,{formation,starting_xi:ids,bench:bench.map(p=>p.id),captain:ranked[0].id,vice_captain:ranked[1].id,expected_points:round(sum),sum});
+ }
+ const ordered=[...byFormation.values()].sort((a,b)=>Math.abs(b.sum-a.sum)>1e-8?b.sum-a.sum:a.formation.localeCompare(b.formation));
+ if(!ordered.length)return null;
+ const {sum,...winner}=ordered[0];
+ return {...winner,optimizer:{method:'EXACT_PUBLIC_MEAN_XP',exact_for_objective:true,legal_xi_count:masks.length,formations_evaluated:ordered.length,
+  captain_multiplier:2,bench_objective:'GK_THEN_DESCENDING_MEAN_XP',autosub_modelled:false,vice_takeover_modelled:false,canonical_distributional_utility:false,monte_carlo:false},
+  formation_comparison:ordered.map(({sum:raw,...row})=>({...row,delta_vs_best:round(raw-sum),selected:row.formation===winner.formation}))};
+}
+export function selectPublicXI(squad,{scoreOnly=false}={}){
  if(!validSquad(squad)||squad.some(p=>score(p)===null))return null;
  const groups=[1,2,3,4].map(pos=>squad.filter(p=>p.element_type===pos).sort(better));
+ const prefix=groups.map(rows=>{const sums=[0];for(const row of rows)sums.push(sums.at(-1)+score(row));return sums;});
+ // Every legal formation includes the leading player from every position.
+ // Its captain bonus is therefore constant; no XI/bench allocation is needed
+ // until the winning formation is known. Exact for this additive objective.
+ const captainBonus=Math.max(...groups.map(rows=>score(rows[0])));
  let best=null;
- for(const [d,m,f] of LEGAL_FORMATIONS){
-  const xi=[groups[0][0],...groups[1].slice(0,d),...groups[2].slice(0,m),...groups[3].slice(0,f)];
-  if(xi.length!==11)continue;
-  const ordered=[...xi].sort(better),captain=ordered[0],vice=ordered[1],sum=xi.reduce((a,p)=>a+score(p),0)+score(captain);
+ for(const legalFormation of canonicalRules.lineup.legal_formations){
+  const [d,m,f]=legalFormation.split('-').map(Number);
+  const sum=prefix[0][1]+prefix[1][d]+prefix[2][m]+prefix[3][f]+captainBonus;
   const formation=d+'-'+m+'-'+f;
   if(!best||sum>best.sum+1e-8||(Math.abs(sum-best.sum)<1e-8&&formation<best.formation)){
-   const ids=new Set(xi.map(p=>p.id));
-   const bench=[...groups[0].slice(1),...squad.filter(p=>!ids.has(p.id)&&p.element_type!==1).sort(better)];
-   best={formation,starting_xi:xi.map(p=>p.id),bench:bench.map(p=>p.id),captain:captain.id,vice_captain:vice.id,expected_points:round(sum),sum};
+   best={formation,d,m,f,sum};
   }
  }
  if(!best)return null;
- const {sum,...out}=best;return out;
+ const {d,m,f,sum,formation}=best;
+ if(scoreOnly)return {formation,expected_points:round(sum)};
+ const xi=[groups[0][0],...groups[1].slice(0,d),...groups[2].slice(0,m),...groups[3].slice(0,f)];
+ const ranked=[...xi].sort(better),ids=new Set(xi.map(p=>p.id));
+ const bench=[...groups[0].slice(1),...squad.filter(p=>!ids.has(p.id)&&p.element_type!==1).sort(better)];
+ return {formation,starting_xi:xi.map(p=>p.id),bench:bench.map(p=>p.id),captain:ranked[0].id,vice_captain:ranked[1].id,expected_points:round(sum)};
 }
 export function publicDecision({entry,picks,bootstrap,planningGw}){
  const map=new Map((bootstrap?.elements||[]).map(p=>[Number(p.id),p]));
@@ -45,11 +114,11 @@ export function publicDecision({entry,picks,bootstrap,planningGw}){
  const selling=p=>validSale(p)?sales.get(p.id):cost(p);
  const describe=(moves)=>moves.map(m=>({out:{id:m.out,web_name:map.get(m.out)?.web_name||'—'},in:{id:m.in,web_name:map.get(m.in)?.web_name||'—'}}));
  const scenario=(kind,xi,moves=[],cash=null)=>({kind,transfers:moves.length,changes:describe(moves),
-   ...xi,gross_gain_vs_hold:round(xi.expected_points-hold.expected_points),
+   ...optimizePublicLineup(owned.map(p=>{const move=moves.find(m=>m.out===p.id);return move?map.get(move.in):p;})),gross_gain_vs_hold:round(xi.expected_points-hold.expected_points),
    bank_after_indicative:cash===null?null:round(cash/10),
    hit_points:null,net_gain:null,executable:false,decision_status:'PUBLIC_ADVISORY'});
  const base={status:'ready',contract:'PUBLIC_FPL_DETERMINISTIC_ADVISORY_V1',model:PUBLIC_DECISION_VERSION,
-  authority:'OFFICIAL_FPL_EP_NEXT',canonical_v12:false,monte_carlo:false,planning_gw:planningGw,
+  authority:'OFFICIAL_FPL_EP_NEXT',canonical_v12:false,canonical_components:CANONICAL_RULES_PROVENANCE,monte_carlo:false,planning_gw:planningGw,
   entry_id:Number(entry.id),source_squad_gw:Number(picks.entry_history?.event)||null,
   economics_status:bankKnown?(proxyCount?'PUBLIC_CURRENT_PRICE_PROXY_INDICATIVE':'PUBLIC_HISTORICAL_INDICATIVE'):'UNAVAILABLE',
   economics_evidence:{bank_basis:'LAST_PUBLISHED_GW_BANK',sale_basis:proxyCount?'CURRENT_OFFICIAL_MARKET_PRICE_PROXY':'PUBLISHED_PICK_SELLING_PRICE',proxy_player_count:proxyCount,actual_affordability_verified:false},
@@ -76,7 +145,7 @@ export function publicDecision({entry,picks,bootstrap,planningGw}){
    if(!candidateIds.has(incoming.id)||incoming.element_type!==out.element_type||cost(incoming)>bank+sale)continue;
    const squad=owned.map(p=>p.id===out.id?incoming:p);
    if(!validSquad(squad))continue;
-   const xi=selectPublicXI(squad);if(!xi)continue;
+   const xi=selectPublicXI(squad,{scoreOnly:true});if(!xi)continue;
    singles.push({out:out.id,in:incoming.id,cash:bank+sale-cost(incoming),xi,gain:round(xi.expected_points-hold.expected_points)});
   }
  }
@@ -99,7 +168,7 @@ export function publicDecision({entry,picks,bootstrap,planningGw}){
   if(!Number.isInteger(cash)||cash<0)continue;
   const squad=owned.map(p=>p.id===a.out?inA:p.id===b.out?inB:p);
   if(!validSquad(squad))continue;
-  const xi=selectPublicXI(squad);if(!xi)continue;
+  const xi=selectPublicXI(squad,{scoreOnly:true});if(!xi)continue;
   const gain=round(xi.expected_points-hold.expected_points);
   if(!best||gain>best.gain){best={a,b,cash,xi,gain};}
  }
