@@ -24,6 +24,10 @@ function playerLabel(p){const t=state.teams[p.team];return '<div class="player-l
 function watchButton(p){return '<button class="watch-star'+(ext.watch.includes(p.id)?' saved':'')+'" data-watch="'+p.id+'" aria-label="'+(ext.watch.includes(p.id)?'Remove from':'Add to')+' watchlist">'+(ext.watch.includes(p.id)?'★':'☆')+'</button>';}
 function ownIds(){return new Set(state.picks?.picks.map(p=>p.element)||[]);}
 function allPlayers(){return Object.values(state.players);}
+// FPL status 'u' = no longer at a Premier League club (mostly departed). Not an injury; hidden from candidate lists unless the user opts in.
+function isInactivePlayer(p){return String(p?.status||'')==='u';}
+function candidatePlayers(){return typeof ext!=='undefined'&&ext.showInactive?allPlayers():allPlayers().filter(p=>!isInactivePlayer(p));}
+function inactiveToggle(){const n=allPlayers().filter(isInactivePlayer).length;return n?'<label class="inactive-toggle"><input type="checkbox" data-show-inactive'+(ext.showInactive?' checked':'')+'> Show inactive players ('+n+', no longer in the Premier League)</label>':'';}
 function listRows(list,metric,unit=''){return list.map((p,i)=>'<div class="adv-row"><div><span class="muted">'+(i+1)+'. </span><button data-player="'+p.id+'">'+esc(p.web_name)+'</button><small>'+esc(state.teams[p.team]?.short_name)+(ownIds().has(p.id)?' · ✓':'')+'</small></div><strong>'+fmt(metric(p),2)+unit+'</strong></div>').join('');}
 function shortlist(title,players,metric,description='',cls=''){return '<article class="adv-card '+cls+'"><h3>'+title+'</h3><p>'+description+'</p>'+listRows(players,metric)+'</article>';}
 async function extraData(key,path){if(ext.cache[key])return ext.cache[key];if(ext.pending[key])return ext.pending[key];ext.pending[key]=api(path).then(data=>{ext.cache[key]=data;return data;}).finally(()=>delete ext.pending[key]);return ext.pending[key];}
