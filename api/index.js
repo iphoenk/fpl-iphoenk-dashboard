@@ -3,9 +3,11 @@ import {publicDecisionResponse} from '../multiuser-decision-server.mjs';
 import {archiveResponse} from '../phase-one-server.mjs';
 import {providerResponse} from '../independent-providers.mjs';
 import {ownModelResponse} from '../own-model-server.mjs';
+import {mcShadowResponse} from '../mc-shadow-server.mjs';
 export default {
  async fetch(request){
   const url=new URL(request.url);
+  const mc=await mcShadowResponse(request);if(mc)return mc;
   const decision=await publicDecisionResponse(request);if(decision)return decision;
   const own=await ownModelResponse(request);if(own)return own;
   if(/^\/api\/forecast-archive\/?$/.test(url.pathname))return archiveResponse(request);

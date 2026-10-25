@@ -55,6 +55,14 @@ The staged global projection challenger from the separate `iphoenk/fpl-dashboard
 
 The global projection is **not Canonical V12**. If GW, identity, freshness, or coverage validation fails, fall back to the public Official one-GW advisory with an explicit non-canonical label. Never fabricate free transfers, hit costs, or net gains.
 
+## Offline MC shadow connection
+
+`GET /api/mc/shadow` reads only the fixed private Blob path `mc-shadow/v1/latest.json` and returns sanitized operational metadata. It does not return forecast rows or change `/api/decision`. Missing output is `UNAVAILABLE`, never a synthetic forecast. Set `FPL_MC_SHADOW_ENABLED=0` to disable this optional reader. Alternative Worker builds return unavailable for this private integration.
+
+The private `iphoenk/fpl-iphoenk-mc` bridge can generate a transport record with `python -m mc_bridge --input approved-player-export.json --context trusted-context.json --output candidate.json --format blob-record`. The exporter and real engine parity are not yet implemented. To publish an approved real record using an existing trusted environment, run `node --env-file=.env.local scripts/publish-mc-shadow.mjs candidate.json`. This command validates fresh Official context, writes the dedicated private path and verifies readback; do not publish constructed test data. No publication credential is embedded in GitHub or the browser.
+
+See `docs/mc-shadow-integration.md` for contract boundaries, acceptance and remaining blockers. Shadow integration is not model acceptance or a production latency guarantee.
+
 ## Canonical V12 decision boundary
 
 Official FPL remains the factual authority. Canonical V12 is the target decision authority, not an automatically active dashboard capability.
