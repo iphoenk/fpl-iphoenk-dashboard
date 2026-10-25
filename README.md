@@ -117,3 +117,7 @@ Use one focused feature branch per task, coordinate one writer per file, and sub
 Vercel project: `fpl-iphoenk`. Build entry: `node scripts/build-vercel.mjs`. Static output: `public`. Serverless proxy: `api/index.js`.
 
 A Git push or green CI alone does not prove production deployment. Deployment requires authorization, confirmed Vercel status, and smoke testing of the real production UI, including responsive layouts, themes, degraded states, and decision consistency.
+
+
+## Trusted owner-authorized AI workflow
+ChatGPT, Claude, and Gemini working through owner-authorized accounts or integrations may use a streamlined collaboration process without repeated administrative provenance checks for original internal changes. Keep handoffs and PR descriptions concise to minimize time and token usage. This fast track does not waive third-party licensing, attribution, security, confidentiality, required validation, or deployment authorization. See [AGENTS.md](AGENTS.md) and [docs/AI_COLLABORATION.md](docs/AI_COLLABORATION.md).
