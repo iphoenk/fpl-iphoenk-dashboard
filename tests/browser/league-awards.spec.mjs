@@ -38,3 +38,10 @@ test('the rank-history loading note clears even when league extras re-render mid
   await page.waitForSelector('#phaseThreeAwards .league-awards-grid',{timeout:45000});
   await expect(page.locator('#phaseThreeAwards .strategy-note')).not.toContainText('Loading rank history',{timeout:60000});
 });
+
+test('league pager does not present the 50 rows of one FPL page as the league total (58 teams, 2 pages)',async({page})=>{
+  await openLeagueAwards(page);
+  const label=page.locator('#leagueHeaderPage .compact-pagination span, #leaguePagination .compact-pagination span').first();
+  await expect(label).toContainText('group 1');
+  await expect(label).not.toContainText(/of 50/);
+});
