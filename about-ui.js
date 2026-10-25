@@ -14,9 +14,12 @@ function renderAbout(){
  const credits=(typeof FPL_CREDITS!=='undefined'&&Array.isArray(FPL_CREDITS.entries))?FPL_CREDITS.entries:[];
  const safeUrl=url=>/^https:\/\/github\.com\//.test(String(url||''))?url:'#';
  const licenseLabel=entry=>entry.license==='MIT'?'MIT license':entry.license==='none-visible'?'No license visible · ideas only':'License unverified · ideas only';
- const statusLabel={planned:'Planned',backlog:'Backlog','reviewed-no-adoption':'Reviewed'};
+ const statusLabel={planned:'Planned',backlog:'Backlog',partial:'Partly in the dashboard',implemented:'In the dashboard','reviewed-no-adoption':'Reviewed'};
  const creditCard=entry=>{
-  const ideas=(entry.adopted||[]).length?'<details class="about-credit-ideas"><summary>'+(entry.status==='reviewed-no-adoption'?'Reviewed':'Ideas under evaluation')+' ('+entry.adopted.length+')</summary><ul>'+entry.adopted.map(item=>'<li>'+esc(item)+'</li>').join('')+'</ul></details>':'';
+  const list=items=>'<ul>'+items.map(item=>'<li>'+esc(item)+'</li>').join('')+'</ul>';
+  const built=(entry.implemented||[]).length?'<details class="about-credit-ideas"><summary>Already in the dashboard, built independently ('+entry.implemented.length+')</summary>'+list(entry.implemented)+'</details>':'';
+  const pending=(entry.adopted||[]).length?'<details class="about-credit-ideas"><summary>Ideas under evaluation ('+entry.adopted.length+')</summary>'+list(entry.adopted)+'</details>':'';
+  const ideas=built+pending;
   return '<li class="about-source about-credit" data-credit="'+esc(entry.id)+'"><a href="'+esc(safeUrl(entry.url))+'" target="_blank" rel="noopener noreferrer">'+esc(entry.name)+' <span aria-hidden="true">↗</span></a><p class="about-credit-meta">by '+esc(entry.author)+' · '+esc(licenseLabel(entry))+' · '+esc(statusLabel[entry.status]||entry.status)+'</p><p>'+esc(entry.summary)+'</p>'+ideas+'</li>';
  };
  const creditGroup=(title,note,list)=>list.length?'<div class="about-credit-group"><h4>'+title+'</h4><p class="about-credit-note">'+note+'</p><ul class="about-source-grid">'+list.map(creditCard).join('')+'</ul></div>':'';

@@ -2,6 +2,17 @@
 
 Updated: 2026-10-25. Source of truth for status is `credits.json`; this file holds the work items. Rule: ideas only unless a verified MIT LICENSE file exists. When an item ships, flip its `credits.json` entry and keep the About page honest.
 
+## Already in the dashboard (checked 2026-10-25)
+
+Built independently, no code copied. Existence in code does not prove which repository inspired it. `credits.json` field `implemented` lists these; `adopted` lists ideas still under evaluation.
+
+- xGI and defensive-contribution analysis; data-quality panel (JonnoMillar ideas)
+- Pre-deadline prediction archive, server-side and never overwritten; multi-gameweek transfer evaluation (jorgefhernandezg ideas)
+- Free-transfer reconstruction from public history (avgcloudwizard idea)
+- Mini-league awards (thinesrao idea); league differential metrics (j-maslin idea)
+
+Remaining gaps: Monte Carlo percentiles and head-to-head (blocked: fpl-iphoenk-mc has only README), minutes model, odds to xG, daily price-change record, pre-deadline audit journal, last-good snapshot, linking the prediction archive to V12.
+
 ## Backlog by target
 
 | # | Item | Idea source | Target | Notes |
