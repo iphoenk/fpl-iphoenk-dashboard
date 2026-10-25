@@ -1429,6 +1429,8 @@ body.has-team[data-view=dashboard] .decision-panel-head p{display:none!important
 @media(max-width:420px){body.has-team[data-view=dashboard] .decision-team-summary{gap:9px 10px}body.has-team[data-view=dashboard] .decision-team-finance span{font-size:9px}body.has-team[data-view=dashboard] .decision-team-finance strong{font-size:14px}}
 
 
+/* D02: score basis note under the Current Team summary (official vs live, provisional vs checked). */
+body.has-team[data-view=dashboard] .decision-score-basis{margin:6px 0 0;font-size:11px;line-height:1.35;color:var(--muted)}
 /* FPL Core-style compact team identity and GW summary above the pitch. */
 body.has-team[data-view=dashboard] .decision-team-summary{
  display:grid;grid-template-columns:max-content minmax(0,1fr);align-items:center;gap:12px;
