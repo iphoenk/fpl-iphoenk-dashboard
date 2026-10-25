@@ -1,4 +1,4 @@
-/* Player availability shading: amber = 75% chance, red = below 75% (or out). Colour is paired with the "!" marker and its title/aria-label. */
+/* Player availability shading: amber = 75% chance, red = below 75% (or out). The chance is also in the card title and accessible name. */
 .player.fit-amber,.player.fit-red{border-radius:10px!important;box-shadow:inset 0 0 0 1px var(--fit-edge)!important}
 .player.fit-amber{--fit-edge:rgba(255,196,0,.85);background:rgba(255,196,0,.34)!important}
 .player.fit-red{--fit-edge:rgba(226,48,72,.9);background:rgba(226,48,72,.38)!important}

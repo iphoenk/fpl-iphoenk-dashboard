@@ -1197,14 +1197,6 @@ body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row 
 
 
 /* Issue #151: Official-FPL fitness markers and compact fixture GW controls. */
-body.has-team[data-view=dashboard] .decision-team .player-fitness{
-  position:absolute;top:23px;left:0;z-index:4;
-  display:grid;place-items:center;width:19px;height:19px;
-  border:2px solid #fff;border-radius:50%;box-sizing:border-box;
-  font-size:13px;font-weight:900;line-height:1;box-shadow:0 1px 5px #0005
-}
-body.has-team[data-view=dashboard] .decision-team .player-fitness.caution{background:#ffd348;color:#4b3700}
-body.has-team[data-view=dashboard] .decision-team .player-fitness.danger{background:#d63043;color:#fff}
 body.has-team[data-view=dashboard] .decision-fixture-head{gap:8px;flex-wrap:wrap}
 body.has-team[data-view=dashboard] .decision-fixture-head h2{font-size:17px}
 body.has-team[data-view=dashboard] .decision-fixture-actions{
@@ -1231,7 +1223,6 @@ body.has-team[data-view=dashboard] .decision-fixture-center small{font-size:10px
  body.has-team[data-view=dashboard] .decision-fixture-actions{gap:5px}
  body.has-team[data-view=dashboard] .decision-fixture-head p{font-size:10px!important}
  body.has-team[data-view=dashboard] .decision-fixture-nav button{width:27px;height:27px}
- body.has-team[data-view=dashboard] .decision-team .player-fitness{width:17px;height:17px;top:20px;font-size:12px}
 }
 
 

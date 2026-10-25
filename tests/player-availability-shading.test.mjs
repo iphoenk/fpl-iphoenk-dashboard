@@ -7,7 +7,7 @@ const ui=readFileSync(new URL('../ui.js',import.meta.url),'utf8');
 const start=ui.indexOf('function playerAvailabilityLevel('),end=ui.indexOf('document.addEventListener(\'error\'',start);
 const marker=ui.slice(start,end);
 const scope=vm.createContext({esc:String});
-vm.runInContext(marker+'\nglobalThis.level=playerAvailabilityLevel;globalThis.marker=playerFitnessMarker;',scope);
+vm.runInContext(marker+'\nglobalThis.level=playerAvailabilityLevel;globalThis.label=playerAvailabilityLabel;',scope);
 const level=p=>scope.level(p);
 
 test('available players get no shading',()=>{
@@ -25,12 +25,12 @@ test('missing chance falls back to status: doubtful amber, injured/suspended/una
  assert.equal(level({status:'d',chance_of_playing_next_round:null}),'amber');
  for(const s of ['i','s','u','n'])assert.equal(level({status:s,chance_of_playing_next_round:null}),'red',s);
 });
-test('marker keeps a non-colour cue: "!" with the chance in title and aria-label',()=>{
- const html=scope.marker({status:'d',chance_of_playing_next_round:75,news:'Unspecified injury'});
- assert.match(html,/>!<\/span>/);
- assert.match(html,/aria-label="Doubtful · 75% chance of playing"/);
- assert.match(html,/title="Doubtful · 75% chance of playing · Unspecified injury"/);
- assert.equal(scope.marker({status:'a'}),'');
+test('no "!" badge; the chance of playing stays available as tooltip and accessible name',()=>{
+ assert.equal(scope.label({status:'d',chance_of_playing_next_round:75,news:'Unspecified injury'}),'Doubtful · 75% chance of playing · Unspecified injury');
+ assert.equal(scope.label({status:'i',chance_of_playing_next_round:0}),'Injured · 0% chance of playing');
+ assert.equal(scope.label({status:'a'}),'');
+ assert.doesNotMatch(ui,/player-fitness/);
+ assert.match(ui,/aria-label="Details '\+esc\(p\.web_name\+\(playerAvailabilityLabel\(p\)/);
 });
 test('player cards carry the fit class and both builds ship availability.css',()=>{
  assert.match(ui,/' fit-'\+playerAvailabilityLevel\(p\)/);
