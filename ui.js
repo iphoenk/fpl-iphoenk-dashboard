@@ -45,17 +45,15 @@ function cleanFitnessNews(news){
  // Official FPL news often ends with "- 75% chance of playing"; the chance is shown separately, so drop that suffix.
  return String(news||'').replace(/\s*[-–—]\s*\d{1,3}% chance of playing\.?\s*$/i,'').trim();
 }
-function playerAvailabilityMeaning(chance){
- return chance===0?'not expected to play':chance===25?'unlikely to play':chance===50?'a coin flip':'';
-}
 function playerAvailabilityLabel(p){
+ // Official FPL flags are evidence only. They are never shown or used as a probability of playing (V12_PLAYER_MINUTES owns that).
  const level=playerAvailabilityLevel(p),flag=String(p?.status||'a');if(flag==='a'&&!level)return '';
+ if(flag==='u'){const note=cleanFitnessNews(p.news);return 'Tidak aktif di FPL'+(note?' · '+note:'');}
  const label=flag==='d'?'Doubtful':flag==='s'?'Suspended':flag==='i'?'Injured':flag==='a'?'Fitness concern':'Unavailable';
  const raw=p.chance_of_playing_next_round,chance=raw===null||raw===undefined||raw===''?null:Number(raw);
  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],added=String(p.news_added||'');
  const month=Number(added.slice(5,7)),day=Number(added.slice(8,10));
- const meaning=chance!==null&&chance<75?playerAvailabilityMeaning(chance):'';
- const parts=[chance===null||!Number.isFinite(chance)?label:label+' · '+chance+'% chance of playing'+(meaning?' ('+meaning+')':'')];
+ const parts=[chance===null||!Number.isFinite(chance)?label:label+' · FPL flag '+chance+'%'];
  const news=cleanFitnessNews(p.news);if(news)parts.push(news);
  if(month>=1&&month<=12&&day>=1)parts.push('updated '+day+' '+months[month-1]);
  return parts.join(' · ');
@@ -63,7 +61,7 @@ function playerAvailabilityLabel(p){
 function playerAvailabilitySummary(players){
  const flagged=players.filter(p=>p&&playerAvailabilityLevel(p));if(!flagged.length)return '';
  const rank=p=>playerAvailabilityLevel(p)==='red'?0:1;
- return 'Fitness flags: '+flagged.sort((x,y)=>rank(x)-rank(y)).map(p=>{const c=p.chance_of_playing_next_round;return p.web_name+' '+(c===null||c===undefined?String(p.status||'').toUpperCase():c+'%');}).join(', ')+'. Amber = 75% chance of playing, red = below 75% or out; hover a card for details.';
+ return 'Fitness flags: '+flagged.sort((x,y)=>rank(x)-rank(y)).map(p=>{const c=p.chance_of_playing_next_round;return p.web_name+' '+(String(p.status)==='u'?'inactive in FPL':c===null||c===undefined?String(p.status||'').toUpperCase():c+'%');}).join(', ')+'. Official FPL status flags, not a probability of starting. Amber = flag 75%, red = flag below 75% or out; hover a card for details.';
 }
 document.addEventListener('error',event=>{
  const img=event.target;if(!img||img.tagName!=='IMG'||!img.hasAttribute('data-player-photo'))return;

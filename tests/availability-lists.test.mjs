@@ -20,8 +20,8 @@ test('list buttons for flagged players get shading class, title and accessible n
  assert.ok(saka.set.has('fit-red')&&saka.set.has('fit-inline'));
  assert.ok(cal.set.has('fit-amber'));
  assert.equal(hal.set.has('fit-red')||hal.set.has('fit-amber'),false);
- assert.match(saka.attrs.title,/^Injured · 0% chance of playing \(not expected to play\) · Thigh injury/);
- assert.equal(cal.attrs['aria-label'],'Calafiori · Doubtful · 75% chance of playing · Hip injury');
+ assert.match(saka.attrs.title,/^Injured · FPL flag 0% · Thigh injury/);
+ assert.equal(cal.attrs['aria-label'],'Calafiori · Doubtful · FPL flag 75% · Hip injury');
 });
 test('pitch cards, unknown players and already-processed nodes are left alone; an existing title is kept',()=>{
  const card=el(1,['player'],'Saka'),unknown=el(99),done=el(1);done.dataset.fitDone='1';
@@ -41,4 +41,12 @@ test('observer uses a timer, not requestAnimationFrame, so hidden tabs are still
  const src=readFileSync(new URL('../availability-ui.js',import.meta.url),'utf8');
  assert.doesNotMatch(src,/requestAnimationFrame/);
  assert.match(src,/setTimeout\(run,40\)/);
+});
+
+test('departed players (status u) get a neutral inactive style in lists, never red',()=>{
+ const gone=el(9,[],'Leaver');
+ run({9:{web_name:'Leaver',status:'u',chance_of_playing_next_round:0,news:'Joined Fulham - 0% chance of playing'}},[gone]);
+ assert.ok(gone.set.has('fit-inactive'));
+ assert.equal(gone.set.has('fit-red'),false);
+ assert.equal(gone.attrs.title,'Tidak aktif di FPL · Joined Fulham');
 });

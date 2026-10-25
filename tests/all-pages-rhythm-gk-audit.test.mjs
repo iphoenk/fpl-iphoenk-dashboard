@@ -17,7 +17,7 @@ function render(pos='GK'){
   3:{id:3,web_name:'LessThan180',team:2,element_type:1,minutes:85,starts:1,now_cost:40,saves_per_90:'8.6'},
  };
  const ctx=vm.createContext({ext:{dashboardPosition:pos,snapshot:null},state:{bootstrap:{events:[]},next:{id:8},players,teams:{1:{short_name:'BHA'},2:{short_name:'OLY'}},fixtures:[{started:true,event:7,team_h:1,team_a:2}]},
-  keeperScoutRows,allPlayers:()=>Object.values(players),labPlayer:()=>null,snapshotIsCurrent:()=>false,
+  keeperScoutRows,allPlayers:()=>Object.values(players),candidatePlayers:()=>Object.values(players),isInactivePlayer:()=>false,inactiveToggle:()=>"",labPlayer:()=>null,snapshotIsCurrent:()=>false,
   ownIds:()=>new Set([1]),fmt:(v,p)=>v==null?'—':Number(v).toFixed(p??0),esc:String,
   sourceNote:text=>'<p>'+text+'</p>',snapshotNotice:()=>'<p>Provenance note</p>',
   panel:(title,body)=>'<section>'+title+body+'</section>'});

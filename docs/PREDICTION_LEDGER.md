@@ -20,7 +20,7 @@ Any claim that a model is accurate, or that a recommendation helped win the mini
 | # | Finding | Evidence | Consequence |
 |---|---|---|---|
 | G1 | History starts at GW8; GW1-7 are missing and cannot be backfilled honestly | Only gw8 and gw9 exist | At most a few GWs of evidence; any accuracy claim is premature |
-| G2 | The frozen snapshot is the first capture, not the last before the deadline | GW8 captured 2026-10-19 14:50Z, deadline 2026-10-23 17:30Z (about 4 days early) | Injury and rotation news after capture is not reflected; accuracy is understated, and models that update late are penalised against ones that do not |
+| G2 | The frozen snapshot is the first capture, not the last before the deadline | GW8 captured 2026-10-19 14:50Z, deadline 2026-10-23 17:30Z (about 4 days early) | An early capture is a valid forecast, but of a different horizon: it measures a prediction made about 4 days ahead. News after capture is not reflected, and the direction of the resulting bias is unknown. Do not call it an understated accuracy; label it as the early checkpoint and compare sources only at equal checkpoints |
 | G3 | On-visit capture can miss a GW if nobody opens the site before the deadline | GW9 fplens captured 2026-10-24 11:35Z, Python model has no GW9 record | Silent gaps; sources are not captured at the same time, so comparisons are not like for like |
 | G4 | No V12 predictions in the ledger | UI text: "Not yet using V6/V12" | The decision authority is not the thing being measured |
 | G5 | Only per-player expected points are recorded, not decisions | Schema has `players[{id,predicted}]` only | Cannot settle captain picks, transfer advice or win probability against the rival |
@@ -52,7 +52,7 @@ Any claim that a model is accurate, or that a recommendation helped win the mini
 1. Entries are append-only. A new checkpoint never replaces an older one.
 2. An entry with `captured_at >= deadline` is invalid and never settled.
 3. The scored entry for a source and GW is the last valid checkpoint before the deadline ("final"). Earlier checkpoints are kept to measure how forecasts drift.
-4. `prev_sha256` chains entries per source and season so deletion or edits are detectable.
+4. `prev_sha256` chains entries per source and season. A chain alone does not prove integrity: whoever can rewrite the whole chain can rewrite the head. The latest head hash must be anchored independently (for example a signed tag or a separate write-restricted location), and the storage must forbid overwrite and deletion of existing entries.
 5. Gaps are recorded as `missing` for that GW, never filled afterwards.
 
 ### Settlement
@@ -60,9 +60,9 @@ Any claim that a model is accurate, or that a recommendation helped win the mini
 Only after the GW is final in Official FPL. Report, per source and baseline `official-fpl`:
 
 - MAE, RMSE and bias per position, with n and coverage.
-- Rank agreement (Spearman) on players with minutes, and top-10 hit rate.
-- Decision settlement: captain points vs best captain, XI points vs best XI under the same squad (needs `decisions`).
-- No ranking of models and no "better than X" statement before at least 5 settled GWs; always show n.
+- Rank agreement (Spearman) and top-10 hit rate. The primary evaluation includes players who did not play (0 minutes): excluding them hides the forecast failure that matters most. A secondary view restricted to players with minutes may be shown, labelled as such.
+- Decision settlement: captain points and XI points against the hindsight best captain and best XI under the same squad. These are hindsight benchmarks, not achievable targets, and must be labelled that way (needs `decisions`).
+- Five settled GWs is a minimum threshold for reporting at all, not evidence of superiority. A "better than X" statement additionally needs coverage, an uncertainty interval, and comparison on the same checkpoint and the same player universe. Always show n.
 
 ### Authority and boundaries
 
@@ -73,22 +73,28 @@ Only after the GW is final in Official FPL. Report, per source and baseline `off
 
 ## Decisions needed from the owner
 
+The recommendations below come from an external review and my own reading, not from the owner. They are not decided until the owner confirms them.
+
 | # | Decision | Options | My recommendation |
 |---|---|---|---|
-| D1 | Where entries live | A: keep Vercel Blob; B: git branch in the private reports repo, written by V12 | B for V12 entries (engine-owned, zero cost, diffable); keep Blob for the existing three sources until migrated |
-| D2 | Checkpoints that count | Existing V12 times: 04:30, 12:30, 21:30 WIB plus deadline-day T-24h to T-5m | Score the last checkpoint at or before T-5m; keep the others for drift |
-| D3 | Record decisions, not only xP | Yes / not yet | Yes; without decisions the ledger cannot answer "did the advice help" |
-| D4 | Who captures | V12 job only, or V12 job plus on-visit fallback | V12 job primary; keep on-visit as a clearly labelled fallback |
-| D5 | Retention | Whole season, or all seasons | All seasons; the size is small |
+| D1 | Where entries live | A: keep Vercel Blob; B: private git for the manifest, version and hash; private Blob for full snapshots | B: git holds the manifest/version/hash only, full snapshots stay in private Blob; never put MC simulation paths in git |
+| D2 | Checkpoints that count | Existing V12 times: 04:30, 12:30, 21:30 WIB plus deadline-day T-24h to T-5m | Score the last valid checkpoint at or before T-5m, and score T-24h separately; keep the others for drift |
+| D3 | Record decisions, not only xP | Yes / not yet | Yes: XI, bench, C, VC, transfers, chip and the economic context, each marked known or unknown |
+| D4 | Who captures | V12 job only, or V12 job plus on-visit fallback | Engine job primary; on-visit fallback labelled and held to the same validation |
+| D5 | Retention | Whole season, or all seasons | Keep summaries, decisions and audit records across seasons; retain raw MC output on a separate, shorter schedule |
 
 ## Rollout
 
 1. Owner decides D1-D5.
 2. Fix G2 in the existing dashboard archive only if D1 keeps Blob: capture a final checkpoint near the deadline, labelled, without overwriting the first.
 3. Define the V12 ledger contract (schema above) in the engine repository and add a read-only adapter here that validates schema, hash chain and deadline rule.
-4. Show settled results with n, coverage and missing GWs; no rankings before 5 settled GWs.
+4. Show settled results with n, coverage and missing GWs; no rankings before 5 settled GWs, and even then only with coverage, uncertainty and equal checkpoint and universe.
 5. Add decision settlement once V12 records `decisions`.
 
 ## Out of scope here
 
-Backfilling GW1-7, Monte Carlo outputs (the `fpl-iphoenk-mc` repository contains only a README), and changing any scoring or recommendation logic.
+Backfilling GW1-7 and changing any scoring or recommendation logic.
+
+## Monte Carlo readiness (2026-10-25)
+
+The private `fpl-iphoenk-mc` repository has open PRs #1 (validation foundation) and #2 (transport plus an engine-backed player histogram exporter). No real MC output exists yet, so the ledger has no MC entry and none may be backfilled or synthesized. When the first real run exists, record it before the deadline with: engine revision, input hash, seed, actual simulation count, source timestamps and universe coverage. MC marginals are shadow evidence only; the ledger must not claim that MC improves recommendations until parity, backtest and acceptance pass.

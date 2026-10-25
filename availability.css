@@ -7,3 +7,6 @@
 /* Inline list buttons (Scout, Market, watchlist...): shade the name like the pitch cards. */
 button.fit-inline.fit-amber,a.fit-inline.fit-amber{background:rgba(255,196,0,.34)!important;box-shadow:inset 0 0 0 1px rgba(255,196,0,.85)!important;border-radius:6px!important}
 button.fit-inline.fit-red,a.fit-inline.fit-red{background:rgba(226,48,72,.38)!important;box-shadow:inset 0 0 0 1px rgba(226,48,72,.9)!important;border-radius:6px!important}
+
+button.fit-inline.fit-inactive,a.fit-inline.fit-inactive{opacity:.62;box-shadow:inset 0 0 0 1px rgba(128,128,128,.55)!important;border-radius:6px!important}
+.inactive-toggle{display:block;margin:0 0 10px;font-size:.85rem;opacity:.85}
