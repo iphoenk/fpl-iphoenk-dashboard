@@ -153,3 +153,16 @@ test('squad multiplier keeps bench 0 instead of coercing to 1',async()=>{
  await c.loadTeam(10,8,{visit:false});
  assert.deepEqual(state.teamState.squad.map(p=>p.multiplier),[0,2,null]);
 });
+
+test('test_points_is_gross_hit_is_not_a_false_mismatch',()=>{
+ // Fixture-backed semantics: entry_history.points is gross (27 with a 4-pt hit matches live gross 27; season total adds 23).
+ const ctx=buildScoreContext({picks:{entry_history:{event:8,points:14,total_points:100,event_transfers_cost:4},picks:squad()},live:liveFor({...ZERO_POINTS,9:5,1:4}),gameweek:8,event:{id:8,finished:false,data_checked:false}});
+ assert.equal(ctx.live_gross,14);
+ assert.equal(ctx.official_gw_points,14);
+ assert.equal(ctx.official_gw_net,10);
+ assert.equal(ctx.live_net,10);
+ assert.ok(!ctx.warnings.includes('LIVE_DIFFERS_FROM_OFFICIAL'),'gross equals gross: no mismatch warning');
+ assert.equal(describeScoreBasis(ctx),'Official 14 (net 10 after -4 hit) · provisional');
+ const noHit=buildScoreContext({picks:{entry_history:{event:8,points:30},picks:squad()},gameweek:8});
+ assert.equal(noHit.official_gw_net,null,'unknown hit keeps net unknown, never gross');
+});

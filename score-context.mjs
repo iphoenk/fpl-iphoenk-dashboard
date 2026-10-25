@@ -85,7 +85,8 @@ export function buildScoreContext({entry=null,picks=null,live=null,event=null,st
   if(valid){liveGross=gross;benchRaw=bench;captainPoints=captain;basis=SCORE_BASIS.LIVE_PUBLISHED_MULTIPLIERS;}
  }else if(picks&&Array.isArray(picks.picks)){warnings.push('LIVE_UNAVAILABLE');}
  const liveNet=liveGross!==null&&hit!==null?liveGross-hit:null;
- if(liveNet!==null&&officialGw!==null&&liveNet!==officialGw)warnings.push('LIVE_DIFFERS_FROM_OFFICIAL');
+ // entry_history.points is the GROSS gameweek score (the hit is not deducted; season total_points is). Compare gross to gross.
+ if(liveGross!==null&&officialGw!==null&&liveGross!==officialGw)warnings.push('LIVE_DIFFERS_FROM_OFFICIAL');
  if(liveGross!==null&&hit===null)warnings.push('LIVE_NET_UNAVAILABLE_HIT_UNKNOWN');
 
  // Finality comes from FPL's own data_checked flag, not from an HTTP 200.
@@ -96,7 +97,7 @@ export function buildScoreContext({entry=null,picks=null,live=null,event=null,st
  const inputs={season:season??null,entry_id:finiteOrNull(entry?.id),gameweek:requestedGw,history,picks:picks?.picks?.map(p=>[p.element,p.position,p.multiplier,p.is_captain?1:0,p.is_vice_captain?1:0])??null,live:[...liveById.values()].map(p=>[p.id,p.stats?.total_points??null]).sort((a,b)=>a[0]-b[0]),standing:standing?{event_total:standingGw,total:standingTotal}:null,data_checked:event?.data_checked??null};
  return {
   version:'FPL_SCORE_CONTEXT_V1',season:season??null,entry_id:finiteOrNull(entry?.id),gameweek:requestedGw,
-  basis,official_gw_points:officialGw,official_season_total:officialTotal,
+  basis,official_gw_points:officialGw,official_gw_net:officialGw!==null&&hit!==null?officialGw-hit:null,official_season_total:officialTotal,
   standing_gw_points:standingGw,standing_total:standingTotal,
   live_gross:liveGross,hit_points:hit,live_net:liveNet,captain_points:captainPoints,bench_raw_points:benchRaw,
   finality,source_as_of:sourceMeta.source_as_of??null,fetched_at:sourceMeta.fetched_at??null,
@@ -108,7 +109,9 @@ export function describeScoreBasis(context){
  if(!context||context.official_gw_points===null&&context.live_gross===null)return 'GW points unavailable';
  const finality=context.finality==='CHECKED'?'final':context.finality==='PROVISIONAL'?'provisional':'unavailable';
  const parts=[];
- if(context.official_gw_points!==null)parts.push('Official '+context.official_gw_points);
- if(context.live_net!==null&&context.live_net!==context.official_gw_points)parts.push('live net '+context.live_net);
+ if(context.official_gw_points!==null){
+  parts.push('Official '+context.official_gw_points+(context.hit_points>0&&context.official_gw_net!==null?' (net '+context.official_gw_net+' after -'+context.hit_points+' hit)':''));
+ }
+ if(context.live_gross!==null&&context.live_gross!==context.official_gw_points)parts.push('live '+context.live_gross);
  return parts.join(' · ')+' · '+finality;
 }
