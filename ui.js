@@ -41,11 +41,29 @@ function playerAvailabilityLevel(p){
  if(flag==='a')return '';
  return flag==='d'?'amber':'red';
 }
+function cleanFitnessNews(news){
+ // Official FPL news often ends with "- 75% chance of playing"; the chance is shown separately, so drop that suffix.
+ return String(news||'').replace(/\s*[-–—]\s*\d{1,3}% chance of playing\.?\s*$/i,'').trim();
+}
+function playerAvailabilityMeaning(chance){
+ return chance===0?'not expected to play':chance===25?'unlikely to play':chance===50?'a coin flip':'';
+}
 function playerAvailabilityLabel(p){
- const flag=String(p?.status||'a');if(flag==='a'&&!playerAvailabilityLevel(p))return '';
+ const level=playerAvailabilityLevel(p),flag=String(p?.status||'a');if(flag==='a'&&!level)return '';
  const label=flag==='d'?'Doubtful':flag==='s'?'Suspended':flag==='i'?'Injured':flag==='a'?'Fitness concern':'Unavailable';
- const chance=p.chance_of_playing_next_round,detail=chance===null||chance===undefined?label:label+' · '+chance+'% chance of playing';
- return p.news?detail+' · '+p.news:detail;
+ const raw=p.chance_of_playing_next_round,chance=raw===null||raw===undefined||raw===''?null:Number(raw);
+ const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],added=String(p.news_added||'');
+ const month=Number(added.slice(5,7)),day=Number(added.slice(8,10));
+ const meaning=chance!==null&&chance<75?playerAvailabilityMeaning(chance):'';
+ const parts=[chance===null||!Number.isFinite(chance)?label:label+' · '+chance+'% chance of playing'+(meaning?' ('+meaning+')':'')];
+ const news=cleanFitnessNews(p.news);if(news)parts.push(news);
+ if(month>=1&&month<=12&&day>=1)parts.push('updated '+day+' '+months[month-1]);
+ return parts.join(' · ');
+}
+function playerAvailabilitySummary(players){
+ const flagged=players.filter(p=>p&&playerAvailabilityLevel(p));if(!flagged.length)return '';
+ const rank=p=>playerAvailabilityLevel(p)==='red'?0:1;
+ return 'Fitness flags: '+flagged.sort((x,y)=>rank(x)-rank(y)).map(p=>{const c=p.chance_of_playing_next_round;return p.web_name+' '+(c===null||c===undefined?String(p.status||'').toUpperCase():c+'%');}).join(', ')+'. Amber = 75% chance of playing, red = below 75% or out; hover a card for details.';
 }
 document.addEventListener('error',event=>{
  const img=event.target;if(!img||img.tagName!=='IMG'||!img.hasAttribute('data-player-photo'))return;
@@ -102,7 +120,7 @@ function renderPitch(){
  for(const type of [1,2,3,4])html+='<div class="pitch-row">'+starting.filter(p=>state.players[p.element]?.element_type===type).map(p=>playerCard(p)).join('')+'</div>';
  $('pitch').innerHTML=html;$('bench').innerHTML=picks.filter(p=>p.position>11).sort((a,b)=>a.position-b.position).map(p=>playerCard(p,true)).join('');
  $('squadTitle').textContent=state.entry.name;$('squadSub').textContent='GW '+state.gw+' · '+state.entry.player_first_name+' '+state.entry.player_last_name+' · FPL ID: '+state.entry.id;
- $('teamNote').textContent=state.metric==='xp'?'xP = model prediction for GW '+(state.next?.id||'next')+', not the selected GW. Value per player before the captain multiplier.':'Points already follow the FPL captain multiplier (×2 / ×3 Triple Captain). The bench shows player points; autosubs may change while the GW is in progress.';
+ $('teamNote').textContent=state.metric==='xp'?'xP = model prediction for GW '+(state.next?.id||'next')+', not the selected GW. Value per player before the captain multiplier.':'Points already follow the FPL captain multiplier (×2 / ×3 Triple Captain). The bench shows player points; autosubs may change while the GW is in progress.'; const fitnessSummary=playerAvailabilitySummary(picks.map(p=>state.players[p.element]));if(fitnessSummary)$('teamNote').textContent+=' '+fitnessSummary;
  $('squadTable').innerHTML='<table><thead><tr><th>Player</th><th>Position</th><th>Price</th><th>Form</th><th>xG</th><th>xA</th><th>Next xP</th><th>GW points</th></tr></thead><tbody>'+picks.map(pick=>{const p=state.players[pick.element];if(!p)return '';return '<tr><td><button class="btn small ghost" data-player="'+p.id+'">'+esc(p.web_name)+(pick.is_captain?' Ⓒ':'')+'</button></td><td>'+positions[p.element_type]+'</td><td>'+money(p.now_cost)+'</td><td>'+fmt(p.form,1)+'</td><td>'+fmt(p.expected_goals,2)+'</td><td>'+fmt(p.expected_assists,2)+'</td><td class="lime">'+fmt(xp(p),1)+'</td><td>'+fmt(displayPickPoints(state.live[p.id]?.stats?.total_points,pick))+'</td></tr>';}).join('')+'</tbody></table>';
 }
 function rankedPlayers(){return Object.values(state.players).filter(p=>xp(p)!==null).sort((a,b)=>xp(b)-xp(a));}
