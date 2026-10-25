@@ -6,7 +6,7 @@ const read=name=>readFileSync(path.join(dir,name),'utf8');
 export const ENTRY_ID=3462711;
 export const LEAGUE_ID=16;
 /** Frozen public FPL API responses (captured 2026-10-25, GW8). The browser tests never reach the live service. */
-export async function mockApi(page,{failLeaguePage2=false}={}){
+export async function mockApi(page,{failLeaguePage2=false,bootstrapPatch=null}={}){
   const json=body=>({status:200,contentType:'application/json',body});
   const routes={
     'bootstrap-static':'bootstrap-static.json','fixtures':'fixtures.json',
@@ -34,6 +34,7 @@ export async function mockApi(page,{failLeaguePage2=false}={}){
       const all=JSON.parse(read('league-9477-history.json'));
       if(all[memberHistory[1]])return route.fulfill(json(JSON.stringify(all[memberHistory[1]])));
     }
+    if(key==='bootstrap-static'&&bootstrapPatch){const data=JSON.parse(read('bootstrap-static.json'));bootstrapPatch(data);return route.fulfill(json(JSON.stringify(data)));}
     const file=routes[key];
     if(!file)return route.fulfill({status:404,contentType:'application/json',body:'{"error":"not mocked"}'});
     return route.fulfill(json(read(file)));
