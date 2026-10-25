@@ -1,0 +1,21 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import {optimizePublicLineup} from '../multiuser-decision.mjs';
+const source=readFileSync(new URL('../decision-first.js',import.meta.url),'utf8');
+test('real formation renderer shows eight scored alternatives, named XI/bench and C/VC for each GW',()=>{
+ const start=source.indexOf('function publicFormationEvidence(');
+ assert.ok(start>=0);
+ const end=source.indexOf('/* END_FORMATION_EVIDENCE */',start);
+ const context=vm.createContext({fmt:(v,d)=>Number(v).toFixed(d)});
+ vm.runInContext(source.slice(start,end)+';this.render=publicFormationEvidence;',context);
+ const types=[1,1,2,2,2,2,2,3,3,3,3,3,4,4,4];
+ const squad=types.map((element_type,i)=>({id:i+1,team:i%5+1,element_type,ep_next:i/3}));
+ const s=optimizePublicLineup(squad);
+ const html=context.render({...s,weeks:[{offset:0,...s},{offset:1,...s}]},8,id=>'Player '+id);
+ assert.equal((html.match(/data-formation-row=/g)||[]).length,16);
+ for(const f of s.formation_comparison)assert.ok(html.includes(f.formation));
+ for(const word of ['GW 8','GW 9','XI:','Bench:','C:','VC:','550','Gap to best'])assert.ok(html.includes(word),word);
+ assert.match(source,/publicFormationEvidence\(s,gw,name\)/);
+});

@@ -1,6 +1,6 @@
 /* V12-inspired deterministic package/lineup evaluation using an independent
    public global model. This is NOT Canonical V12 and NEVER runs Monte Carlo. */
-import {selectPublicXI} from './multiuser-decision.mjs';
+import {selectPublicXI,optimizePublicLineup,canonicalSquadCheck,CANONICAL_RULES_PROVENANCE} from './multiuser-decision.mjs';
 const n=x=>x!==null&&x!==undefined&&x!==''&&Number.isFinite(Number(x))?Number(x):null;
 const rnd=x=>Math.round(x*100)/100;
 const liteRisk=(scenario,verified)=>{
@@ -15,9 +15,7 @@ const liteRisk=(scenario,verified)=>{
   risk_note:'Vercel V12 Lite exposes available starter evidence; it does not invent calibrated probabilities.'
  };
 };
-const legal=s=>s.length===15&&new Set(s.map(p=>p.id)).size===15&&
- [[1,2],[2,5],[3,5],[4,3]].every(([pos,num])=>s.filter(p=>p.element_type===pos).length===num)&&
- Object.values(s.reduce((a,p)=>(a[p.team]=(a[p.team]||0)+1,a),{})).every(x=>x<=3);
+const legal=s=>canonicalSquadCheck(s)[0];
 export function validateGlobalModel(snapshot,bootstrap,gw,now=Date.now()){
  const meta=snapshot?.meta,rows=snapshot?.players;
  const ts=Date.parse(meta?.built_at||'');
@@ -39,17 +37,16 @@ export function validateGlobalModel(snapshot,bootstrap,gw,now=Date.now()){
    challenger:meta.fplens?{model:meta.fplens.model,gw:meta.fplens.gw}:null,
    retro_backtest:Array.isArray(meta.backtest)?meta.backtest.slice(-3):[]};
 }
-function plan(squad,horizon){
+function plan(squad,horizon,explain=false){
  if(!legal(squad))return null;
  let total=0;const weeks=[];
  for(let i=0;i<horizon;i++){
   const valued=squad.map(p=>({...p,ep_next:n(p.xpm?.[i])}));
   if(valued.some(p=>p.ep_next===null))return null;
-  const xi=selectPublicXI(valued);
+  const xi=explain?optimizePublicLineup(valued):selectPublicXI(valued,{scoreOnly:true});
   if(!xi)return null;
   total+=xi.expected_points;
-  weeks.push({offset:i,starting_xi:xi.starting_xi,bench:xi.bench,captain:xi.captain,vice_captain:xi.vice_captain,expected_points:xi.expected_points});
-  if(i===0)weeks[0].formation=xi.formation;
+  weeks.push({offset:i,...xi});
  }
  return {expected_points:rnd(total),formation:weeks[0].formation,
   starting_xi:weeks[0].starting_xi,bench:weeks[0].bench,captain:weeks[0].captain,
@@ -77,6 +74,7 @@ export function multiGwDecision({entry,picks,bootstrap,planningGw,snapshot,horiz
  const describe=(moves)=>moves.map(m=>({out:{id:m.out,web_name:pretty(m.out)},in:{id:m.in,web_name:pretty(m.in)}}));
  const scenario=(kind,value,moves=[],cash=null)=>({
   kind,transfers:moves.length,changes:describe(moves),...value,
+  ...plan(owned.map(p=>{const move=moves.find(m=>m.out===p.id);return move?verified.map.get(move.in):p;}),horizon,true),
   gross_gain_vs_hold:rnd(value.expected_points-hold.expected_points),
   bank_after_indicative:cash===null?null:rnd(cash/10),
   hit_points:null,net_gain:null,executable:false,decision_status:'PUBLIC_NONCANONICAL',
@@ -84,7 +82,7 @@ export function multiGwDecision({entry,picks,bootstrap,planningGw,snapshot,horiz
  });
  const res={status:known?'ready':'partial',contract:'PUBLIC_FPL_MULTIGW_ADVISORY_V2',
   model:'independent-eight-gw-challenger',authority:'OFFICIAL_FACTS_PUBLIC_PROJECTION',
-  canonical_v12:false,v12_methodology:'DETERMINISTIC_PACKAGE_SEARCH_AND_LINEUP_NONCANONICAL',
+  canonical_v12:false,canonical_components:CANONICAL_RULES_PROVENANCE,v12_methodology:'DETERMINISTIC_PACKAGE_SEARCH_AND_LINEUP_NONCANONICAL',
   monte_carlo:false,planning_gw:planningGw,entry_id:Number(entry.id),horizon,
   source_squad_gw:Number(picks.entry_history?.event)||null,
   economics_status:known?(proxyCount?'PUBLIC_CURRENT_PRICE_PROXY_INDICATIVE':'PUBLIC_HISTORICAL_INDICATIVE'):'UNAVAILABLE',
