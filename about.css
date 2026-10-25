@@ -144,3 +144,11 @@
  #view-about .about-section-head p{font-size:12.5px}
  #view-about .about-link-button{font-size:12px;padding:6px 8px}
 }
+
+#view-about .about-credit-group{margin-top:16px}
+#view-about .about-credit-group h4{font-size:14px;font-weight:700;color:var(--text)}
+#view-about .about-credit-note{margin-top:2px;font-size:12.5px;line-height:1.4;color:var(--muted)}
+#view-about .about-credit-meta{font-size:12px;color:var(--muted)}
+#view-about .about-credit-ideas{margin-top:6px;font-size:12.5px;color:var(--muted)}
+#view-about .about-credit-ideas summary{cursor:pointer;font-weight:600;color:var(--text)}
+#view-about .about-credit-ideas ul{margin:4px 0 0;padding-left:18px;display:grid;gap:2px}

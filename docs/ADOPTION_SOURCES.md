@@ -12,6 +12,15 @@ This registry records external repositories reviewed or adopted as implementatio
 - No external repository may create a second optimizer, scheduler, or recommendation authority.
 - Browser code never runs MC500K. The dashboard consumes only validated, published engine artifacts.
 
+## Single source of truth
+
+`credits.json` is the machine-readable registry. Both build scripts embed it and the About page renders it, so a source cannot be adopted without appearing on the About page. Each entry has a license state, `adoptionType` (`idea_only` or `code_or_idea`), `codeCopied` and a `status`. Rules enforced by `tests/about-layout-20261024.test.mjs`:
+
+- `codeCopied: true` is allowed only for sources with a verified MIT license, and requires the license notice in `THIRD_PARTY_LICENSES/`. No code has been copied so far, so the "Code used (MIT)" group is not shown.
+- `idea_only` sources must have `codeCopied: false`; the About page labels them "Inspired by".
+- A repository that only claims a license in its README without a visible LICENSE file is treated as unverified and idea-only.
+- Adding a row below without adding the matching `credits.json` entry is an incomplete adoption.
+
 ## Registry
 
 | Source | Role adopted or reviewed | Target | License handling | Status |
