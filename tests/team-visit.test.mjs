@@ -49,3 +49,19 @@ test('fetchTeam() itself accepts a matching numeric API id against a string requ
  assert.equal(result.entry.id,3462711);
  assert.equal(calls.some(p=>p.includes('identity_retry')),false);
 });
+test('league table keeps the You badge on the saved home team while visiting a rival and marks the visited team Viewing',async()=>{
+ const source=readFileSync(new URL('../ui.js',import.meta.url),'utf8');
+ const start=source.indexOf('async function loadLeague(');
+ const end=source.indexOf('\nasync function ',start+10)>0?Math.min(...['\nasync function ','\nfunction '].map(m=>{const k=source.indexOf(m,start+10);return k<0?Infinity:k})):source.length;
+ const fn=source.slice(start,end);
+ const results=[{entry:10,entry_name:'Home FC',player_name:'Me',rank:9,last_rank:6,event_total:18,total:495},{entry:20,entry_name:'Rival FC',player_name:'Rv',rank:1,last_rank:1,event_total:42,total:559}];
+ const nodes=new Map(),state={leagueRequest:0,entry:{id:20},homeEntryId:10,visitingTeam:true};
+ const c=vm.createContext({state,$:id=>{if(!nodes.has(id))nodes.set(id,{querySelector:()=>null,replaceChildren(){},childNodes:[],set innerHTML(v){this.history=(this.history||[]).concat(String(v))},get innerHTML(){return (this.history||[]).at(-1)}});return nodes.get(id);},document:{createElement:()=>({})},clearAlert:()=>{},alertMessage:()=>{},api:async()=>({league:{id:9477,name:'ICON+ League'},standings:{results,has_next:false}}),esc:String,fmt:String,safeRead:()=>'10',ext:{leagueToken:0},renderLeagueOptions:()=>{},renderLeagueAnalysis:()=>{},renderAdvancedLeague:()=>{},showView:()=>{}});
+ try{vm.runInContext(fn,c);await c.loadLeague(9477,1);}catch(e){globalThis.__e=e.message}
+ const html=(nodes.get('leaguePanel').history||[]).find(h=>h.includes('Home FC'))||'';assert.ok(html,'table not rendered: '+globalThis.__e);
+ const home=html.split('<tr').find(r=>r.includes('Home FC')),rival=html.split('<tr').find(r=>r.includes('Rival FC'));
+ assert.match(home,/<span class="badge">You<\/span>/);
+ assert.doesNotMatch(home,/Viewing/);
+ assert.doesNotMatch(rival,/>You</);
+ assert.match(rival,/<span class="badge">Viewing<\/span>/);
+});
