@@ -20,7 +20,7 @@ function renderCard(pick,bench=false){
     xp:()=>5,fmt:value=>String(value),displayPickPoints:(value,selected)=>value*selected.multiplier,
     playerPortraitUrl:()=> 'https://resources.premierleague.com/example.png',
     playerFixture:()=>'<span class="player-fixture upcoming">TOT (H)</span>',
-    playerFitnessMarker:()=>'',
+    playerFitnessMarker:()=>'',playerAvailabilityLevel:()=>'',
     esc:value=>String(value)
   });
   return render({...pick,element:7,multiplier:pick.multiplier??1},bench);
