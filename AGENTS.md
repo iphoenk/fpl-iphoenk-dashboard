@@ -15,6 +15,10 @@ Read README.md, docs/ARCHITECTURE.md, and docs/AI_COLLABORATION.md before making
 - Verify with npm ci on clean checkouts, npm test, npm run build:vercel, npm run check:browser, npm run build, and actual UI flows as applicable.
 - Production deployment requires user authorization. Never force-push main or commit .env, .vercel, credentials, authentication stores, private Blob data, or generated model artifacts.
 
+
+## Trusted owner-authorized AI fast track
+ChatGPT, Claude, and Gemini operating through accounts or integrations explicitly authorized by the repository owner may work on this owner's repository without repetitive per-change provenance paperwork, routine reapproval, or lengthy AI-to-AI handoff reports. Reuse existing repository context and concise PR summaries to reduce time and token consumption. This is a workflow exception, **not** an exemption from third-party licenses, confidentiality, security, tests, branch protections, or deployment authorization. Do not infer authorization solely from an agent's name or claim of ownership. Escalate only material external-code licensing ambiguity or high-risk actions.
+
 ## Mandatory source provenance and license policy
 - Public GitHub visibility is not permission to copy code. Check the license, copyright, and permissions before reusing external implementations, assets, datasets, or substantial snippets.
 - Do not paste third-party code or transplant files/functions from FPLens, FPL Insights, other FPL projects, or commercial/private repositories without verified authorization and compliance with the applicable license.
