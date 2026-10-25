@@ -10,6 +10,8 @@ for(let team=1;team<=14;team++)for(const pos of [1,2,3,4])for(let k=0;k<3;k++)ad
 const take=(pos,teams)=>teams.map(team=>players.find(p=>p.element_type===pos&&p.team===team));
 const squad=[...take(1,[1,2]),...take(2,[3,4,5,6,7]),...take(3,[8,9,10,11,12]),
  players.find(p=>p.element_type===4&&p.team===13),players.find(p=>p.element_type===4&&p.team===14),players.find(p=>p.element_type===4&&p.team===13&&p.id!==players.find(x=>x.element_type===4&&x.team===13).id)];
+// The fixture's GW8 deadline is 2026-10-25T11:00Z; pin the clock so results do not change when real time passes it.
+const PINNED_CLOCK=()=>Date.parse('2026-10-20T00:00:00Z');
 const bootstrap={elements:players,events:[{id:7,is_current:true,deadline_time:'2026-10-18T11:00:00Z'},{id:8,is_next:true,deadline_time:'2026-10-25T11:00:00Z'}]};
 const picks={picks:squad.map((p,i)=>({element:p.id,position:i+1,selling_price:p.now_cost})),entry_history:{bank:120,event:7}};
 test('optimizer enumerates every legal FPL formation',()=>{
@@ -51,7 +53,7 @@ test('twenty concurrent users share bootstrap, deduplicate same ID and bound con
   const num=Number(x[1]);per.set(num,(per.get(num)||0)+1);
   return Response.json(path.includes('picks')?picks:path.includes('history')?{current:[{event:1,event_transfers:0},{event:2,event_transfers:0},{event:3,event_transfers:0},{event:4,event_transfers:0},{event:5,event_transfers:0},{event:6,event_transfers:0},{event:7,event_transfers:0}]}:{id:num});
  };
- const service=createPublicDecisionService({fetcher,maxActive:4});
+ const service=createPublicDecisionService({fetcher,clock:PINNED_CLOCK,maxActive:4});
  const results=await Promise.all(Array.from({length:20},(_,i)=>service.get(70000+i)));
  assert.ok(results.every((r,i)=>r.status==='ready'&&r.entry_id===70000+i));
  assert.equal(per.size,20);assert.equal(calls,65);assert.ok(service.stats().peak<=4);
@@ -73,7 +75,7 @@ test('identical cold users coalesce, real errors are not cached',async()=>{
   if(p.endsWith('/picks/'))return Response.json(picks);
   return Response.json({id:55});
  };
- const s=createPublicDecisionService({fetcher});
+ const s=createPublicDecisionService({fetcher,clock:PINNED_CLOCK});
  const both=await Promise.all([s.get(55),s.get(55)]);
  assert.equal(both[0].entry_id,55);assert.equal(n,8);
 });
@@ -97,7 +99,7 @@ test('decision response exposes one Official FPL canonical team state',async()=>
    if(path.endsWith('/picks/'))return Response.json(picks);
    return Response.json({id:3462711,name:'Kutu Kupret',player_first_name:'Test',player_last_name:'Manager',summary_overall_points:477,summary_overall_rank:1100000});
   };
-  return createPublicDecisionService({fetcher,maxActive:4});
+  return createPublicDecisionService({fetcher,clock:PINNED_CLOCK,maxActive:4});
  })();
  const r=await m.get(3462711,1);
  assert.equal(r.team_state.requested_entry_id,3462711);
