@@ -56,11 +56,15 @@ test('credits registry is valid, license-honest and safe to embed',()=>{
   assert.ok(!ids.has(e.id),'duplicate '+e.id);ids.add(e.id);
   assert.match(e.url,/^https:\/\/github\.com\/[^/]+\/[^/]+$/);
   assert.ok(['idea_only','code_or_idea'].includes(e.adoptionType));
-  assert.ok(['planned','backlog','reviewed-no-adoption'].includes(e.status));
+  assert.ok(['planned','backlog','partial','implemented','reviewed-no-adoption'].includes(e.status));
+  assert.ok(Array.isArray(e.implemented)&&Array.isArray(e.adopted),e.id);
+  if(e.status==='implemented'){assert.ok(e.implemented.length>0&&e.adopted.length===0,e.id);}
+  if(e.status==='partial'){assert.ok(e.implemented.length>0&&e.adopted.length>0,e.id);}
+  if(e.status==='planned'||e.status==='backlog')assert.equal(e.implemented.length,0,e.id);
   assert.equal(typeof e.codeCopied,'boolean');
   if(e.codeCopied)assert.equal(e.license,'MIT','code may only be copied from MIT sources: '+e.id);
   if(e.adoptionType==='idea_only')assert.equal(e.codeCopied,false,e.id);
-  if(e.status==='reviewed-no-adoption')assert.equal(e.adopted.length,0,e.id);
+  if(e.status==='reviewed-no-adoption'){assert.equal(e.adopted.length,0,e.id);assert.equal(e.implemented.length,0,e.id);}
  }
  const raw=readFileSync(new URL('../credits.json',import.meta.url),'utf8');
  assert.ok(!raw.includes('$'),'no $ in credits: breaks string replacement in builds');
@@ -138,4 +142,13 @@ test('both build pipelines replace the dashboard revision with a non-secret comm
   const src=readFileSync(new URL('../'+file,import.meta.url),'utf8');
   assert.match(src,/\.replaceAll\('__FPL_DASHBOARD_BUILD__',\(process\.env\.VERCEL_GIT_COMMIT_SHA\|\|process\.env\.GITHUB_SHA\|\|'unpublished'\)\.slice\(0,8\)\)/);
  }
+});
+
+test('About separates what is already built from what is only under evaluation',()=>{
+ const html=render();
+ assert.match(html,/Already in the dashboard, built independently \(2\)/);
+ assert.match(html,/Ideas under evaluation \(4\)/);
+ assert.match(html,/Partly in the dashboard/);
+ assert.match(html,/by thinesrao · MIT license · In the dashboard/);
+ assert.doesNotMatch(html,/Mini-league awards concept/);
 });
