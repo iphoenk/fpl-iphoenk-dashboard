@@ -28,3 +28,13 @@ test('a failed standings page makes Awards partial, never a whole-league winner'
   await expect(note).toContainText('not league winners');
   await expect(page.locator('#phaseThreeAwards .league-award.unavailable h3')).toHaveText('Unique player haul');
 });
+
+test('the rank-history loading note clears even when league extras re-render mid-load (guard, not a proven repro of the old race)',async({page})=>{
+  // Slow member histories so a second league render lands while they are in flight.
+  await page.route('**/api/entry/*/history*',async route=>{await new Promise(r=>setTimeout(r,1200));await route.fallback();});
+  await openLeagueAwards(page);
+  await page.selectOption('#leagueSelect','');
+  await page.selectOption('#leagueSelect','9477');
+  await page.waitForSelector('#phaseThreeAwards .league-awards-grid',{timeout:45000});
+  await expect(page.locator('#phaseThreeAwards .strategy-note')).not.toContainText('Loading rank history',{timeout:60000});
+});

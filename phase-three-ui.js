@@ -44,7 +44,7 @@ function awardWinnersHtml(category){
 }
 function renderLeagueAwards(){
  const host=$('phaseThreeRivals');if(!host)return;let awards=$('phaseThreeAwards');if(!awards){awards=document.createElement('div');awards.id='phaseThreeAwards';}const anchor=$('leaguePanel');if(anchor&&awards.nextSibling!==anchor)anchor.before(awards);
- const gw=state.gw,event=state.bootstrap?.events?.find(e=>e.id===gw),token=ext.leagueToken,leagueId=state.league?.league.id;
+ const gw=state.gw,event=state.bootstrap?.events?.find(e=>e.id===gw),leagueId=state.league?.league.id;
  const {records,coverage}=awardRecordsForLeague();
  const result=computeLeagueAwards({records,live:state.live,event,gameweek:gw,coverage});
  const scope=result.status==='COMPLETE'?'All '+result.coverage.total+' teams in the league.':'Partial: '+result.coverage.loaded+(result.coverage.total?' of '+result.coverage.total:'')+' teams loaded'+(result.coverage.reason?' ('+esc(result.coverage.reason)+')':'')+'. Winners below are leaders among loaded teams only, not league winners.';
@@ -54,7 +54,7 @@ function renderLeagueAwards(){
  if(needsHistory&&!ext.awardsHistoryLoading){
   ext.awardsHistoryLoading=true;
   const missing=records.filter(r=>!r.history);
-  mapLimited(missing,5,async r=>extraData('history-'+r.row.entry,'entry/'+r.row.entry+'/history/')).then(()=>{ext.awardsHistoryLoading=false;if(token===ext.leagueToken&&String(state.league?.league.id)===String(leagueId)&&state.gw===gw)renderLeagueAwards();},()=>{ext.awardsHistoryLoading=false;});
+  mapLimited(missing,5,async r=>extraData('history-'+r.row.entry,'entry/'+r.row.entry+'/history/')).then(()=>{ext.awardsHistoryLoading=false;if(state.view==='liga'&&String(state.league?.league.id)===String(leagueId)&&state.gw===gw)renderLeagueAwards();},()=>{ext.awardsHistoryLoading=false;});
  }
 }
 let coreUI=null,coreBusy=false;
