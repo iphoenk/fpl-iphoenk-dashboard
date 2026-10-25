@@ -1,0 +1,23 @@
+/* My Team: same shoulders-up portrait crop as the Overview pitch, so faces are readable. */
+body.has-team #view-tim .pitch-row .player-portrait-frame,
+body.has-team #view-tim .bench-row .player-portrait-frame{
+  position:relative;display:block!important;box-sizing:border-box!important;
+  overflow:hidden!important;isolation:isolate;flex:none!important;
+  margin:0 auto!important;border-radius:9px 9px 0 0!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(8,43,22,.1))
+}
+body.has-team #view-tim .pitch-row .player-portrait-frame{width:min(100%,72px)!important;height:clamp(52px,12vw,64px)!important}
+body.has-team #view-tim .bench-row .player-portrait-frame{width:min(100%,64px)!important;height:clamp(48px,11vw,58px)!important}
+body.has-team #view-tim .pitch-row .player-portrait-frame>.player-portrait,
+body.has-team #view-tim .bench-row .player-portrait-frame>.player-portrait{
+  position:absolute!important;top:0!important;left:0!important;display:block!important;
+  box-sizing:border-box!important;width:100%!important;height:100%!important;
+  max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;
+  aspect-ratio:auto!important;border-radius:0!important;
+  object-fit:cover!important;object-position:50% 0%!important;
+  transform:scale(1.43)!important;transform-origin:50% 4%!important;
+  filter:none!important;background:transparent!important
+}
+body.has-team #view-tim .bench-row .player-portrait-frame>.player-portrait{transform:scale(1.35)!important}
+body.has-team #view-tim .pitch-row .player-portrait-frame.failed,
+body.has-team #view-tim .bench-row .player-portrait-frame.failed{display:none!important}
