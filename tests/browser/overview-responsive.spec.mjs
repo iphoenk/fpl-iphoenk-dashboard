@@ -27,6 +27,11 @@ for(const width of WIDTHS)for(const theme of THEMES){
       expect(intersects(rects[i][1],rects[j][1]),rects[i][0]+' overlaps '+rects[j][0]).toBe(false);
     }
 
+    // Stacked tablet layout (768-960): panels fill the column; no dead strip beside Fixtures.
+    if(width>=768&&width<=960&&m['.decision-fixtures']&&m['.decision-team']){
+      expect(Math.abs(m['.decision-fixtures'].w-m['.decision-team'].w),'fixtures width equals team width').toBeLessThanOrEqual(2);
+    }
+
     // No page-level horizontal overflow; captain, vice-captain and every bench player reachable.
     expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width+1);
     for(const sel of ['.decision-pitch .cap:not(.cap-vice)','.decision-pitch .cap-vice']){

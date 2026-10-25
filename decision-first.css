@@ -1081,7 +1081,7 @@ body.has-team[data-view=dashboard] .decision-primary .decision-bench .bench-row 
 }
 @media(min-width:768px) and (max-width:960px){
   body.has-team[data-view=dashboard] .decision-first{
-    display:flex!important;flex-direction:column!important
+    display:flex!important;flex-direction:column!important;align-items:stretch!important
   }
   body.has-team[data-view=dashboard] .decision-primary{
     display:grid!important;grid-template-columns:minmax(0,1fr)!important
