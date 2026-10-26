@@ -2,6 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
+import {parseResearchContext,normalizeResearchContext,serializeResearchContext} from '../research-context.mjs';
 
 const read=file=>readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const css=read('mobile-scout-recovery.css');
@@ -21,7 +22,9 @@ function renderLab(pos='GK') {
   $:element,allPlayers:()=>[],candidatePlayers:()=>[],isInactivePlayer:()=>false,inactiveToggle:()=>"",keeperScoutRows:()=>[goalkeeper],score:()=>5,
   snapshotPlayer:()=>null,ownIds:()=>new Set(),fmt:v=>String(v??'—'),esc:String,
   scatter:()=>'<svg></svg>',sourceNote:()=>'<p>Official FPL</p>',snapshotNotice:()=>'<p>Snapshot</p>',
-  panel:(title,body)=>'<section>'+title+body+'</section>'
+  panel:(title,body)=>'<section>'+title+body+'</section>',
+  parseResearchContext,normalizeResearchContext,serializeResearchContext,
+  location:{search:'',pathname:'/',hash:''},history:{replaceState(){}},document:{addEventListener(){}}
  });
  vm.runInContext(labJs,ctx);
  ctx.renderLabs();
