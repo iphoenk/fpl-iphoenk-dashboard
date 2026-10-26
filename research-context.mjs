@@ -65,3 +65,23 @@ export function classifyInjuryClaim(article,player){
  if(player.status&&player.status!=='a'&&String(player.news||'').trim())return {level:'confirmed',source:'Official FPL status'};
  return RC_RUMOUR.test(String(article.headline||''))?{level:'rumour',source:article.source||'Article'}:{level:'mention',source:article.source||'Article'};
 }
+/* Fixture window: an explicit gwFrom..gwTo range wins; otherwise `horizon` GWs from the next GW. Always within GW1..38. */
+export function fixtureWindow(context,nextGw,horizon=6){
+ const c=normalizeResearchContext(context),weeks=[];
+ let from,to;
+ if(c.gwFrom!==null){from=c.gwFrom;to=c.gwTo;}
+ else{const n=rcInt(nextGw,1,38);if(n===null)return weeks;from=n;to=Math.min(38,n+Math.max(1,horizon)-1);}
+ for(let gw=from;gw<=to;gw++)weeks.push(gw);
+ return weeks;
+}
+/* Official fixtures of one team in one GW; [] for a blank GW, two entries for a double. venue: all|home|away. */
+export function teamFixtures(fixtures,teamId,gw,venue='all'){
+ return (fixtures||[]).filter(f=>f.event===gw&&(f.team_h===teamId||f.team_a===teamId)).map(f=>{
+  const home=f.team_h===teamId;
+  return {gw,home,opponent:home?f.team_a:f.team_h,difficulty:rcNum(home?f.team_h_difficulty:f.team_a_difficulty)};
+ }).filter(f=>venue==='home'?f.home:venue==='away'?!f.home:true);
+}
+export function averageDifficulty(list){
+ const d=(list||[]).map(f=>f.difficulty).filter(v=>v!==null&&v!==undefined&&Number.isFinite(Number(v))).map(Number);
+ return d.length?d.reduce((a,b)=>a+b,0)/d.length:null;
+}

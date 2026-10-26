@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {DEFAULT_RESEARCH_CONTEXT,normalizeResearchContext,serializeResearchContext,parseResearchContext,metricValue,classifyInjuryClaim} from '../research-context.mjs';
+import {DEFAULT_RESEARCH_CONTEXT,normalizeResearchContext,serializeResearchContext,parseResearchContext,metricValue,classifyInjuryClaim,fixtureWindow,teamFixtures,averageDifficulty} from '../research-context.mjs';
 const boot=JSON.parse(readFileSync(new URL('./browser/fixtures/bootstrap-static.json',import.meta.url),'utf8'));
 const byName=n=>boot.elements.find(p=>p.web_name===n);
 
@@ -47,4 +47,35 @@ test('ambiguous Silva needs matching element id, club and position; wrong player
  assert.equal(classifyInjuryClaim(art,a).level,'confirmed');
  assert.equal(classifyInjuryClaim(art,b).level,'none');
  assert.equal(classifyInjuryClaim({headline:'Silva injury',injury_flag:true,players:[{web_name:'Silva'}]},a).level,'none');
+});
+
+const fx=(event,h,a,dh=2,da=4)=>({event,team_h:h,team_a:a,team_h_difficulty:dh,team_a_difficulty:da});
+test('fixtureWindow: explicit range wins, otherwise horizon from next GW; always clamped to GW1..38',()=>{
+ assert.deepEqual(fixtureWindow(DEFAULT_RESEARCH_CONTEXT,9,3),[9,10,11]);
+ assert.deepEqual(fixtureWindow({...DEFAULT_RESEARCH_CONTEXT,gwFrom:12,gwTo:14},9,6),[12,13,14]);
+ assert.deepEqual(fixtureWindow(DEFAULT_RESEARCH_CONTEXT,37,6),[37,38]);
+ assert.deepEqual(fixtureWindow({...DEFAULT_RESEARCH_CONTEXT,gwFrom:36,gwTo:38},9,3),[36,37,38]);
+ assert.deepEqual(fixtureWindow(DEFAULT_RESEARCH_CONTEXT,null,3),[]);
+});
+test('teamFixtures: blank GW is empty, double GW has two, venue filters by home/away',()=>{
+ const f=[fx(9,1,2),fx(10,3,1),fx(11,1,4),fx(11,5,1)];
+ assert.equal(teamFixtures(f,1,12,'all').length,0);
+ assert.equal(teamFixtures(f,1,11,'all').length,2);
+ assert.deepEqual(teamFixtures(f,1,11,'home').map(x=>x.home),[true]);
+ assert.deepEqual(teamFixtures(f,1,11,'away').map(x=>x.home),[false]);
+ assert.equal(teamFixtures(f,1,9,'all')[0].difficulty,2);
+ assert.equal(teamFixtures(f,1,10,'all')[0].difficulty,4);
+ assert.equal(teamFixtures(f,2,9,'home').length,0);
+});
+test('averageDifficulty: null (not 0) with no fixtures, ignores non-numeric difficulty',()=>{
+ assert.equal(averageDifficulty([]),null);
+ assert.equal(averageDifficulty([{difficulty:2},{difficulty:4}]),3);
+ assert.equal(averageDifficulty([{difficulty:null},{difficulty:'x'}]),null);
+ assert.equal(averageDifficulty([{difficulty:2},{difficulty:null}]),2);
+});
+test('frozen fixtures file: every team plays at most two matches per GW and venue filters partition them',()=>{
+ const fixtures=JSON.parse(readFileSync(new URL('./browser/fixtures/fixtures.json',import.meta.url),'utf8'));
+ for(const gw of [9,10]){for(const team of new Set(fixtures.flatMap(x=>[x.team_h,x.team_a]))){
+  const all=teamFixtures(fixtures,team,gw,'all'),home=teamFixtures(fixtures,team,gw,'home'),away=teamFixtures(fixtures,team,gw,'away');
+  assert.ok(all.length<=2);assert.equal(home.length+away.length,all.length);}}
 });
