@@ -10,7 +10,7 @@ test('value scatter includes GK in all players and filters GK independently',()=
  const players=[1,2,3,4].map(type=>({id:type,element_type:type,minutes:90,web_name:'Player '+type,now_cost:50,total_points:20,points_per_game:4,expected_goal_involvements_per_90:0}));
  players.push({...players[0],id:5,minutes:59});
  let plotted;
- const context=vm.createContext({ext:{},valueMetricOptions,valueMetricNumber,esc:String,ownIds:()=>new Set([1]),allPlayers:()=>players,candidatePlayers:()=>players,isInactivePlayer:()=>false,positions:{1:'GK',2:'DEF',3:'MID',4:'FWD'},scatter:points=>{plotted=points;return '';},projectedAt:()=>4});
+ const context=vm.createContext({ext:{},researchPasses:(minutes)=>Number(minutes)>=60,researchControls:()=>'',valueMetricOptions,valueMetricNumber,esc:String,ownIds:()=>new Set([1]),allPlayers:()=>players,candidatePlayers:()=>players,isInactivePlayer:()=>false,positions:{1:'GK',2:'DEF',3:'MID',4:'FWD'},scatter:points=>{plotted=points;return '';},projectedAt:()=>4});
  vm.runInContext(fn,context);
  const html=vm.runInContext('valueScatter()',context);
  assert.match(html,/>All players</);assert.match(html,/value="1">GK</);
