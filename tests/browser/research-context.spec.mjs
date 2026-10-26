@@ -45,3 +45,39 @@ test('an unreachable minutes threshold empties the Scout pool; invalid query val
   await expect(page.locator('#labOwned')).not.toBeChecked();
   expect(await poolRows(page)).toBeGreaterThan(0);
 });
+
+// D07: Fixtures honours the shared range, venue and owned-only filters.
+async function openFixtures(page,query=''){
+  await openOverview(page,{width:1440});
+  await page.goto('/'+query+'#fixtures');
+  await page.waitForSelector('table.adv-fixture-table',{timeout:30000});
+}
+const headers=page=>page.locator('table.adv-fixture-table thead th').allInnerTexts();
+
+test('Fixtures: explicit GW range and home venue from the URL',async({page})=>{
+  await openFixtures(page,'?gwFrom=9&gwTo=10&venue=home');
+  expect((await headers(page)).filter(t=>/^GW\d+$/.test(t))).toEqual(['GW9','GW10']);
+  await expect(page.locator('#fixtureGwFrom')).toHaveValue('9');
+  await expect(page.locator('#fixtureVenue')).toHaveValue('home');
+  const tags=await page.locator('table.adv-fixture-table tbody .heat small').allInnerTexts();
+  expect(tags.length).toBeGreaterThan(5);
+  expect(tags.every(t=>/· H$/.test(t))).toBe(true);
+});
+
+test('Fixtures: owned-only keeps only clubs with owned players; changing the range updates the URL',async({page})=>{
+  await openFixtures(page,'?owned=1');
+  const owned=await page.locator('table.adv-fixture-table tbody tr td:nth-child(2)').allInnerTexts();
+  expect(owned.length).toBeGreaterThan(0);expect(owned.length).toBeLessThan(20);
+  expect(owned.every(t=>Number(t)>0)).toBe(true);
+  await page.fill('#fixtureGwFrom','11');await page.fill('#fixtureGwTo','12');
+  await page.locator('#fixtureGwTo').dispatchEvent('change');
+  await expect.poll(()=>page.evaluate(()=>location.search)).toContain('gwFrom=11');
+  expect((await headers(page)).filter(t=>/^GW\d+$/.test(t))).toEqual(['GW11','GW12']);
+});
+
+test('Fixtures: default view unchanged (horizon from next GW, all venues)',async({page})=>{
+  await openFixtures(page);
+  const gws=(await headers(page)).filter(t=>/^GW\d+$/.test(t));
+  expect(gws.length).toBe(6);
+  await expect(page.locator('#fixtureVenue')).toHaveValue('all');
+});

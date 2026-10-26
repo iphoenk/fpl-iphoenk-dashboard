@@ -13,6 +13,13 @@ document.addEventListener('change',e=>{
  if(t.id==='labMinMinutes'||t.id==='valueMinMinutes'){researchSet({minMinutes:t.value});state.view==='labs'?renderLabs():renderMarket();}
  else if(t.id==='labOwned'||t.id==='valueOwned'){researchSet({ownedOnly:t.checked});state.view==='labs'?renderLabs():renderMarket();}
  else if(t.id==='valuePosition')researchSet({position:t.value||null});
+ else if(t.id==='fixtureGwFrom'||t.id==='fixtureGwTo'){
+  const from=$('fixtureGwFrom').value,to=$('fixtureGwTo').value;
+  if((from==='')!==(to===''))return;   // a range needs both ends; wait until the other is filled
+  researchSet({gwFrom:from===''?null:from,gwTo:to===''?null:to});renderTicker();
+ }
+ else if(t.id==='fixtureVenue'){researchSet({venue:t.value});renderTicker();}
+ else if(t.id==='fixtureOwned'){researchSet({ownedOnly:t.checked});renderTicker();}
 });
 document.addEventListener('click',e=>{const b=e.target.closest('[data-lab-pos]');if(b)researchSet({position:RESEARCH_POS_KEY.indexOf(b.dataset.labPos)});});
 renderLabs=function(){
