@@ -8,6 +8,7 @@ function syncResearchUrl(){
 }
 function researchSet(patch){
  ext.research=normalizeResearchContext({...ext.research,...patch});
+ if('position' in patch){ext.valuePos=ext.research.position||'';if(ext.research.position)ext.labPos=RESEARCH_POS_KEY[ext.research.position];}
  syncResearchUrl();
 }
 function marketSetTab(name,focus=false){
@@ -26,16 +27,21 @@ const researchMine=()=>({owned:ownIds(),watch:ext.watch});
 const researchPasses=(minutes,id)=>Number(minutes)>=Math.max(60,ext.research.minMinutes)&&matchesMine(ext.research,id,researchMine());
 const researchClubPasses=teamId=>{const r=ext.research;if(!r.ownedOnly&&!r.watchlistOnly)return true;return (r.ownedOnly&&currentSquad().some(p=>p.team===teamId))||(r.watchlistOnly&&ext.watch.some(id=>state.players[id]?.team===teamId));};
 const researchFlags=prefix=>'<label class="inline-check"><input id="'+prefix+'Owned" type="checkbox"'+(ext.research.ownedOnly?' checked':'')+'> Owned only</label><label class="inline-check"><input id="'+prefix+'Watch" type="checkbox"'+(ext.research.watchlistOnly?' checked':'')+'> Watchlist only</label>';
+const researchPositionSelect=id=>'<label>Position<select id="'+id+'"><option value="">All players</option>'+[1,2,3,4].map(v=>'<option value="'+v+'"'+(ext.research.position===v?' selected':'')+'>'+positions[v]+'</option>').join('')+'</select></label>';
+const researchVenueSelect=id=>'<label>Venue<select id="'+id+'">'+[['all','All'],['home','Home only'],['away','Away only']].map(([v,l])=>'<option value="'+v+'"'+(ext.research.venue===v?' selected':'')+'>'+l+'</option>').join('')+'</select></label>';
 const researchControls=prefix=>'<label>Minimum minutes<input id="'+prefix+'MinMinutes" type="number" min="0" max="4000" step="90" value="'+ext.research.minMinutes+'"></label>'+researchFlags(prefix);
 document.addEventListener('change',e=>{
  const t=e.target;if(!t||!t.id)return;
- if(t.id==='labMinMinutes'||t.id==='valueMinMinutes'){researchSet({minMinutes:t.value});state.view==='labs'?renderLabs():renderMarket();}
- else if(/^(lab|value|fixture|news)(Owned|Watch)$/.test(t.id)){
-  const [,prefix,flag]=t.id.match(/^(lab|value|fixture|news)(Owned|Watch)$/);
+ if(t.id==='labMinMinutes'||t.id==='valueMinMinutes'||t.id==='compareMinMinutes'){researchSet({minMinutes:t.value});({labs:renderLabs,market:renderMarket,playercompare:renderPlayerCompare})[state.view]?.();}
+ else if(/^(lab|value|fixture|news|compare)(Owned|Watch)$/.test(t.id)){
+  const [,prefix,flag]=t.id.match(/^(lab|value|fixture|news|compare)(Owned|Watch)$/);
   researchSet(flag==='Owned'?{ownedOnly:t.checked}:{watchlistOnly:t.checked});
-  ({lab:renderLabs,value:renderMarket,fixture:renderTicker,news:renderNews})[prefix]();
+  ({lab:renderLabs,value:renderMarket,fixture:renderTicker,news:renderNews,compare:renderPlayerCompare})[prefix]();
  }
  else if(t.id==='valuePosition'){researchSet({position:t.value||null});if(state.view==='market')renderMarket();}
+ else if(t.id==='newsPosition'){researchSet({position:t.value||null});renderNews();}
+ else if(t.id==='comparePosition'){researchSet({position:t.value||null});renderPlayerCompare();}
+ else if(t.id==='compareVenue'){researchSet({venue:t.value});renderPlayerCompare();}
  else if(t.id==='fixtureGwFrom'||t.id==='fixtureGwTo'){
   const from=$('fixtureGwFrom').value,to=$('fixtureGwTo').value;
   if((from==='')!==(to===''))return;   // a range needs both ends; wait until the other is filled
