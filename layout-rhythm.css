@@ -288,3 +288,8 @@ body.has-team {
 .market-source{display:flex;flex-wrap:wrap;gap:4px 12px;margin:0 0 10px;font-size:11px;color:var(--muted)}
 .market-filters{margin-bottom:8px}
 @media(max-width:767px){.market-tabs{overflow-x:auto}.market-tabs [role=tab]{flex:1 0 auto}}
+/* D07: shared research controls added to Compare and News keep a 44px touch target on phones */
+@media(max-width:767px){
+  #compareContext select,#compareContext input:not([type=checkbox]),#newsPosition{min-height:44px}
+  #compareContext .inline-check{min-height:44px;display:inline-flex;align-items:center}
+}
