@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
-import {parseResearchContext,normalizeResearchContext,serializeResearchContext} from '../research-context.mjs';
+import {parseResearchContext,normalizeResearchContext,serializeResearchContext,matchesMine} from '../research-context.mjs';
 
 const read=file=>readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const css=read('mobile-scout-recovery.css');
@@ -17,13 +17,13 @@ function renderLab(pos='GK') {
  };
  const goalkeeper={id:1,webName:'Keeper',minutes:500,startRate:.9,teamShort:'ABC',teamId:1,price:4.5,saves90:3.5,cleanSheets:2,pointsPerGame:4,xgc90:1.1,minutesPerStart:88,bps90:22,xp:5};
  const ctx=vm.createContext({
-  ext:{labPos:pos,labQuery:'',labPage:1,labClub:'',labMax:'',labMinStart:null,compare:[],snapshot:{scouts:{DEF:{rows:[]},MID:{rows:[]},FWD:{rows:[]}}}},
+  ext:{watch:[],labPos:pos,labQuery:'',labPage:1,labClub:'',labMax:'',labMinStart:null,compare:[],snapshot:{scouts:{DEF:{rows:[]},MID:{rows:[]},FWD:{rows:[]}}}},
   state:{players:{1:{id:1,element_type:1,web_name:'Keeper'}},fixtures:[],teams:{1:{id:1,short_name:'ABC'}}},
   $:element,allPlayers:()=>[],candidatePlayers:()=>[],isInactivePlayer:()=>false,inactiveToggle:()=>"",keeperScoutRows:()=>[goalkeeper],score:()=>5,
   snapshotPlayer:()=>null,ownIds:()=>new Set(),fmt:v=>String(v??'—'),esc:String,
   scatter:()=>'<svg></svg>',sourceNote:()=>'<p>Official FPL</p>',snapshotNotice:()=>'<p>Snapshot</p>',
   panel:(title,body)=>'<section>'+title+body+'</section>',
-  parseResearchContext,normalizeResearchContext,serializeResearchContext,
+  parseResearchContext,normalizeResearchContext,serializeResearchContext,matchesMine,
   URLSearchParams,location:{search:'',pathname:'/',hash:''},history:{replaceState(){}},document:{addEventListener(){}}
  });
  vm.runInContext(labJs,ctx);
