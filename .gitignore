@@ -1,5 +1,5 @@
 # Repository files only — never commit local credentials or generated output.
-node_modules/
+node_modules
 public/
 worker/
 dist/
