@@ -1,15 +1,15 @@
 import {test,expect} from '@playwright/test';
 import {openOverview} from './harness.mjs';
 
-// D10 (PARTIAL acceptance): 17 routes x 3 widths x 2 themes on frozen anonymised fixtures, plus keyboard focus visibility
-// and touch-target size at the 393px phone width.
+// D10 (PARTIAL acceptance): 17 routes x 3 widths in the dark theme (the light theme is covered by routes.spec.mjs) on frozen
+// anonymised fixtures, plus keyboard focus visibility and touch-target size at the 393px phone width. Kept small because CI has a 10 minute budget.
 // NOT covered: real model/news data, screen readers, real devices, colour-contrast ratios, 200% zoom / text spacing,
 // reduced-motion, hover states, DGW/BGW weeks. Passing this file is not a WCAG conformance claim.
 // Target sizes are a RATCHET: the counts below are the measured gaps on 2026-10-27. The test fails if a route gets worse;
 // improving a route means lowering its number here. 24px follows WCAG 2.2 SC 2.5.8 (AA); 44px is the stricter project goal.
 const VIEWS=['dashboard','tim','optimal','watchlist','planning','transfers','chips','labs','playercompare','fixtures','market','news','liga','banding','accuracy','modelinsights','about'];
 const WIDTHS=[393,768,1440];
-const THEMES=['light','dark'];
+const THEMES=['dark']; // light at the same three widths, with the same assertions, is already covered by routes.spec.mjs
 const MIN24={dashboard:19,tim:0,optimal:0,watchlist:0,planning:4,transfers:0,chips:0,labs:0,playercompare:0,fixtures:0,market:10,news:0,liga:0,banding:0,accuracy:0,modelinsights:1,about:31};
 const MIN44={dashboard:72,tim:25,optimal:6,watchlist:19,planning:15,transfers:12,chips:6,labs:10,playercompare:8,fixtures:9,market:29,news:18,liga:31,banding:6,accuracy:6,modelinsights:8,about:38};
 
@@ -43,7 +43,7 @@ for(const width of WIDTHS)for(const theme of THEMES){
   });
 }
 
-for(const [width,theme] of [[393,'dark'],[1440,'light']]){
+for(const [width,theme] of [[393,'dark']]){
   test(`keyboard: the first 14 Tab presses on every route reach at least 3 controls and show a visible focus indicator at ${width}px ${theme}`,async({page})=>{
     test.setTimeout(240000);
     await openOverview(page,{width,theme});
