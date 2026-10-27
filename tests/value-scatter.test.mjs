@@ -6,7 +6,7 @@ import {valueMetricOptions,valueMetricNumber} from '../domain.mjs';
 
 test('value scatter includes GK in all players and filters GK independently',()=>{
  const source=readFileSync(new URL('../advanced-planning.js',import.meta.url),'utf8');
- const fn=source.slice(source.indexOf('function valueScatter()'),source.indexOf('function renderMarket()'));
+ const fn=source.slice(source.indexOf('function valueScatter('),source.indexOf('const MARKET_TABS'));
  const players=[1,2,3,4].map(type=>({id:type,element_type:type,minutes:90,web_name:'Player '+type,now_cost:50,total_points:20,points_per_game:4,expected_goal_involvements_per_90:0}));
  players.push({...players[0],id:5,minutes:59});
  let plotted;

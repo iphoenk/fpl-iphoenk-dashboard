@@ -24,7 +24,7 @@ function renderLab(pos='GK') {
   scatter:()=>'<svg></svg>',sourceNote:()=>'<p>Official FPL</p>',snapshotNotice:()=>'<p>Snapshot</p>',
   panel:(title,body)=>'<section>'+title+body+'</section>',
   parseResearchContext,normalizeResearchContext,serializeResearchContext,
-  location:{search:'',pathname:'/',hash:''},history:{replaceState(){}},document:{addEventListener(){}}
+  URLSearchParams,location:{search:'',pathname:'/',hash:''},history:{replaceState(){}},document:{addEventListener(){}}
  });
  vm.runInContext(labJs,ctx);
  ctx.renderLabs();

@@ -2,17 +2,33 @@
 ext.research=parseResearchContext(location.search);
 const RESEARCH_POS_KEY=[null,'GK','DEF','MID','FWD'];
 if(ext.research.position){ext.labPos=RESEARCH_POS_KEY[ext.research.position];ext.valuePos=ext.research.position;}
+ext.marketTab=['prices','transfers','value'].includes(new URLSearchParams(location.search).get('market'))?new URLSearchParams(location.search).get('market'):'prices';
+function syncResearchUrl(){
+ try{const q=serializeResearchContext(ext.research);if(ext.marketTab!=='prices')q.set('market',ext.marketTab);const text=q.toString();history.replaceState(null,'',location.pathname+(text?'?'+text:'')+location.hash);}catch{}
+}
 function researchSet(patch){
  ext.research=normalizeResearchContext({...ext.research,...patch});
- try{const q=serializeResearchContext(ext.research).toString();history.replaceState(null,'',location.pathname+(q?'?'+q:'')+location.hash);}catch{}
+ syncResearchUrl();
 }
+function marketSetTab(name,focus=false){
+ if(!['prices','transfers','value'].includes(name))return;
+ ext.marketTab=name;syncResearchUrl();renderMarket();
+ if(focus)document.getElementById('marketTab-'+name)?.focus();
+}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-market-tab]');if(t)marketSetTab(t.dataset.marketTab);});
+document.addEventListener('keydown',e=>{
+ const t=e.target.closest?.('[data-market-tab]');if(!t)return;
+ const order=['prices','transfers','value'],i=order.indexOf(t.dataset.marketTab);
+ const next=e.key==='ArrowRight'?order[(i+1)%3]:e.key==='ArrowLeft'?order[(i+2)%3]:e.key==='Home'?order[0]:e.key==='End'?order[2]:null;
+ if(next){e.preventDefault();marketSetTab(next,true);}
+});
 const researchPasses=(minutes,id)=>Number(minutes)>=Math.max(60,ext.research.minMinutes)&&(!ext.research.ownedOnly||ownIds().has(id));
 const researchControls=prefix=>'<label>Minimum minutes<input id="'+prefix+'MinMinutes" type="number" min="0" max="4000" step="90" value="'+ext.research.minMinutes+'"></label><label class="inline-check"><input id="'+prefix+'Owned" type="checkbox"'+(ext.research.ownedOnly?' checked':'')+'> Owned only</label>';
 document.addEventListener('change',e=>{
  const t=e.target;if(!t||!t.id)return;
  if(t.id==='labMinMinutes'||t.id==='valueMinMinutes'){researchSet({minMinutes:t.value});state.view==='labs'?renderLabs():renderMarket();}
  else if(t.id==='labOwned'||t.id==='valueOwned'){researchSet({ownedOnly:t.checked});state.view==='labs'?renderLabs():renderMarket();}
- else if(t.id==='valuePosition')researchSet({position:t.value||null});
+ else if(t.id==='valuePosition'){researchSet({position:t.value||null});if(state.view==='market')renderMarket();}
  else if(t.id==='fixtureGwFrom'||t.id==='fixtureGwTo'){
   const from=$('fixtureGwFrom').value,to=$('fixtureGwTo').value;
   if((from==='')!==(to===''))return;   // a range needs both ends; wait until the other is filled
