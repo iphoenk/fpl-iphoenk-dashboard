@@ -22,12 +22,19 @@ document.addEventListener('keydown',e=>{
  const next=e.key==='ArrowRight'?order[(i+1)%3]:e.key==='ArrowLeft'?order[(i+2)%3]:e.key==='Home'?order[0]:e.key==='End'?order[2]:null;
  if(next){e.preventDefault();marketSetTab(next,true);}
 });
-const researchPasses=(minutes,id)=>Number(minutes)>=Math.max(60,ext.research.minMinutes)&&(!ext.research.ownedOnly||ownIds().has(id));
-const researchControls=prefix=>'<label>Minimum minutes<input id="'+prefix+'MinMinutes" type="number" min="0" max="4000" step="90" value="'+ext.research.minMinutes+'"></label><label class="inline-check"><input id="'+prefix+'Owned" type="checkbox"'+(ext.research.ownedOnly?' checked':'')+'> Owned only</label>';
+const researchMine=()=>({owned:ownIds(),watch:ext.watch});
+const researchPasses=(minutes,id)=>Number(minutes)>=Math.max(60,ext.research.minMinutes)&&matchesMine(ext.research,id,researchMine());
+const researchClubPasses=teamId=>{const r=ext.research;if(!r.ownedOnly&&!r.watchlistOnly)return true;return (r.ownedOnly&&currentSquad().some(p=>p.team===teamId))||(r.watchlistOnly&&ext.watch.some(id=>state.players[id]?.team===teamId));};
+const researchFlags=prefix=>'<label class="inline-check"><input id="'+prefix+'Owned" type="checkbox"'+(ext.research.ownedOnly?' checked':'')+'> Owned only</label><label class="inline-check"><input id="'+prefix+'Watch" type="checkbox"'+(ext.research.watchlistOnly?' checked':'')+'> Watchlist only</label>';
+const researchControls=prefix=>'<label>Minimum minutes<input id="'+prefix+'MinMinutes" type="number" min="0" max="4000" step="90" value="'+ext.research.minMinutes+'"></label>'+researchFlags(prefix);
 document.addEventListener('change',e=>{
  const t=e.target;if(!t||!t.id)return;
  if(t.id==='labMinMinutes'||t.id==='valueMinMinutes'){researchSet({minMinutes:t.value});state.view==='labs'?renderLabs():renderMarket();}
- else if(t.id==='labOwned'||t.id==='valueOwned'){researchSet({ownedOnly:t.checked});state.view==='labs'?renderLabs():renderMarket();}
+ else if(/^(lab|value|fixture|news)(Owned|Watch)$/.test(t.id)){
+  const [,prefix,flag]=t.id.match(/^(lab|value|fixture|news)(Owned|Watch)$/);
+  researchSet(flag==='Owned'?{ownedOnly:t.checked}:{watchlistOnly:t.checked});
+  ({lab:renderLabs,value:renderMarket,fixture:renderTicker,news:renderNews})[prefix]();
+ }
  else if(t.id==='valuePosition'){researchSet({position:t.value||null});if(state.view==='market')renderMarket();}
  else if(t.id==='fixtureGwFrom'||t.id==='fixtureGwTo'){
   const from=$('fixtureGwFrom').value,to=$('fixtureGwTo').value;
@@ -35,7 +42,6 @@ document.addEventListener('change',e=>{
   researchSet({gwFrom:from===''?null:from,gwTo:to===''?null:to});renderTicker();
  }
  else if(t.id==='fixtureVenue'){researchSet({venue:t.value});renderTicker();}
- else if(t.id==='fixtureOwned'){researchSet({ownedOnly:t.checked});renderTicker();}
 });
 document.addEventListener('click',e=>{const b=e.target.closest('[data-lab-pos]');if(b)researchSet({position:RESEARCH_POS_KEY.indexOf(b.dataset.labPos)});});
 renderLabs=function(){

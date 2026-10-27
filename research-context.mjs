@@ -85,3 +85,21 @@ export function averageDifficulty(list){
  const d=(list||[]).map(f=>f.difficulty).filter(v=>v!==null&&v!==undefined&&Number.isFinite(Number(v))).map(Number);
  return d.length?d.reduce((a,b)=>a+b,0)/d.length:null;
 }
+/* "Mine" = owned squad and/or watchlist. No flag: everyone passes. Both flags: union (an empty intersection would hide everything). */
+export function matchesMine(context,id,mine){
+ const c=normalizeResearchContext(context);
+ if(!c.ownedOnly&&!c.watchlistOnly)return true;
+ if(id===null||id===undefined)return false;
+ return (c.ownedOnly&&mine?.owned instanceof Set&&mine.owned.has(id))||(c.watchlistOnly&&Array.isArray(mine?.watch)&&mine.watch.includes(id));
+}
+/* Relevance of an article to the user: squad > watchlist > none. Only exact player ids count, never names. */
+export function articleRelevance(article,mine){
+ const ids=(article?.players||[]).map(p=>Number(p?.element)).filter(Number.isInteger);
+ if(mine?.owned instanceof Set&&ids.some(id=>mine.owned.has(id)))return 'squad';
+ if(Array.isArray(mine?.watch)&&ids.some(id=>mine.watch.includes(id)))return 'watchlist';
+ return 'none';
+}
+export function sortByRelevance(articles,mine){
+ const rank={squad:0,watchlist:1,none:2};
+ return articles.map((a,i)=>({a,i,r:rank[articleRelevance(a,mine)]})).sort((x,y)=>x.r-y.r||x.i-y.i).map(x=>x.a);
+}

@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {DEFAULT_RESEARCH_CONTEXT,normalizeResearchContext,serializeResearchContext,parseResearchContext,metricValue,classifyInjuryClaim,fixtureWindow,teamFixtures,averageDifficulty} from '../research-context.mjs';
+import {DEFAULT_RESEARCH_CONTEXT,normalizeResearchContext,serializeResearchContext,parseResearchContext,metricValue,classifyInjuryClaim,fixtureWindow,teamFixtures,averageDifficulty,matchesMine,articleRelevance,sortByRelevance} from '../research-context.mjs';
 const boot=JSON.parse(readFileSync(new URL('./browser/fixtures/bootstrap-static.json',import.meta.url),'utf8'));
 const byName=n=>boot.elements.find(p=>p.web_name===n);
 
@@ -78,4 +78,34 @@ test('frozen fixtures file: every team plays at most two matches per GW and venu
  for(const gw of [9,10]){for(const team of new Set(fixtures.flatMap(x=>[x.team_h,x.team_a]))){
   const all=teamFixtures(fixtures,team,gw,'all'),home=teamFixtures(fixtures,team,gw,'home'),away=teamFixtures(fixtures,team,gw,'away');
   assert.ok(all.length<=2);assert.equal(home.length+away.length,all.length);}}
+});
+
+const mine={owned:new Set([1,2]),watch:[2,3]};
+const ctx=(o={},w={})=>({...DEFAULT_RESEARCH_CONTEXT,ownedOnly:o,watchlistOnly:w});
+test('matchesMine: no flag passes everyone; owned, watchlist and both (union) behave as defined',()=>{
+ assert.equal(matchesMine(ctx(false,false),9,mine),true);
+ assert.equal(matchesMine(ctx(true,false),1,mine),true);
+ assert.equal(matchesMine(ctx(true,false),3,mine),false);
+ assert.equal(matchesMine(ctx(false,true),3,mine),true);
+ assert.equal(matchesMine(ctx(false,true),1,mine),false);
+ assert.equal(matchesMine(ctx(true,true),1,mine),true);
+ assert.equal(matchesMine(ctx(true,true),3,mine),true);
+ assert.equal(matchesMine(ctx(true,true),9,mine),false);
+ assert.equal(matchesMine(ctx(true,true),null,mine),false);
+ assert.equal(matchesMine(ctx(true,true),1,{}),false);
+});
+test('articleRelevance: squad beats watchlist beats none; only exact player ids count',()=>{
+ const a=ids=>({players:ids.map(element=>({element,web_name:'x'}))});
+ assert.equal(articleRelevance(a([9,1]),mine),'squad');
+ assert.equal(articleRelevance(a([3]),mine),'watchlist');
+ assert.equal(articleRelevance(a([2]),mine),'squad');
+ assert.equal(articleRelevance(a([9]),mine),'none');
+ assert.equal(articleRelevance({players:[{web_name:'Silva'}]},mine),'none');
+ assert.equal(articleRelevance({},mine),'none');
+});
+test('sortByRelevance is stable: squad, then watchlist, then the rest; original order kept inside a group',()=>{
+ const art=(id,el)=>({id,players:[{element:el}]});
+ const list=[art('n1',9),art('w1',3),art('s1',1),art('n2',8),art('s2',2),art('w2',3)];
+ assert.deepEqual(sortByRelevance(list,mine).map(x=>x.id),['s1','s2','w1','w2','n1','n2']);
+ assert.deepEqual(list.map(x=>x.id),['n1','w1','s1','n2','s2','w2']);
 });
