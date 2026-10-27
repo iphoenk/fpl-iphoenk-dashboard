@@ -10,8 +10,8 @@ import {openOverview} from './harness.mjs';
 const VIEWS=['dashboard','tim','optimal','watchlist','planning','transfers','chips','labs','playercompare','fixtures','market','news','liga','banding','accuracy','modelinsights','about'];
 const WIDTHS=[393,768,1440];
 const THEMES=['dark']; // light at the same three widths, with the same assertions, is already covered by routes.spec.mjs
-const MIN24={dashboard:19,tim:0,optimal:0,watchlist:0,planning:4,transfers:0,chips:0,labs:0,playercompare:0,fixtures:0,market:10,news:0,liga:0,banding:0,accuracy:0,modelinsights:1,about:31};
-const MIN44={dashboard:72,tim:25,optimal:6,watchlist:19,planning:15,transfers:12,chips:6,labs:10,playercompare:8,fixtures:9,market:29,news:18,liga:31,banding:6,accuracy:6,modelinsights:8,about:38};
+const MIN24={dashboard:0,tim:0,optimal:0,watchlist:0,planning:0,transfers:0,chips:0,labs:0,playercompare:0,fixtures:0,market:0,news:0,liga:0,banding:0,accuracy:0,modelinsights:0,about:18};
+const MIN44={dashboard:50,tim:6,optimal:4,watchlist:16,planning:7,transfers:4,chips:4,labs:6,playercompare:4,fixtures:4,market:9,news:4,liga:6,banding:4,accuracy:4,modelinsights:4,about:23};
 
 async function go(page,view){
   await page.evaluate(v=>document.querySelector('[data-view="'+v+'"]').click(),view);

@@ -320,3 +320,8 @@ body.has-team {
 .srui-details summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
 .srui-load{min-height:44px}
 @media(max-width:767px){.srui-card strong{font-size:20px}.srui-history{grid-template-columns:1fr}}
+/* D10: phone touch targets. Controls get a 44px minimum height; text links inside running text are exempt. */
+@media(max-width:767px){
+  button,.btn,summary,[role=tab],select,input:not([type=checkbox]):not([type=radio]):not([type=range]){min-height:44px}
+  label.inline-check,label:has(>input[type=checkbox]),label:has(>input[type=radio]){min-height:44px;display:inline-flex;align-items:center;gap:8px}
+}
