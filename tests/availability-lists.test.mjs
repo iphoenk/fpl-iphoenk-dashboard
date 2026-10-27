@@ -33,7 +33,7 @@ test('pitch cards, unknown players and already-processed nodes are left alone; a
  assert.equal(titled.attrs.title,'Existing');
 });
 test('both builds load availability-ui.js and the CSS styles inline buttons',()=>{
- for(const f of ['scripts/build-vercel.mjs','scripts/build.mjs'])assert.match(readFileSync(new URL('../'+f,import.meta.url),'utf8'),/'planning-compact\.js','availability-ui\.js'\]/);
+ for(const f of ['scripts/build-vercel.mjs','scripts/build.mjs'])assert.match(readFileSync(new URL('../'+f,import.meta.url),'utf8'),/'planning-compact\.js','availability-ui\.js'(?:,'[a-z-]+\.js')*\]/);
  assert.match(readFileSync(new URL('../availability.css',import.meta.url),'utf8'),/button\.fit-inline\.fit-red/);
 });
 
