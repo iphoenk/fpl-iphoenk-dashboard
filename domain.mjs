@@ -91,10 +91,12 @@ export function valueMetricOptions(position){
   points:{key:'points',label:'Total points',field:'total_points',note:'Poin musim berjalan; total dipengaruhi jumlah pertandingan dan menit bermain.'},
   xp:{key:'xp',label:'Projected points',note:'Estimasi poin untuk gameweek berikutnya, bukan jaminan hasil.'},
   form:{key:'form',label:'Form',field:'form',note:'Form resmi FPL.'},
-  bps90:{key:'bps90',label:'BPS per 90',total:'bps',note:'Bonus Points System per 90 menit, bukan bonus points yang sudah diberikan.'}
+  bps90:{key:'bps90',label:'BPS per 90',total:'bps',note:'Bonus Points System per 90 menit, bukan bonus points yang sudah diberikan.'},
+  valueSeason:{key:'valueSeason',label:'Value (season)',field:'value_season',note:'Field resmi FPL value_season = total points musim ini ÷ harga (£m). Definisinya sama dengan "PPM" yang dipakai komunitas, tapi memakai nama field resmi FPL agar tidak ambigu dengan definisi PPM lain yang mungkin berbeda skala.'},
+  valueForm:{key:'valueForm',label:'Value (form)',field:'value_form',note:'Field resmi FPL value_form = form (rata-rata poin 30 hari terakhir) ÷ harga (£m).'}
  };
  const keys={1:['saves90','cs90','xgc90','gc90'],2:['cs90','xgc90','defcon90','xgi90','xg90','xa90'],3:['xa90','xgi90','xg90','assists90','defcon90'],4:['xg90','xgi90','goals90','xa90']}[Number(position)]||[];
- return [...keys,'ppg','points','xp','form','bps90'].map(key=>metrics[key]);
+ return [...keys,'ppg','points','xp','form','bps90','valueSeason','valueForm'].map(key=>metrics[key]);
 }
 export function valueMetricNumber(player,metric,projected=null){
  if(metric.key==='xp')return projected!=null&&Number.isFinite(Number(projected))?Number(projected):null;

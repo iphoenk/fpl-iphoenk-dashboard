@@ -117,3 +117,39 @@ test('Current Team shows C/VC only on pitch, not in a duplicate bottom footer',(
  assert.doesNotMatch(flagged,/fitness flag/);
  assert.doesNotMatch(flagged,/decision-foot/);
 });
+
+test('Next GW Plan footer shows V6 data-plane status honestly (VERIFIED/STALE/UNVERIFIED/UNAVAILABLE), never claims V12 readiness',()=>{
+ const start=js.indexOf('  function planCard(){');
+ const end=js.indexOf('\n  function activeFixtureGw(){',start);
+ assert.ok(start>=0&&end>start);
+ const baseReport={
+  contract:'PUBLIC_FPL_MULTIGW_ADVISORY_V2',horizon:1,status:'ready',
+  scenarios:{},team_state:{free_transfers:1,bank:0},economics_status:null
+ };
+ function makeState(v6Status){
+  const publicPlan={entryId:42,gw:8,horizon:1,loading:false,error:null,
+   report:v6Status?{...baseReport,source:{v6:{status:v6Status}}}:baseReport};
+  const state={next:{id:8},entry:{id:42},players:{}};
+  return {state,publicPlan};
+ }
+ const stubs={safeName:String,number:n=>String(n),money:n=>'£'+n,fmt:(n,d)=>Number(n).toFixed(d),
+  deviceDateTime:x=>x,publicFormationEvidence:()=>''};
+ function render(v6Status){
+  const {state,publicPlan}=makeState(v6Status);
+  const context=vm.createContext({...stubs,state,publicPlan});
+  vm.runInContext(js.slice(start,end)+'\nglobalThis.renderCard=planCard;',context);
+  return context.renderCard();
+ }
+ assert.match(render('VERIFIED'),/V6 data: verified/);
+ assert.match(render('STALE'),/V6 data: stale/);
+ assert.match(render('UNVERIFIED'),/V6 data: unverified/);
+ assert.match(render('UNAVAILABLE'),/V6 data: unavailable/);
+ // No status at all (older/degraded response shape): no fabricated label.
+ assert.doesNotMatch(render(undefined),/V6 data:/);
+ // The tooltip may mention V12 only to disclaim it, never to assert readiness.
+ for(const s of ['VERIFIED','STALE','UNVERIFIED','UNAVAILABLE']){
+  const out=render(s);
+  assert.doesNotMatch(out,/V12 (is |source )?(ready|verified|READY)/i);
+  assert.match(out,/independent of V12 readiness/);
+ }
+});
