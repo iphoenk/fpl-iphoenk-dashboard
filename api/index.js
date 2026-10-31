@@ -3,13 +3,14 @@ import {publicDecisionResponse} from '../multiuser-decision-server.mjs';
 import {archiveResponse} from '../phase-one-server.mjs';
 import {providerResponse} from '../independent-providers.mjs';
 import {ownModelResponse} from '../own-model-server.mjs';
-import {checkRateLimit,rateLimitResponse} from '../rate-limit.mjs';
+import {checkRateLimit,rateLimitResponse,rateLimitRule} from '../rate-limit.mjs';
 export default {
  async fetch(request){
   const url=new URL(request.url);
-  const rateLimitedPath=url.pathname.replace(/\/$/,'');
-  if(request.method==='GET'&&(rateLimitedPath==='/api/decision'||rateLimitedPath==='/api/own-model')){
-   const {limited,retryAfter}=checkRateLimit(rateLimitedPath,request);
+  // GET and HEAD: server.mjs serves HEAD for the fan-out endpoints at full upstream cost.
+  const rule=['GET','HEAD'].includes(request.method)?rateLimitRule(url.pathname):null;
+  if(rule){
+   const {limited,retryAfter}=checkRateLimit(rule.name,request,{limit:rule.limit});
    if(limited)return rateLimitResponse(retryAfter);
   }
   const decision=await publicDecisionResponse(request);if(decision)return decision;
