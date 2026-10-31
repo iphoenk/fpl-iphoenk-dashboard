@@ -42,3 +42,37 @@ The **only public next-GW recommendation API** is GET /api/decision (multiuser-d
 Confirmed legacy competing UI calculations: advanced-planning.js transferSuggestions()/transferPanels() and planningMoveCards(); phase-three-ui.js local transfer sandbox; advanced.js bestXI() for Optimal XI; captainMatrix() local evidence comparison; own-model optional prediction provider. These are **analysis/sandbox surfaces**, NOT authoritative A/B/C. Their calculations must not be presented as the best transfer or recommended captain. dashboard-focus.js Transfer Radar and phase-two-ui.js Overview preview must consume ext.publicDecision from the single API with matching entry ID and planning GW. The latter was corrected in this PR and is guarded by tests/decision-authority-guard.test.mjs. When API data is missing or stale, show unavailable, never recompute an alternate transfer recommendation.
 
 Hardening backlog before claiming all-green production: refactor Planning/Transfers to show API A/B/C recommendations first; rename local suggestion and captain surfaces as explicitly non-authoritative analysis, with source/horizon and no execution claim; validate every response contract/GW/entry/model age; eliminate stale cross-entry caching; test 1/3/5 GW, missing model, unavailable Official, 20 concurrent entries, iPhone Safari and Vercel live. Legacy global model is a separate projection producer and must not silently become canonical V12. No code merge alone constitutes live acceptance.
+
+## CSS override order (audit item #9)
+
+Both `scripts/build-vercel.mjs` and `scripts/build.mjs` concatenate CSS into the single inlined `<style>` block in `ui.html` by reading these 22 files in this exact order, and the two scripts are kept in lockstep — a change to one must be mirrored in the other:
+
+1. `light.css`
+2. `dashboard.css`
+3. `refined.css`
+4. `approved-layout.css`
+5. `theme.css`
+6. `dashboard-focus.css`
+7. `phase-one.css`
+8. `phase-two.css`
+9. `phase-three.css`
+10. `independent.css`
+11. `own-model.css`
+12. `desktop-shell.css`
+13. `about.css`
+14. `decision-first.css`
+15. `floating-dock.css`
+16. `mobile-scout-recovery.css`
+17. `mobile-more-dialog.css`
+18. `overview-gk-spacing.css`
+19. `planning-compact.css`
+20. `layout-rhythm.css`
+21. `availability.css`
+22. `team-portrait.css`
+
+Because this is a flat concatenation (no `@layer`, no scoping), a later file in this list wins any selector-specificity tie against an earlier one — plain source order, same as any single stylesheet. The audit found roughly a fifth of all top-level class declarations (206 of 994) duplicated across two or more of these files with no prior documentation of which one wins; this list is that documentation. Two practical consequences:
+
+- A fix that only edits an early file (e.g. `dashboard.css`) can be silently overridden by an unrelated rule in a later file (e.g. `team-portrait.css`) if both declare the same class. Grep the class name across all 22 files before assuming an edit took effect, and prefer editing the *last* file in this order that declares the class, unless the earlier declaration is the one that should win (uncommon — rename or scope one of the two instead where practical).
+- New CSS files should be appended at the end of both arrays (position 23+) unless there's a specific reason the new rules must lose to an existing file, which should be called out in the commit message when it happens.
+
+This order is load-bearing behavior, not an implementation detail — do not reorder these arrays without checking for the duplicate-class collisions above.
