@@ -1577,6 +1577,12 @@ html[data-theme=dark] body.has-team .decision-league .decision-table-wrap tbody 
 }
 
 
+/* V6 provenance chip: the text label carries the meaning; the border colour is only a secondary cue. */
+body.has-team[data-view=dashboard] .decision-horizon .decision-v6{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:10px;line-height:1.3;white-space:normal}
+body.has-team[data-view=dashboard] .decision-horizon .decision-v6 b{color:var(--text);font-weight:600}
+body.has-team[data-view=dashboard] .decision-horizon .decision-v6[data-v6-status=VERIFIED]{border-color:var(--green)}
+body.has-team[data-view=dashboard] .decision-horizon .decision-v6[data-v6-status=STALE],body.has-team[data-view=dashboard] .decision-horizon .decision-v6[data-v6-status=UNVERIFIED]{border-color:#d9a441}
+
 /* Issue #67: one genuinely slim, consistent mobile masthead.
    Explicit parent height defeats the legacy --bar-h and inner min-height. */
 @media (max-width:767px) {
@@ -1600,5 +1606,3 @@ html[data-theme=dark] body.has-team .decision-league .decision-table-wrap tbody 
     max-height:43px!important;
   }
 }
-
-

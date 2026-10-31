@@ -176,6 +176,18 @@ function publicFormationEvidence(s,planningGw,name){
       if(typeof renderDashboardBrief==='function')renderDashboardBrief();
     }
   }
+  // V6 provenance chip. Source: backend source.v6.status only (VERIFIED/STALE/UNVERIFIED/UNAVAILABLE).
+  // V6 attests the factual data feed; it is NOT Canonical V12 readiness and does not validate projections.
+  const V6_LABELS={VERIFIED:'Verified',STALE:'Stale',UNVERIFIED:'Unverified',UNAVAILABLE:'Unavailable'};
+  function v6Chip(report){
+    const source=report?.source;
+    if(!source||typeof source!=='object')return '';
+    const raw=source.v6?.status,known=Object.prototype.hasOwnProperty.call(V6_LABELS,raw);
+    const status=known?raw:'NOT_REPORTED',label=known?V6_LABELS[raw]:'Not reported';
+    const observed=known&&source.v6.observed_at?deviceDateTime(source.v6.observed_at):null;
+    const detail='V6 checks the integrity and freshness of the factual data feed. It is not Canonical V12 readiness and does not validate the projections.';
+    return '<span class="decision-v6" data-v6-status="'+status+'" title="'+detail+'">V6 data feed: <b>'+label+'</b>'+(observed&&observed!=='Tanggal belum tersedia'?' \u00b7 '+safeName(observed):'')+'</span>';
+  }
   function planCard(){
     const gw=Number(state.next?.id),report=publicPlan.entryId===Number(state.entry?.id)&&publicPlan.gw===gw?publicPlan.report:null;
     const modelReady=report?.contract==='PUBLIC_FPL_MULTIGW_ADVISORY_V2';
@@ -210,7 +222,7 @@ function publicFormationEvidence(s,planningGw,name){
     };
     const economicsLabel={PUBLIC_CURRENT_PRICE_PROXY_INDICATIVE:'Sale price proxy · verify before transfer',PUBLIC_HISTORICAL_INDICATIVE:'Historical price/bank · indicative',UNAVAILABLE:'Affordability not verified'}[report?.economics_status]|| (report?.economics_status?'Economics status · verify before transfer':report?.status==='unavailable'?'Projection unavailable':publicPlan.error?'Official data unavailable':'Awaiting official data');
     return '<article class="decision-panel decision-plan"><header class="decision-panel-head"><div><h2>Next GW Plan'+(gw?' · GW '+gw:'')+'</h2><p>'+safeName(scope)+' · no Monte Carlo</p>'+accountLine+'</div><button class="decision-link" data-goto="planning">Planner ↗</button></header>'+
-      '<div class="decision-horizon"><label for="decisionHorizonSelect">Horizon</label><select id="decisionHorizonSelect" aria-label="Optimization horizon">'+[1,3,5].map(h=>'<option value="'+h+'"'+(publicPlan.horizon===h?' selected':'')+'>'+h+' GW</option>').join('')+'</select><span>'+(modelStamp?'Model '+safeName(modelStamp):generated?'Official '+safeName(generated):'Source being verified')+'</span></div>'+
+      '<div class="decision-horizon"><label for="decisionHorizonSelect">Horizon</label><select id="decisionHorizonSelect" aria-label="Optimization horizon">'+[1,3,5].map(h=>'<option value="'+h+'"'+(publicPlan.horizon===h?' selected':'')+'>'+h+' GW</option>').join('')+'</select><span>'+(modelStamp?'Model '+safeName(modelStamp):generated?'Official '+safeName(generated):'Source being verified')+'</span>'+v6Chip(report)+'</div>'+
       (report&&!modelReady&&publicPlan.horizon>1?'<p class="decision-fallback-notice">The '+publicPlan.horizon+' GW projection is not yet validated. The available result only uses 1 GW of Official FPL.</p>':'')+
       (report?.economics_status==='PUBLIC_CURRENT_PRICE_PROXY_INDICATIVE'?'<p class="decision-fallback-notice">B/C use the Official FPL market price as a proxy for the sale price, and the bank from the last published GW. <strong>This may not be affordable in your account.</strong> Verify the sale price and hit before transferring.</p>':'')+
       '<div class="decision-scenarios">'+scenario('A','A · Hold')+scenario('B','B · 1 Transfer')+scenario('C','C · 2 Transfers')+'</div>'+
