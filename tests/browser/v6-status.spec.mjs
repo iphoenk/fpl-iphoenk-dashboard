@@ -53,3 +53,17 @@ for(const theme of ['light','dark'])for(const width of [393,768,1440])for(const 
     expect(m.docOverflow).toBeLessThanOrEqual(0);
   });
 }
+
+for(const theme of ['light','dark'])for(const width of [320,393]){
+  test('V6 chip text meets WCAG AA contrast (4.5:1) at '+width+'px '+theme,async({page})=>{
+    await openOverview(page,{width,theme});
+    const ratio=await chip(page).evaluate(el=>{
+      const rgb=s=>(s.match(/[\d.]+/g)||[]).slice(0,3).map(Number);
+      const lum=c=>{const [r,g,b]=c.map(v=>{v/=255;return v<=0.03928?v/12.92:((v+0.055)/1.055)**2.4});return 0.2126*r+0.7152*g+0.0722*b};
+      let bg=el;while(bg){const c=getComputedStyle(bg).backgroundColor,p=(c.match(/[\d.]+/g)||[]).map(Number);if(p.length&&(p.length<4||p[3]>0.5)){bg=p.slice(0,3);break}bg=bg.parentElement}
+      if(!Array.isArray(bg))bg=[255,255,255];
+      const x=lum(rgb(getComputedStyle(el).color)),y=lum(bg);return (Math.max(x,y)+0.05)/(Math.min(x,y)+0.05);
+    });
+    expect(ratio).toBeGreaterThanOrEqual(4.5);
+  });
+}
