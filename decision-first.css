@@ -1601,4 +1601,12 @@ html[data-theme=dark] body.has-team .decision-league .decision-table-wrap tbody 
   }
 }
 
-
+/* V6 provenance chip: glyph + border style + text. Colour is only a secondary cue. */
+.decision-plan .decision-foot .decision-v6{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border:1.5px solid var(--line);border-radius:999px;color:var(--muted);font-size:10px;line-height:1.3;white-space:normal;max-width:100%}
+.decision-plan .decision-foot .decision-v6 i{font-style:normal;font-weight:700;color:var(--text)}
+.decision-plan .decision-foot .decision-v6 b{color:var(--text);font-weight:600}
+.decision-plan .decision-foot .decision-v6[data-v6-status=VERIFIED]{border-style:solid;border-color:var(--green)}
+.decision-plan .decision-foot .decision-v6[data-v6-status=STALE]{border-style:dashed;border-color:#d9a441}
+.decision-plan .decision-foot .decision-v6[data-v6-status=UNVERIFIED]{border-style:dotted;border-color:#d9a441}
+.decision-plan .decision-foot .decision-v6[data-v6-status=UNAVAILABLE]{border-style:double;border-width:3px;border-color:var(--red,#c0392b)}
+.decision-plan .decision-foot .decision-v6[data-v6-status=NOT_REPORTED]{border-style:dashed;border-color:var(--line)}
