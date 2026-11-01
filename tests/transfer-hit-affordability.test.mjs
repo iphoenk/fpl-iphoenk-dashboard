@@ -6,7 +6,7 @@ import vm from 'node:vm';
 /* GAP-01: transfer hit, free-transfer provenance, sale price and bank in advanced-planning.js. */
 const source=readFileSync(new URL('../advanced-planning.js',import.meta.url),'utf8');
 const pick=name=>{const i=source.indexOf('function '+name+'(');assert.ok(i>=0,name);let d=0;const j=source.indexOf('}){',i)>=0&&source.indexOf('}){',i)<source.indexOf('\n',i)?source.indexOf('}){',i)+2:source.indexOf('){',i)+1;for(let k=j;k<source.length;k++){if(source[k]==='{')d++;if(source[k]==='}'&&--d===0)return source.slice(i,k+1);}};
-const NAMES=['ftParse','transferFtContext','transferHitContext','transferHit','transferNetSummary','transferBankInfo','transferSellingPrice','transferAffordabilityLabel','loadTransferFt','currentSquad','transferSuggestions','transferCard','transferPanels'];
+const NAMES=['ftParse','transferScope','transferFtFromReport','transferFtContext','transferHitContext','transferHit','transferNetSummary','transferBankInfo','transferSellingPrice','transferAffordabilityLabel','loadTransferFt','currentSquad','transferSuggestions','transferCard','transferPanels'];
 const code=NAMES.map(pick).join('\n');
 
 const player=(id,type,team,cost,xp,extra={})=>({id,element_type:type,team,now_cost:cost,xp,status:'a',web_name:'P'+id,...extra});
@@ -99,20 +99,137 @@ test('FT provenance: user-provided beats public, public is labelled inferred, st
  assert.equal(base({ext:{ftPublic:undefined}}).t.transferFtContext().label,'FT UNVERIFIED');
 });
 
-test('loadTransferFt reads the public decision, validates GW and never invents a value',async()=>{
+/* A decision response as /api/decision returns it for entry 1, planning GW 10, horizon 1 (fields the FT check relies on). */
+const report=(over={},ts={},ev={})=>({status:'ready',contract:'PUBLIC_FPL_MULTIGW_ADVISORY_V2',canonical_v12:false,entry_id:1,planning_gw:10,horizon:1,
+ team_state:{entry_id:1,requested_entry_id:1,planning_gameweek:10,free_transfers:2,authority:'OFFICIAL_FPL',source:'Official FPL',
+  free_transfer_evidence:{value:2,as_of_gameweek:9,next_gameweek:10,source:'Official FPL entry history',verified:true,...ev},...ts},...over});
+const deferred=()=>{let resolve;const promise=new Promise(r=>{resolve=r;});return {promise,resolve};};
+
+test('loadTransferFt reads the public decision and accepts a fully matching response',async()=>{
  const calls=[];
- const ok=base({ext:{ftPublic:undefined},api:async path=>{calls.push(path);return {status:'ready',team_state:{planning_gameweek:10,free_transfers:2}};}});
+ const ok=base({ext:{ftPublic:undefined},api:async path=>{calls.push(path);return report();}});
  await ok.t.loadTransferFt();
  assert.deepEqual(calls,['decision?entry_id=1&horizon=1']);
  assert.equal(ok.t.transferFtContext().value,2);
+ assert.equal(ok.t.transferFtContext().status,'public-inferred');
  await ok.t.loadTransferFt();
  assert.equal(calls.length,1,'one request per entry and GW');
- for(const reply of [{status:'unavailable',team_state:{planning_gameweek:10,free_transfers:2}},{status:'ready',team_state:{planning_gameweek:11,free_transfers:2}},{status:'ready',team_state:{planning_gameweek:10,free_transfers:null}},{status:'ready'},null]){
+ const partial=base({ext:{ftPublic:undefined},api:async()=>report({status:'partial',contract:'PUBLIC_FPL_DETERMINISTIC_ADVISORY_V1',horizon:undefined})});
+ await partial.t.loadTransferFt();
+ assert.equal(partial.t.transferFtContext().value,2,'V1 contract without a horizon field is supported');
+});
+
+test('FT response validation fails closed: wrong team, GW, contract, status, authority, evidence',async()=>{
+ const bad={
+  'wrong team, same GW (top-level entry_id)':report({entry_id:2}),
+  'wrong team in team_state':report({},{entry_id:2}),
+  'requested entry mismatch':report({},{requested_entry_id:2}),
+  'missing entry ids':report({entry_id:undefined},{entry_id:undefined}),
+  'stale planning GW':report({planning_gw:9}),
+  'stale team_state GW':report({},{planning_gameweek:9}),
+  'future planning GW':report({planning_gw:11},{planning_gameweek:11}),
+  'canonical V12 contract':report({contract:'FPL_V12_CANONICAL_DECISION_V1',canonical_v12:true}),
+  'canonical flag set on a public contract':report({canonical_v12:true}),
+  'unknown contract':report({contract:'SOMETHING_ELSE'}),
+  'missing contract':report({contract:undefined}),
+  'status unavailable':report({status:'unavailable'}),
+  'status error':report({status:'error'}),
+  'status stale':report({status:'stale'}),
+  'horizon 3':report({horizon:3}),
+  'wrong team_state authority':report({},{authority:'USER'}),
+  'wrong team_state source':report({},{source:'Cache'}),
+  'FT null':report({},{free_transfers:null}),
+  'FT above cap':report({},{free_transfers:9},{value:9}),
+  'FT fractional':report({},{free_transfers:1.5},{value:1.5}),
+  'evidence missing':report({},{free_transfer_evidence:null}),
+  'evidence disagrees with FT':report({},{},{value:3}),
+  'evidence for another GW':report({},{},{next_gameweek:11,as_of_gameweek:10}),
+  'evidence as-of GW stale':report({},{},{as_of_gameweek:7}),
+  'not an object':'ready',
+  'null':null,
+  'array':[]
+ };
+ for(const [name,reply] of Object.entries(bad)){
   const m=base({ext:{ftPublic:undefined},api:async()=>reply});await m.t.loadTransferFt();
-  assert.equal(m.t.transferFtContext().status,'unknown',JSON.stringify(reply));
+  assert.equal(m.t.transferFtContext().status,'unknown',name);
+  assert.equal(m.t.transferFtContext().value,null,name);
  }
  const failing=base({ext:{ftPublic:undefined},api:async()=>{throw new Error('429');}});await failing.t.loadTransferFt();
  assert.equal(failing.t.transferFtContext().status,'unknown');
+ assert.match(failing.t.transferNetSummary(5,2),/FT UNVERIFIED/);
+});
+
+test('team switch: user FT, bank and sale prices of team A never apply to team B',()=>{
+ const m=base({ext:{ftUser:2,transferBank:30,salePrices:{2:4.7},ftPublic:{entryId:1,gw:10,status:'ready',value:1}}});
+ assert.equal(m.t.transferFtContext().status,'user');
+ assert.equal(m.t.transferBankInfo().source,'user-provided');
+ m.sandbox.state.entry={id:2};
+ m.sandbox.state.picks=squadPicks([1,2,3],{bank:55,event_transfers:0});
+ const ft=m.t.transferFtContext();
+ assert.equal(ft.status,'unknown','team A public FT and user FT are gone');
+ assert.equal(m.sandbox.ext.ftUser,undefined);
+ const bank=m.t.transferBankInfo();
+ assert.equal(bank.tenths,55,'team B uses its own public bank');
+ assert.equal(bank.source,'last published GW');
+ assert.equal(m.t.transferSellingPrice({id:2,now_cost:50}).source,'market-proxy');
+ assert.equal(m.sandbox.ext.transferBankInvalid,false);
+ // policy: nothing is restored when switching back
+ m.sandbox.state.entry={id:1};
+ assert.equal(m.t.transferFtContext().status,'unknown');
+ assert.equal(m.t.transferBankInfo().source,'last published GW');
+});
+
+test('team switch also clears an invalid bank entry and a GW rollover resets inputs',()=>{
+ const m=base({ext:{transferBankInvalid:true,ftUser:1}});
+ assert.equal(m.t.transferBankInfo().valid,false);
+ m.sandbox.state.entry={id:7};
+ assert.equal(m.t.transferBankInfo().valid,true,'team 7 is not blocked by team 1\'s invalid entry');
+ m.sandbox.ext.ftUser=3;m.sandbox.ext.transferBank=20;
+ m.sandbox.state.next={id:11};m.sandbox.state.gw=11;
+ assert.equal(m.t.transferFtContext().status,'unknown','planning GW changed, inputs expire');
+ assert.equal(m.sandbox.ext.transferBank,undefined);
+});
+
+test('viewing another gameweek keeps typed inputs but invalidates the public bank',()=>{
+ const m=base({ext:{ftUser:2,transferBank:30}});
+ m.sandbox.state.gw=4;
+ assert.equal(m.t.transferFtContext().value,2,'inputs belong to entry and planning GW, not the viewed GW');
+ assert.equal(m.t.transferBankInfo().valid,true);
+ const pub=base({gw:4,next:10});
+ assert.equal(pub.t.transferBankInfo().valid,false,'bank of GW 4 is not the last published bank');
+ assert.match(pub.t.transferBankInfo().reason,/GW 4/);
+ assert.equal(pub.t.transferSuggestions(1).length,0);
+ assert.match(pub.t.transferPanels(),/data-bank-status="invalid"/);
+ assert.equal(base({gw:9,next:10}).t.transferBankInfo().valid,true,'last published GW');
+ assert.equal(base({gw:10,next:10}).t.transferBankInfo().valid,true);
+});
+
+test('stale async response for team A never changes team B',async()=>{
+ const pending={};
+ const api=path=>{const id=Number(path.match(/entry_id=(\d+)/)[1]);pending[id]=deferred();return pending[id].promise;};
+ const m=base({ext:{ftPublic:undefined},api});
+ const loadA=m.t.loadTransferFt();
+ m.sandbox.state.entry={id:2};
+ m.sandbox.state.picks=squadPicks([1,2,3],{bank:55,event_transfers:0});
+ const loadB=m.t.loadTransferFt();
+ assert.equal(m.t.transferFtContext().status,'unknown','team B is waiting for its own answer');
+ pending[1].resolve(report({},{free_transfers:3},{value:3}));await loadA;
+ assert.equal(m.t.transferFtContext().status,'unknown','team A answered first: ignored for team B');
+ pending[2].resolve(report({entry_id:2},{entry_id:2,requested_entry_id:2,free_transfers:1},{value:1}));await loadB;
+ assert.equal(m.t.transferFtContext().value,1);
+ // switching back to A refetches instead of reusing a stale slot
+ m.sandbox.state.entry={id:1};
+ assert.equal(m.t.transferFtContext().status,'unknown');
+ const again=m.t.loadTransferFt();
+ pending[1].resolve(report());await again;
+ assert.equal(m.t.transferFtContext().value,2);
+});
+
+test('wrong-team response for the active GW is rejected even when everything else matches',async()=>{
+ const m=base({ext:{ftPublic:undefined},api:async()=>report({entry_id:2},{entry_id:2,requested_entry_id:2,free_transfers:5},{value:5})});
+ await m.t.loadTransferFt();
+ assert.equal(m.t.transferFtContext().status,'unknown');
+ assert.doesNotMatch(m.t.transferNetSummary(5,2),/FT 5/);
 });
 
 test('one selling-price calculation: actual price below market, proxy label, invalid prices',()=>{

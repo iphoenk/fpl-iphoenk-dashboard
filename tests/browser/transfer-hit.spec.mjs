@@ -12,10 +12,31 @@ function snapshotFromBootstrap(){
   const players=b.elements.map(e=>({id:e.id,name:e.web_name,team:short[e.team],projected:Math.round((Number(e.total_points)/8+Number(e.form||0)/2)*100)/100}));
   return {gw:next,generated:new Date().toISOString(),scouts:{},projections:{},players};
 }
+const TEAM_B=222;
+/** A second team with its own bank (5.5m) and FT (1). Registered after mockApi so it wins; everything else falls back to the shared harness. */
+async function mockTeamB(page){
+  const entry=fixture('entry.json');entry.id=TEAM_B;entry.name='Team B';
+  const picks=fixture('picks.json');picks.entry_history.bank=55;
+  const decision=JSON.parse(JSON.stringify(fixture('decision.json')).replaceAll(String(ENTRY_ID),String(TEAM_B)));
+  decision.team_state.free_transfers=1;decision.team_state.free_transfer_evidence.value=1;
+  const ok=body=>({status:200,contentType:'application/json',body:JSON.stringify(body)});
+  await page.route('**/api/**',route=>{
+    const url=new URL(route.request().url()),key=url.pathname.replace(/^\/api\//,'').replace(/\/$/,'');
+    if(key==='entry/'+TEAM_B)return route.fulfill(ok(entry));
+    if(key==='entry/'+TEAM_B+'/event/8/picks')return route.fulfill(ok(picks));
+    if(key==='decision'&&url.searchParams.get('entry_id')===String(TEAM_B))return route.fulfill(ok(decision));
+    return route.fallback();
+  });
+}
+async function connect(page,id){
+  // The entry form lives on the Overview and is hidden while another view is open; submitting it runs the same onsubmit handler as the button.
+  await page.evaluate(value=>{document.getElementById('entryInput').value=String(value);document.getElementById('entryForm').requestSubmit();},id);
+}
 async function openOverview(page,{width}){
   await page.setViewportSize({width,height:1024});
   await page.emulateMedia({colorScheme:'light'});
   await mockApi(page);
+  await mockTeamB(page);
   const snapshot=snapshotFromBootstrap();
   await page.route('**/api/insights/snapshot**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(snapshot)}));
   await page.addInitScript(id=>{try{localStorage.setItem('dugout-entry',JSON.stringify(id));}catch{}},ENTRY_ID);
@@ -93,4 +114,23 @@ test('no horizontal overflow on the Transfers page at 393 and 1440',async({page}
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
     expect(overflow,'width '+width).toBeLessThanOrEqual(0);
   }
+});
+
+test('switching team while on Transfers drops team A inputs and shows team B own bank and FT',async({page})=>{
+  await openTransfers(page);
+  await page.selectOption('#suggestionFt','0');
+  await page.fill('#suggestionBank','3');
+  await page.click('#recomputeTransfers');
+  await expect(pairs(page).first().locator('.transfer-net')).toHaveAttribute('data-ft-status','user');
+  await connect(page,TEAM_B);
+  await expect(page.locator('#suggestionBank')).toHaveValue('5.5');
+  await expect(page.locator('#suggestionFt')).toHaveValue('');
+  const note=pairs(page).first().locator('.transfer-net');
+  await expect(note).toHaveAttribute('data-ft-status','public-inferred');
+  await expect(note).toContainText('FT 1 · inferred from public history');
+  // policy: nothing from team A comes back when switching back, team A public data is loaded again
+  await connect(page,ENTRY_ID);
+  await expect(page.locator('#suggestionBank')).toHaveValue('1.4');
+  await expect(page.locator('#suggestionFt')).toHaveValue('');
+  await expect(pairs(page).first().locator('.transfer-net')).toContainText('FT 2 · inferred from public history');
 });
