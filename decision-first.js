@@ -176,6 +176,26 @@ function publicFormationEvidence(s,planningGw,name){
       if(typeof renderDashboardBrief==='function')renderDashboardBrief();
     }
   }
+  // V6 provenance chip. Source: backend source.v6.status only. V6 attests the Official FPL data feed
+  // (identity consistency + freshness); it is NOT Canonical V12 readiness and does not validate projections.
+  // Each status has its own glyph and border style so it is distinguishable without relying on colour.
+  const V6_STATES={
+    VERIFIED:{label:'Verified',glyph:'\u2713'},
+    STALE:{label:'Stale',glyph:'\u25B2'},
+    UNVERIFIED:{label:'Unverified',glyph:'?'},
+    UNAVAILABLE:{label:'Unavailable',glyph:'\u2715'},
+    NOT_REPORTED:{label:'Not reported',glyph:'\u2013'}
+  };
+  function v6Chip(report){
+    const source=report?.source;
+    if(!source||typeof source!=='object')return '';
+    const raw=source.v6?.status,known=Object.prototype.hasOwnProperty.call(V6_STATES,raw)&&raw!=='NOT_REPORTED';
+    const status=known?raw:'NOT_REPORTED',info=V6_STATES[status];
+    const observed=known&&source.v6.observed_at?deviceDateTime(source.v6.observed_at):null;
+    const when=observed&&observed!=='Tanggal belum tersedia'?' \u00b7 '+safeName(observed):'';
+    const detail='V6 checks the integrity and freshness of the Official FPL data feed. It is not Canonical V12 readiness (independent of V12 readiness) and does not validate the projections.';
+    return '<span class="decision-v6" data-v6-status="'+status+'" title="'+detail+'"><i aria-hidden="true">'+info.glyph+'</i> V6 data feed: <b>'+info.label+'</b>'+when+'</span>';
+  }
   function planCard(){
     const gw=Number(state.next?.id),report=publicPlan.entryId===Number(state.entry?.id)&&publicPlan.gw===gw?publicPlan.report:null;
     const modelReady=report?.contract==='PUBLIC_FPL_MULTIGW_ADVISORY_V2';
@@ -214,7 +234,7 @@ function publicFormationEvidence(s,planningGw,name){
       (report&&!modelReady&&publicPlan.horizon>1?'<p class="decision-fallback-notice">The '+publicPlan.horizon+' GW projection is not yet validated. The available result only uses 1 GW of Official FPL.</p>':'')+
       (report?.economics_status==='PUBLIC_CURRENT_PRICE_PROXY_INDICATIVE'?'<p class="decision-fallback-notice">B/C use the Official FPL market price as a proxy for the sale price, and the bank from the last published GW. <strong>This may not be affordable in your account.</strong> Verify the sale price and hit before transferring.</p>':'')+
       '<div class="decision-scenarios">'+scenario('A','A · Hold')+scenario('B','B · 1 Transfer')+scenario('C','C · 2 Transfers')+'</div>'+
-      '<footer class="decision-foot"><span>'+safeName(economicsLabel)+'</span><span>Public data · Non-canonical · Gross gain, not net after hit</span></footer></article>';
+      '<footer class="decision-foot"><span>'+safeName(economicsLabel)+'</span><span>Public data · Non-canonical · Gross gain, not net after hit</span>'+v6Chip(report)+'</footer></article>';
   }
   let fixturePageGw=null,fixtureTeamGw=null;
   function activeFixtureGw(){

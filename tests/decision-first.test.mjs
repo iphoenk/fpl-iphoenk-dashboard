@@ -117,3 +117,49 @@ test('Current Team shows C/VC only on pitch, not in a duplicate bottom footer',(
  assert.doesNotMatch(flagged,/fitness flag/);
  assert.doesNotMatch(flagged,/decision-foot/);
 });
+
+test('Next GW Plan footer shows V6 status with a distinct glyph per state, NOT REPORTED when absent, never V12 readiness',()=>{
+ const start=js.indexOf('  const V6_STATES=');
+ const end=js.indexOf('\n  let fixturePageGw=null',start);
+ assert.ok(start>=0&&end>start);
+ const baseReport={contract:'PUBLIC_FPL_MULTIGW_ADVISORY_V2',horizon:1,status:'ready',scenarios:{},team_state:{free_transfers:1,bank:0},economics_status:null};
+ function render(v6,withSource=true){
+  const report=withSource?{...baseReport,source:{provider:'Official FPL',...(v6===undefined?{}:{v6})}}:baseReport;
+  const state={next:{id:8},entry:{id:42},players:{}},publicPlan={entryId:42,gw:8,horizon:1,loading:false,error:null,report};
+  const context=vm.createContext({safeName:String,number:n=>String(n),money:n=>'£'+n,fmt:(n,d)=>Number(n).toFixed(d),
+   deviceDateTime:x=>Number.isFinite(new Date(x).getTime())?'OBS<'+x+'>':'Tanggal belum tersedia',publicFormationEvidence:()=>'',state,publicPlan});
+  vm.runInContext(js.slice(start,end)+'\nglobalThis.renderCard=planCard;',context);
+  return context.renderCard();
+ }
+ const glyphs={};
+ for(const [status,label] of [['VERIFIED','Verified'],['STALE','Stale'],['UNVERIFIED','Unverified'],['UNAVAILABLE','Unavailable']]){
+  const out=render({status,observed_at:'2026-10-25T05:13:00.858Z'});
+  assert.match(out,new RegExp('data-v6-status="'+status+'"'),status);
+  assert.match(out,new RegExp('<b>'+label+'</b>'),status);
+  assert.match(out,/<footer class="decision-foot">.*decision-v6/s,'chip is inside the plan footer');
+  assert.match(out,/OBS<2026-10-25T05:13:00.858Z>/,'observed_at shown when valid');
+  glyphs[status]=out.match(/<i aria-hidden="true">([^<]+)<\/i>/)[1];
+  assert.doesNotMatch(out,/V12 (is |source )?(ready|verified|READY)/i);
+  assert.match(out,/independent of V12 readiness/);
+ }
+ assert.equal(new Set(Object.values(glyphs)).size,4,'each status has its own glyph');
+ // Missing or unknown status: explicit NOT REPORTED, never a fabricated or silent state.
+ for(const v6 of [undefined,null,{},{status:'OK'},{status:'verified'},{status:'__proto__'},{status:'toString'},{status:'NOT_REPORTED'}]){
+  const out=render(v6);
+  assert.match(out,/data-v6-status="NOT_REPORTED"/,JSON.stringify(v6));
+  assert.match(out,/<b>Not reported<\/b>/);
+  assert.doesNotMatch(out,/Verified/);
+  assert.doesNotMatch(out,/OBS</);
+ }
+ assert.ok(!Object.values(glyphs).includes('\u2013'),'NOT REPORTED glyph differs from every reported status');
+ // observed_at: never invented, never shown for an invalid value or a status the backend did not report.
+ assert.doesNotMatch(render({status:'VERIFIED'}),/OBS<|Tanggal belum/);
+ assert.doesNotMatch(render({status:'VERIFIED',observed_at:'not-a-date'}),/OBS<|Tanggal belum/);
+ assert.doesNotMatch(render({observed_at:'2026-10-25T05:13:00Z'}),/OBS</);
+ // No chip when the report carries no source object at all (loading/unavailable report).
+ assert.doesNotMatch(render(undefined,false),/decision-v6/);
+ // Server strings are never echoed into markup.
+ const evil=render({status:'<img src=x onerror=alert(1)>',observed_at:'2026-10-25T05:13:00Z'});
+ assert.doesNotMatch(evil,/<img|onerror/);
+ assert.match(evil,/NOT_REPORTED/);
+});

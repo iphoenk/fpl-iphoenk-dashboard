@@ -1,4 +1,21 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {entryId,projection,comparePicks,validateTransfer,bestXI} from '../domain.mjs';import {sourceFor,handle} from '../server.mjs';
+import {test} from 'node:test';import assert from 'node:assert/strict';import {entryId,projection,comparePicks,validateTransfer,bestXI,valueMetricOptions,valueMetricNumber} from '../domain.mjs';import {sourceFor,handle} from '../server.mjs';
+
+test('valueSeason/valueForm read Official FPL native value_season/value_form fields as-is, not a recomputed PPM, for every position',()=>{
+ for(const position of [1,2,3,4]){
+  const options=valueMetricOptions(position);
+  const season=options.find(m=>m.key==='valueSeason'),form=options.find(m=>m.key==='valueForm');
+  assert.ok(season,'valueSeason option present for position '+position);
+  assert.ok(form,'valueForm option present for position '+position);
+  assert.equal(season.field,'value_season');
+  assert.equal(form.field,'value_form');
+  assert.doesNotMatch(season.label,/PPM/);
+ }
+ const player={value_season:'7.9',value_form:'0.8',minutes:720};
+ assert.equal(valueMetricNumber(player,valueMetricOptions(1).find(m=>m.key==='valueSeason')),7.9);
+ assert.equal(valueMetricNumber(player,valueMetricOptions(1).find(m=>m.key==='valueForm')),0.8);
+ // Missing/non-numeric field: no fabricated value.
+ assert.equal(valueMetricNumber({},valueMetricOptions(1).find(m=>m.key==='valueSeason')),null);
+});
 test('best XI respects formation and max three per club when one club dominates',()=>{
  const players=[];let id=1;for(const type of [1,2,3,4])for(let i=0;i<12;i++)players.push({id:id++,element_type:type,team:i<5?1:i-2,score:20-i});
  const result=bestXI(players,p=>p.score);assert.equal(result.players.length,11);assert.equal(result.players.filter(p=>p.element_type===1).length,1);const counts=result.players.reduce((acc,p)=>(acc[p.team]=(acc[p.team]||0)+1,acc),{});assert.ok(Object.values(counts).every(n=>n<=3));assert.equal(new Set(result.players.map(p=>p.id)).size,11);
