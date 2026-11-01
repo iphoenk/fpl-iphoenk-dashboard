@@ -6,7 +6,7 @@ import vm from 'node:vm';
 /* GAP-01: transfer hit, free-transfer provenance, sale price and bank in advanced-planning.js. */
 const source=readFileSync(new URL('../advanced-planning.js',import.meta.url),'utf8');
 const pick=name=>{const i=source.indexOf('function '+name+'(');assert.ok(i>=0,name);let d=0;const j=source.indexOf('}){',i)>=0&&source.indexOf('}){',i)<source.indexOf('\n',i)?source.indexOf('}){',i)+2:source.indexOf('){',i)+1;for(let k=j;k<source.length;k++){if(source[k]==='{')d++;if(source[k]==='}'&&--d===0)return source.slice(i,k+1);}};
-const NAMES=['ftParse','transferScope','transferFtFromReport','transferFtContext','transferHitContext','transferHit','transferNetSummary','transferBankInfo','transferSellingPrice','transferAffordabilityLabel','loadTransferFt','currentSquad','transferSuggestions','transferCard','transferPanels'];
+const NAMES=['strictNumber','ftParse','transferScope','transferFtFromReport','transferFtContext','transferHitContext','transferHit','transferNetSummary','transferBankInfo','transferSellingPrice','transferAffordabilityLabel','loadTransferFt','currentSquad','transferSuggestions','transferCard','transferPanels'];
 const code=NAMES.map(pick).join('\n');
 
 const player=(id,type,team,cost,xp,extra={})=>({id,element_type:type,team,now_cost:cost,xp,status:'a',web_name:'P'+id,...extra});
@@ -21,7 +21,7 @@ function make({picks,players,ext={},gw=10,next=10,api,entryId=1}={}){
   projectedAt:p=>p.xp??null,playerPhoto:()=>'',fixturePills:()=>'',api:api||(async()=>{throw new Error('no api');})
  };
  vm.createContext(sandbox);
- vm.runInContext(code+'\nglobalThis.t={ftParse,transferFtContext,transferHit,transferNetSummary,transferBankInfo,transferSellingPrice,transferAffordabilityLabel,loadTransferFt,transferSuggestions,transferCard,transferPanels};',sandbox);
+ vm.runInContext(code+'\nglobalThis.t={ftParse,strictNumber,transferFtContext,transferHit,transferNetSummary,transferBankInfo,transferSellingPrice,transferAffordabilityLabel,loadTransferFt,transferSuggestions,transferCard,transferPanels};',sandbox);
  return {t:sandbox.t,sandbox};
 }
 const squadPicks=(ids,entry_history={bank:10,event_transfers:0},extra={})=>({picks:ids.map((element,i)=>({element,position:i+1})),entry_history,...extra});
@@ -144,6 +144,8 @@ test('FT response validation fails closed: wrong team, GW, contract, status, aut
   'evidence missing':report({},{free_transfer_evidence:null}),
   'evidence disagrees with FT':report({},{},{value:3}),
   'evidence for another GW':report({},{},{next_gameweek:11,as_of_gameweek:10}),
+  'evidence next GW only':report({},{},{next_gameweek:11}),
+  'evidence next GW missing':report({},{},{next_gameweek:undefined}),
   'evidence as-of GW stale':report({},{},{as_of_gameweek:7}),
   'not an object':'ready',
   'null':null,
@@ -190,18 +192,49 @@ test('team switch also clears an invalid bank entry and a GW rollover resets inp
  assert.equal(m.sandbox.ext.transferBank,undefined);
 });
 
-test('viewing another gameweek keeps typed inputs but invalidates the public bank',()=>{
- const m=base({ext:{ftUser:2,transferBank:30}});
+test('viewing another squad gameweek discards typed inputs and invalidates the public bank',()=>{
+ const m=base({ext:{ftUser:2,transferBank:30,salePrices:{2:4.7}}});
+ assert.equal(m.t.transferBankInfo().source,'user-provided');
  m.sandbox.state.gw=4;
- assert.equal(m.t.transferFtContext().value,2,'inputs belong to entry and planning GW, not the viewed GW');
- assert.equal(m.t.transferBankInfo().valid,true);
- const pub=base({gw:4,next:10});
- assert.equal(pub.t.transferBankInfo().valid,false,'bank of GW 4 is not the last published bank');
- assert.match(pub.t.transferBankInfo().reason,/GW 4/);
- assert.equal(pub.t.transferSuggestions(1).length,0);
- assert.match(pub.t.transferPanels(),/data-bank-status="invalid"/);
- assert.equal(base({gw:9,next:10}).t.transferBankInfo().valid,true,'last published GW');
+ assert.equal(m.t.transferFtContext().status,'unknown','a bank or FT typed for the current squad does not follow the GW selector');
+ assert.equal(m.sandbox.ext.transferBank,undefined);
+ assert.equal(m.sandbox.ext.salePrices,undefined);
+ assert.equal(m.t.transferBankInfo().valid,false,'the public bank of GW 4 is not the last published bank');
+ assert.match(m.t.transferBankInfo().reason,/GW 4/);
+ assert.equal(m.t.transferSuggestions(1).length,0);
+ assert.match(m.t.transferPanels(),/data-bank-status="invalid"/);
+ m.sandbox.state.gw=9;
+ assert.equal(m.t.transferBankInfo().valid,true,'last published GW is accepted again');
+ assert.equal(m.t.transferBankInfo().source,'last published GW');
+ assert.equal(base({gw:9,next:10}).t.transferBankInfo().valid,true);
  assert.equal(base({gw:10,next:10}).t.transferBankInfo().valid,true);
+ assert.equal(base({gw:4,next:10}).t.transferBankInfo().valid,false);
+});
+
+test('non-numeric values are rejected, not coerced: false, blank, arrays, hex and booleans',async()=>{
+ const m=base();
+ for(const bad of [false,true,' ','',[],{},'0x2','1e1',null,undefined,NaN,Infinity,'abc'])assert.equal(m.t.ftParse(bad),null,JSON.stringify(bad)+' as FT');
+ assert.equal(m.t.ftParse(2),2);assert.equal(m.t.ftParse('3'),3);assert.equal(m.t.ftParse(' 1 '),1);
+ for(const raw of [false,true,' ','',[],{},'0x2','1e1','abc',null,undefined,NaN,Infinity,-1]){
+  const x=make({players:basePlayers(),picks:squadPicks([1,2,3],{bank:raw,event_transfers:0})});
+  assert.equal(x.t.transferBankInfo().valid,false,'bank '+JSON.stringify(raw));
+ }
+ assert.equal(make({players:basePlayers(),picks:squadPicks([1,2,3],{bank:'14',event_transfers:0})}).t.transferBankInfo().tenths,14);
+ const falseFt=base({ext:{ftPublic:undefined},api:async()=>report({},{free_transfers:false},{value:false})});
+ await falseFt.t.loadTransferFt();
+ assert.equal(falseFt.t.transferFtContext().status,'unknown','false is not FT 0');
+ const falseMade=make({players:basePlayers(),picks:squadPicks([1,2,3],{bank:10,event_transfers:false},{active_chip:null}),ext:{ftUser:2}});
+ assert.match(falseMade.t.transferNetSummary(5,2),/not verified/,'false is not 0 transfers made');
+});
+
+test('affordability label only claims user input when bank and every sale price are user-provided',()=>{
+ const outs=[{id:2,now_cost:50}];
+ const publicBank=base({ext:{salePrices:{2:4.7}}});
+ assert.doesNotMatch(publicBank.t.transferAffordabilityLabel(outs),/Affordability uses the bank and sale prices you entered/,'public bank is never user-confirmed');
+ const confirmed=base({ext:{transferBank:30,salePrices:{2:4.7}}});
+ assert.match(confirmed.t.transferAffordabilityLabel(outs),/Affordability uses the bank and sale prices you entered/);
+ assert.doesNotMatch(confirmed.t.transferAffordabilityLabel([]),/Affordability uses the bank and sale prices you entered/,'an empty list confirms nothing');
+ assert.doesNotMatch(base({ext:{transferBank:30}}).t.transferAffordabilityLabel(outs),/Affordability uses the bank and sale prices you entered/,'bank typed but sale price is a proxy');
 });
 
 test('stale async response for team A never changes team B',async()=>{
