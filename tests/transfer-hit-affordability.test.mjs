@@ -237,6 +237,16 @@ test('affordability label only claims user input when bank and every sale price 
  assert.doesNotMatch(base({ext:{transferBank:30}}).t.transferAffordabilityLabel(outs),/Affordability uses the bank and sale prices you entered/,'bank typed but sale price is a proxy');
 });
 
+test('a planning-GW change alone, with the viewed squad GW unchanged, also discards typed inputs',()=>{
+ const m=base({gw:10,next:10,ext:{ftUser:3,transferBank:20,salePrices:{2:4.7}}});
+ assert.equal(m.t.transferFtContext().status,'user');
+ m.sandbox.state.next={id:11};
+ assert.equal(m.sandbox.state.gw,10,'viewed squad GW did not change');
+ assert.equal(m.t.transferFtContext().status,'unknown');
+ assert.equal(m.sandbox.ext.transferBank,undefined);
+ assert.equal(m.sandbox.ext.salePrices,undefined);
+});
+
 test('stale async response for team A never changes team B',async()=>{
  const pending={};
  const api=path=>{const id=Number(path.match(/entry_id=(\d+)/)[1]);pending[id]=deferred();return pending[id].promise;};
